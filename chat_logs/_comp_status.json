@@ -1,0 +1,60 @@
+{
+  "cloud_api_disabled": true,
+  "controls": [
+    {
+      "evidence": "pii_guard.CLAUDE_API_DISABLED = True\uff1bOllama \u672c\u5730 LLM qwen2.5:7b",
+      "id": "C1_LOCAL_ONLY",
+      "name": "\u500b\u8cc7\u4e0d\u5916\u6d41\uff08\u96f2\u7aef API \u95dc\u9589\uff09",
+      "status": "DONE"
+    },
+    {
+      "evidence": "\u6240\u6709 LLM \u547c\u53eb\u7d93 pii_guard.mask_text()\uff1b\u7d2f\u8a08\u5075\u6e2c 5 \u7b46 PII",
+      "id": "C2_PII_MASK",
+      "name": "PII \u5075\u6e2c\u8207\u906e\u853d\u4e2d\u4ecb\u5c64",
+      "status": "DONE"
+    },
+    {
+      "evidence": "pii_audit=True / acceptance_audit=True / org_audit=False",
+      "id": "C3_AUDIT_LOG",
+      "name": "\u7a3d\u6838\u65e5\u8a8c\u5b8c\u6574\u6027\uff08append-only JSONL\uff09",
+      "status": "PARTIAL"
+    },
+    {
+      "evidence": "\u7d44\u7e54\u6210\u54e1\u522a\u9664\u3001\u60c5\u5883\u91cd\u7f6e\u3001\u6279\u6b21\u532f\u51fa\u7686\u5f37\u5236 confirm() + \u7a3d\u6838\u5beb\u5165",
+      "id": "C4_HUMAN_GATE",
+      "name": "\u4eba\u5de5\u5be9\u6838\u9598\uff08\u522a\u9664/\u532f\u51fa\u4e8c\u6b21\u78ba\u8a8d\uff09",
+      "status": "DONE"
+    }
+  ],
+  "ollama_model": "qwen2.5:7b",
+  "summary": {
+    "by_context": {
+      "unknown": 1
+    },
+    "by_type": {
+      "CN_NAME": 1,
+      "EMAIL": 1,
+      "TW_ADDR": 1,
+      "TW_ID": 1,
+      "TW_PHONE": 1
+    },
+    "last_10": [
+      {
+        "context": "unknown",
+        "detections_count": 5,
+        "input_len": 63,
+        "output_len": 68,
+        "ts": "2026-04-20T11:13:50",
+        "types": [
+          "CN_NAME",
+          "EMAIL",
+          "TW_ADDR",
+          "TW_ID",
+          "TW_PHONE"
+        ]
+      }
+    ],
+    "total_calls_scanned": 1,
+    "total_pii_detected": 5
+  }
+}

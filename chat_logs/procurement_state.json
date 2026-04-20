@@ -1,0 +1,201 @@
+{
+  "customer": {
+    "id": "CUST-001",
+    "name": "陳先生",
+    "phone": "0912-345-678",
+    "address": "台北市大安區和平東路二段 xxx 號 5F",
+    "channel": "addwii 官網表單填寫"
+  },
+  "space": {
+    "area_ping": 12,
+    "area_m2": 39.6,
+    "height_m": 2.8,
+    "scenario": "客廳款（Living Room Clean Room）"
+  },
+  "inquiry": {
+    "id": "INQ-2026-0412",
+    "date": "2026-04-12",
+    "status": "已回覆"
+  },
+  "quote": {
+    "id": "QUO-2026-0041",
+    "date": "2026-04-14",
+    "amount": 168000,
+    "validity": "30 天",
+    "status": "客戶已簽回"
+  },
+  "order": {
+    "id": "ORD-2026-0028",
+    "date": "2026-04-16",
+    "amount": 168000,
+    "deposit": 84000,
+    "status": "運送中",
+    "current_milestone": "shipping"
+  },
+  "milestones": [
+    {
+      "key": "inquiry",
+      "label": "客戶詢價",
+      "date": "2026-04-12"
+    },
+    {
+      "key": "quote",
+      "label": "addwii 報價",
+      "date": "2026-04-14"
+    },
+    {
+      "key": "contract",
+      "label": "簽約 + 付訂金 50%",
+      "date": "2026-04-16"
+    },
+    {
+      "key": "purchase",
+      "label": "addwii → microjet 採購感測器",
+      "date": "2026-04-18"
+    },
+    {
+      "key": "manufacture",
+      "label": "主機製造 + 感測器到料",
+      "date": "2026-04-20"
+    },
+    {
+      "key": "shipping",
+      "label": "出貨",
+      "date": "2026-04-26"
+    },
+    {
+      "key": "install",
+      "label": "到府安裝 + 序號綁定",
+      "date": "2026-04-28"
+    },
+    {
+      "key": "acceptance",
+      "label": "驗收完工 + 尾款",
+      "date": "2026-04-29"
+    }
+  ],
+  "bom": [
+    {
+      "sku": "ADW-LR-12P",
+      "name": "客廳無塵室主機（12 坪適用）",
+      "qty": 1,
+      "unit": 148000,
+      "supplier": "addwii 自製"
+    },
+    {
+      "sku": "CJ-P760",
+      "name": "PM + VOC 整合感測器模組",
+      "qty": 2,
+      "unit": 3200,
+      "supplier": "microjet / CurieJet"
+    },
+    {
+      "sku": "CJ-P710",
+      "name": "PM2.5 備援感測器模組",
+      "qty": 1,
+      "unit": 2400,
+      "supplier": "microjet / CurieJet"
+    },
+    {
+      "sku": "ADW-HEPA-H13",
+      "name": "HEPA H13 濾網組（初始配備）",
+      "qty": 1,
+      "unit": 3600,
+      "supplier": "addwii"
+    },
+    {
+      "sku": "ADW-CARBON",
+      "name": "活性碳除臭層",
+      "qty": 1,
+      "unit": 1800,
+      "supplier": "addwii"
+    },
+    {
+      "sku": "ADW-UV",
+      "name": "UV 殺菌模組",
+      "qty": 1,
+      "unit": 4800,
+      "supplier": "addwii"
+    }
+  ],
+  "purchase_to_microjet": {
+    "po_id": "PO-ADW-2026-0117",
+    "date": "2026-04-18",
+    "items": [
+      {
+        "sku": "CJ-P760",
+        "qty": 2,
+        "unit": 3200,
+        "subtotal": 6400
+      },
+      {
+        "sku": "CJ-P710",
+        "qty": 1,
+        "unit": 2400,
+        "subtotal": 2400
+      }
+    ],
+    "total": 8800,
+    "expected_delivery": "2026-04-22",
+    "status": "已出貨",
+    "shipped_at": "2026-04-20T10:44:08"
+  },
+  "sensor_serials": [
+    {
+      "serial": "CJ-P760-20260420-0001",
+      "sku": "CJ-P760",
+      "shipped_at": "2026-04-20T10:44:08",
+      "bound_to_order": "ORD-2026-0028",
+      "bound_to_customer": "陳先生",
+      "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
+      "bound_at": "2026-04-20T10:44:08"
+    },
+    {
+      "serial": "CJ-P760-20260420-0002",
+      "sku": "CJ-P760",
+      "shipped_at": "2026-04-20T10:44:08",
+      "bound_to_order": "ORD-2026-0028",
+      "bound_to_customer": "陳先生",
+      "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
+      "bound_at": "2026-04-20T10:44:08"
+    },
+    {
+      "serial": "CJ-P710-20260420-0003",
+      "sku": "CJ-P710",
+      "shipped_at": "2026-04-20T10:44:08",
+      "bound_to_order": "ORD-2026-0028",
+      "bound_to_customer": "陳先生",
+      "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
+      "bound_at": "2026-04-20T10:44:08"
+    }
+  ],
+  "audit": [
+    {
+      "ts": "2026-04-20T10:40:04",
+      "action": "reset",
+      "detail": {}
+    },
+    {
+      "ts": "2026-04-20T10:44:05",
+      "action": "advance_order",
+      "detail": {
+        "order_id": "ORD-2026-0028",
+        "from": "manufacture",
+        "to": "shipping"
+      }
+    },
+    {
+      "ts": "2026-04-20T10:44:08",
+      "action": "ship_po",
+      "detail": {
+        "po_id": "PO-ADW-2026-0117",
+        "serials_generated": [
+          "CJ-P760-20260420-0001",
+          "CJ-P760-20260420-0002",
+          "CJ-P710-20260420-0003"
+        ],
+        "bound_order": "ORD-2026-0028"
+      }
+    }
+  ]
+}

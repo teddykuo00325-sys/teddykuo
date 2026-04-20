@@ -1,0 +1,54 @@
+# 凌策公司 — LiteLLM API 閘道配置
+# 統一 API 格式、Token 監控、模型分流
+
+model_list:
+  # 主力模型 — 複雜推理、決策、程式碼生成
+  - model_name: claude-sonnet
+    litellm_params:
+      model: claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      max_tokens: 8192
+      input_cost_per_token: 0.000003
+      output_cost_per_token: 0.000015
+
+  # 輕量模型 — 文件整理、格式轉換
+  - model_name: claude-haiku
+    litellm_params:
+      model: claude-haiku-4-5-20251001
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      max_tokens: 8192
+      input_cost_per_token: 0.00000025
+      output_cost_per_token: 0.00000125
+
+  # 重度模型 — 僅關鍵場景
+  - model_name: claude-opus
+    litellm_params:
+      model: claude-opus-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      max_tokens: 8192
+      input_cost_per_token: 0.000015
+      output_cost_per_token: 0.000075
+
+litellm_settings:
+  # Token 用量上限
+  max_budget: 50.0  # USD
+  budget_duration: 7d
+
+  # 快取設定（Prompt Caching）
+  cache: true
+  cache_params:
+    type: local
+    ttl: 3600
+
+  # 日誌
+  success_callback: ["prometheus"]
+  failure_callback: ["prometheus"]
+
+general_settings:
+  master_key: lingce-api-key-2026
+  alerting:
+    - slack
+  alerting_threshold: 80  # 預算使用 80% 時告警

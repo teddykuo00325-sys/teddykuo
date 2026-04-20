@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>凌策公司 LingCe — AI Agent 服務型組織 · 1 人 + 10 AI</title>
+<meta name="description" content="凌策 LingCe：1 位人類老闆 + 10 位 AI Agent 員工，用 AI 取代傳統人力，為企業交付 AI 驅動解決方案。14 個 AI 模組即買即用。">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --navy: #0a0f1e;
+    --card: #0f172a;
+    --border: rgba(96,165,250,0.18);
+    --accent: #60a5fa;
+    --accent2: #a78bfa;
+    --gold: #fbbf24;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, 'Microsoft JhengHei', sans-serif;
+    background: var(--navy); color: #e2e8f0; margin: 0;
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(96,165,250,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(96,165,250,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .hero-radial {
+    background:
+      radial-gradient(ellipse at 25% 15%, rgba(96,165,250,0.18), transparent 55%),
+      radial-gradient(ellipse at 75% 85%, rgba(167,139,250,0.14), transparent 55%);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; transition: all .25s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(96,165,250,0.12);
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .3rem .7rem; border-radius: 999px;
+    background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.25);
+    font-size: .72rem; color: #93c5fd;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    color: #0a0f1e; font-weight: 700;
+    padding: .8rem 1.6rem; border-radius: 10px; border: 0; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(96,165,250,0.35); }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.6rem; border-radius: 10px;
+    background: transparent; color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.25); cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .btn-outline:hover { border-color: var(--accent); background: rgba(96,165,250,0.08); }
+  nav.top-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(10,15,30,0.82); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .input-field {
+    background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.25);
+    border-radius: 8px; padding: .65rem .9rem; color: #e2e8f0; width: 100%;
+    font-size: .9rem;
+  }
+  .input-field:focus { outline: none; border-color: var(--accent); }
+  .input-field::placeholder { color: #64748b; }
+  @keyframes float { 0%,100% {transform: translateY(0);} 50% {transform: translateY(-10px);} }
+  .float { animation: float 4s ease-in-out infinite; }
+  @keyframes glow-pulse { 0%,100% {opacity:.4} 50% {opacity:1} }
+  .glow-dot { animation: glow-pulse 2s ease-in-out infinite; }
+</style>
+</head>
+<body class="grid-bg">
+
+<!-- ================= 頂部導覽 ================= -->
+<nav class="top-nav">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <a href="#hero" class="flex items-center gap-2">
+      <span class="text-xl font-black tracking-wider"><span class="text-blue-400">凌策</span> LingCe</span>
+      <span class="text-[10px] text-slate-500 hidden md:inline-block">AI AGENT COMPANY</span>
+    </a>
+    <div class="hidden md:flex items-center gap-7 text-sm text-slate-300">
+      <a href="#how" class="hover:text-blue-400">運作模式</a>
+      <a href="#modules" class="hover:text-blue-400">AI 模組</a>
+      <a href="#cases" class="hover:text-blue-400">成功案例</a>
+      <a href="#inquiry" class="hover:text-blue-400">提出需求</a>
+      <a href="dashboard.html" class="hover:text-blue-400 text-xs border border-blue-500/40 rounded-full px-3 py-1">🔐 內部控制台</a>
+    </div>
+    <button class="btn-primary text-sm" onclick="document.getElementById('inquiry').scrollIntoView({behavior:'smooth'})">
+      立即諮詢
+    </button>
+  </div>
+</nav>
+
+<!-- ================= Hero ================= -->
+<section id="hero" class="hero-radial min-h-screen flex items-center pt-20">
+  <div class="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <div class="chip mb-5">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400 glow-dot"></span>
+        LINGCE · AI AGENT CONSULTING · 2026
+      </div>
+      <h1 class="text-5xl md:text-6xl font-black leading-tight mb-5">
+        用 <span class="gradient-text">AI Agent</span><br>
+        取代傳統人力<br>
+        <span class="text-blue-400">交付真實商業成果</span>
+      </h1>
+      <p class="text-slate-300 text-lg leading-relaxed mb-8">
+        凌策 = <span class="text-amber-300 font-bold">1 位人類老闆</span> +
+        <span class="text-cyan-300 font-bold">10 位 AI Agent 員工</span>。<br>
+        沒有業務、沒有工程師、沒有客服 — 一切職能由 AI Agent 扮演。<br class="hidden md:block">
+        為製造業、買賣業、B2C 品牌交付 <b>AI 驅動解決方案</b>，月費制、24 小時部署。
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <button class="btn-primary" onclick="document.getElementById('modules').scrollIntoView({behavior:'smooth'})">
+          查看 14 個 AI 模組 →
+        </button>
+        <button class="btn-outline" onclick="document.getElementById('cases').scrollIntoView({behavior:'smooth'})">
+          看真實客戶案例
+        </button>
+      </div>
+    </div>
+    <div class="relative">
+      <div class="card p-8 float">
+        <div class="text-[11px] text-slate-500 uppercase tracking-widest mb-3">凌策組織公式</div>
+        <div class="flex items-center gap-3 mb-5">
+          <div class="flex-1 text-center bg-amber-900/30 border border-amber-500/40 rounded-xl py-4">
+            <div class="text-3xl mb-1">👤</div>
+            <div class="text-xs text-amber-300">人類老闆</div>
+            <div class="text-2xl font-black text-amber-200">1</div>
+          </div>
+          <div class="text-blue-400 text-2xl font-bold">+</div>
+          <div class="flex-1 text-center bg-blue-900/30 border border-blue-500/40 rounded-xl py-4">
+            <div class="text-3xl mb-1">🤖</div>
+            <div class="text-xs text-blue-300">AI Agent 員工</div>
+            <div class="text-2xl font-black text-blue-200">10</div>
+          </div>
+        </div>
+        <div class="text-center text-slate-500 text-lg mb-3">=</div>
+        <div class="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl py-5">
+          <div class="text-3xl font-black">新世代 IT 服務公司</div>
+          <div class="text-xs text-blue-100 mt-1">取代傳統 30+ 人團隊</div>
+        </div>
+        <div class="mt-5 grid grid-cols-3 gap-2 text-[11px] text-center">
+          <div class="bg-slate-800/60 rounded py-2">Orchestrator</div>
+          <div class="bg-slate-800/60 rounded py-2">BD Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">客服 Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">提案 Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">前端 Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">後端 Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">QA Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">財務 Agent</div>
+          <div class="bg-slate-800/60 rounded py-2">法務 Agent</div>
+          <div class="col-span-3 bg-slate-800/60 rounded py-2">+ 文件 Agent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 核心價值卡片 ================= -->
+<section class="py-16 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-5">
+    <div class="card p-6">
+      <div class="text-3xl mb-3">⚡</div>
+      <div class="text-lg font-bold mb-1">24 小時部署</div>
+      <div class="text-sm text-slate-400">AI Deploy Agent 自動完成模組設定</div>
+    </div>
+    <div class="card p-6">
+      <div class="text-3xl mb-3">💰</div>
+      <div class="text-lg font-bold mb-1">月費制成本</div>
+      <div class="text-sm text-slate-400">4 項 9 折 / 7 項 85 折，不綁約</div>
+    </div>
+    <div class="card p-6">
+      <div class="text-3xl mb-3">🔒</div>
+      <div class="text-lg font-bold mb-1">本地優先</div>
+      <div class="text-sm text-slate-400">Ollama 本地 LLM + Claude API 備援</div>
+    </div>
+    <div class="card p-6">
+      <div class="text-3xl mb-3">🎯</div>
+      <div class="text-lg font-bold mb-1">30 天滿意保證</div>
+      <div class="text-sm text-slate-400">不合用無痛退訂</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 運作模式 ================= -->
+<section id="how" class="py-20 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-[11px] text-blue-400 tracking-[0.2em] uppercase mb-2">// HOW WE WORK</div>
+    <h2 class="text-4xl font-black mb-3">凌策的運作模式</h2>
+    <p class="text-slate-400 mb-12 max-w-2xl">從接單到交付，全程由 AI Agent 協作執行；人類老闆只負責監管、決策、風控、最終簽核。</p>
+
+    <div class="grid md:grid-cols-5 gap-4">
+      <div class="card p-5">
+        <div class="text-blue-400 font-black text-xl mb-2">01</div>
+        <div class="font-bold mb-1">客戶提出需求</div>
+        <div class="text-xs text-slate-400">本網站表單或 BD Agent 主動訪談，需求即時寫入系統</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-blue-400 font-black text-xl mb-2">02</div>
+        <div class="font-bold mb-1">AI 自動報價</div>
+        <div class="text-xs text-slate-400">依選配模組與折扣規則即時算出月費，附 PDF 報價單</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-blue-400 font-black text-xl mb-2">03</div>
+        <div class="font-bold mb-1">人類老闆簽核</div>
+        <div class="text-xs text-slate-400">唯一人類把關點：決策、合規、風控、定案</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-blue-400 font-black text-xl mb-2">04</div>
+        <div class="font-bold mb-1">Agent 自動部署</div>
+        <div class="text-xs text-slate-400">10 個 AI Agent 分工完成環境建置、資料匯入、驗收</div>
+      </div>
+      <div class="card p-5">
+        <div class="text-blue-400 font-black text-xl mb-2">05</div>
+        <div class="font-bold mb-1">持續維運升級</div>
+        <div class="text-xs text-slate-400">模型持續更新，效能只增不減；客製化另報</div>
+      </div>
+    </div>
+
+    <!-- 雙軌商業模式 -->
+    <div class="mt-12 grid md:grid-cols-2 gap-5">
+      <div class="card p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">⚙️</span>
+          <div class="font-bold text-blue-300">軌道一 · 凌策自用</div>
+          <span class="ml-auto chip">AI Agent 接案</span>
+        </div>
+        <div class="text-sm text-slate-300 space-y-1.5">
+          <div>▸ BD Agent 自動評估接案、即時報價</div>
+          <div>▸ 10 位 AI Agent 並行分工執行</div>
+          <div>▸ Orchestrator 自動產出進度報告</div>
+          <div>▸ 每次案件累積知識庫</div>
+        </div>
+      </div>
+      <div class="card p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">📦</span>
+          <div class="font-bold text-emerald-300">軌道二 · 模組授權</div>
+          <span class="ml-auto chip" style="color:#6ee7b7;border-color:rgba(110,231,183,0.3);background:rgba(16,185,129,0.08);">14 個模組</span>
+        </div>
+        <div class="text-sm text-slate-300 space-y-1.5">
+          <div>▸ 月費制 AI 模組商品，即買即用</div>
+          <div>▸ 24 小時內凌策 AI 協助部署上線</div>
+          <div>▸ 持續更新模型與能力</div>
+          <div>▸ 依客戶需求疊加新模組</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AI 模組 ================= -->
+<section id="modules" class="py-20 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-[11px] text-blue-400 tracking-[0.2em] uppercase mb-2">// MODULES</div>
+    <h2 class="text-4xl font-black mb-3">14 個 AI 套裝模組</h2>
+    <p class="text-slate-400 mb-8 max-w-2xl">依產業選擇最適組合，選滿 4 項 9 折 · 選滿 7 項 85 折。客製需求另行報價。</p>
+
+    <!-- 分類 tabs -->
+    <div class="flex flex-wrap gap-2 mb-8">
+      <button class="mod-tab px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold" data-cat="general">通用（4）</button>
+      <button class="mod-tab px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm hover:bg-slate-700" data-cat="mfg">製造業（4）</button>
+      <button class="mod-tab px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm hover:bg-slate-700" data-cat="trade">買賣業（4）</button>
+      <button class="mod-tab px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-sm hover:bg-slate-700" data-cat="order">訂單（2）</button>
+    </div>
+
+    <div id="modules-grid" class="grid md:grid-cols-4 gap-4"></div>
+
+    <div class="mt-8 card p-5 flex items-center justify-between">
+      <div>
+        <div class="text-sm font-bold text-amber-300">💡 價格模擬</div>
+        <div class="text-xs text-slate-400 mt-1">在左側點選模組即可即時看到月費估算</div>
+      </div>
+      <div class="text-right">
+        <div class="text-xs text-slate-500">已選 <span id="mod-count" class="text-white font-mono font-bold">0</span> 個模組</div>
+        <div class="text-3xl font-black text-amber-300" id="mod-price">NT$ 0</div>
+        <div class="text-[11px] text-slate-500">/ 月 · <span id="mod-discount">無折扣</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 成功案例 ================= -->
+<section id="cases" class="py-20 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-[11px] text-blue-400 tracking-[0.2em] uppercase mb-2">// CASES</div>
+    <h2 class="text-4xl font-black mb-3">真實服務中的客戶</h2>
+    <p class="text-slate-400 mb-12 max-w-2xl">凌策目前同時服務三家真實客戶（1 家評估中），涵蓋 B2B 精密製造、B2C 品牌、顧問業。</p>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <!-- addwii -->
+      <div class="card p-6">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="chip" style="background:rgba(14,165,233,0.1);border-color:rgba(14,165,233,0.3);color:#7dd3fc;">🏠 B2C 品牌</div>
+            <h3 class="text-2xl font-black mt-2">addwii 加我科技</h3>
+          </div>
+          <span class="chip" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#86efac;">🟢 Live</span>
+        </div>
+        <div class="text-sm text-slate-300 mb-3">場域無塵室品牌，六款場域產品（嬰兒 / 廚房 / 浴室 / 客廳 / 臥室 / 餐廳）</div>
+        <div class="text-xs text-slate-500 mb-3">官網 · <a href="https://addwiicleanroom.com" target="_blank" class="text-sky-400 hover:underline">addwiicleanroom.com</a></div>
+        <div class="border-t border-slate-700 pt-3 space-y-1.5 text-xs">
+          <div class="flex justify-between"><span class="text-slate-500">組織規模</span><span>6 人團隊</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">導入模組</span><span>AI 內容行銷 · 情緒分析</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">進度</span><span class="text-green-300">82% 完成</span></div>
+        </div>
+      </div>
+
+      <!-- microjet -->
+      <div class="card p-6">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="chip" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fcd34d;">🏭 B2B 製造</div>
+            <h3 class="text-2xl font-black mt-2">MicroJet Technology</h3>
+          </div>
+          <span class="chip" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#86efac;">🟢 Live</span>
+        </div>
+        <div class="text-sm text-slate-300 mb-3">MEMS 壓電微流體領導品牌，1,600+ 專利；子品牌 CurieJet 感測器 / ComeTrue 3D 列印</div>
+        <div class="text-xs text-slate-500 mb-3">官網 · <a href="https://www.microjet.com.tw/en/" target="_blank" class="text-amber-400 hover:underline">microjet.com.tw</a></div>
+        <div class="border-t border-slate-700 pt-3 space-y-1.5 text-xs">
+          <div class="flex justify-between"><span class="text-slate-500">組織規模</span><span>134 人</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">導入模組</span><span>產品 Q&A · CSV 洞察 · PII 合規</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">進度</span><span class="text-green-300">88% 完成</span></div>
+        </div>
+      </div>
+
+      <!-- 維明 -->
+      <div class="card p-6">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="chip" style="background:rgba(148,163,184,0.1);border-color:rgba(148,163,184,0.3);color:#cbd5e1;">🏛️ 顧問業</div>
+            <h3 class="text-2xl font-black mt-2">維明顧問</h3>
+          </div>
+          <span class="chip" style="background:rgba(148,163,184,0.1);border-color:rgba(148,163,184,0.25);color:#94a3b8;">評估中</span>
+        </div>
+        <div class="text-sm text-slate-300 mb-3">企業顧問業務，商業模式與 AI 整合需求仍在訪談討論中</div>
+        <div class="text-xs text-slate-500 mb-3">狀態 · BD Agent 持續對話中</div>
+        <div class="border-t border-slate-700 pt-3 space-y-1.5 text-xs">
+          <div class="flex justify-between"><span class="text-slate-500">組織規模</span><span>待定</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">導入模組</span><span class="text-slate-500">評估中</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">進度</span><span class="text-slate-400">10%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 跨客戶整合亮點 -->
+    <div class="mt-8 card p-6 border-blue-500/30" style="background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(167,139,250,0.08));">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-3xl">🔗</span>
+        <div class="font-bold text-blue-300">跨客戶 B2B 整合案例：12 坪無塵居家</div>
+      </div>
+      <div class="text-sm text-slate-300 leading-relaxed">
+        終端客戶陳先生向 <b class="text-sky-300">addwii</b> 下單 12 坪客廳無塵室（NT$ 168,000）→
+        addwii 向 <b class="text-amber-300">microjet</b> 採購感測器（P760×2 + P710×1，NT$ 8,800）→
+        出貨後感測器序號自動綁定至陳先生住址 → 凌策 AI 客服 24×7 待命。
+        <br>
+        <span class="text-xs text-slate-400">凌策同時驅動兩家客戶的組織管理、報價、採購、安裝、客服全流程。</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 聯絡表單 ================= -->
+<section id="inquiry" class="py-20 border-t border-slate-800">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-[11px] text-blue-400 tracking-[0.2em] uppercase mb-2">// INQUIRY</div>
+    <h2 class="text-4xl font-black mb-3">提出您的需求</h2>
+    <p class="text-slate-400 mb-8">填寫表單後由 BD Agent 自動接收並 24 小時內回覆初步方案。標 <span class="text-red-400">*</span> 為必填。</p>
+
+    <form id="inquiry-form" class="card p-8 grid md:grid-cols-2 gap-4" onsubmit="return false;">
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">公司名稱 <span class="text-red-400">*</span></label>
+        <input class="input-field" id="f-company" placeholder="XX 股份有限公司 / 個人">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">聯絡人 <span class="text-red-400">*</span></label>
+        <input class="input-field" id="f-contact" placeholder="您的姓名">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">Email <span class="text-red-400">*</span></label>
+        <input class="input-field" type="email" id="f-email" placeholder="you@example.com">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">電話</label>
+        <input class="input-field" id="f-phone" placeholder="0912-xxx-xxx">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">產業別</label>
+        <select class="input-field" id="f-industry">
+          <option>製造業</option>
+          <option>買賣業</option>
+          <option>貿易業</option>
+          <option>B2C 品牌</option>
+          <option>顧問業</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">組織規模</label>
+        <select class="input-field" id="f-size">
+          <option>1~10 人</option>
+          <option>11~50 人</option>
+          <option>51~200 人</option>
+          <option>201+ 人</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label class="text-xs text-slate-400 block mb-1">有興趣的 AI 模組（可複選）</label>
+        <div id="f-modules" class="flex flex-wrap gap-2"></div>
+      </div>
+      <div class="md:col-span-2">
+        <label class="text-xs text-slate-400 block mb-1">需求描述</label>
+        <textarea class="input-field" id="f-note" rows="4" placeholder="請描述您的痛點、目標與期待... AI Agent 會自動分析並推薦最適組合"></textarea>
+      </div>
+      <div class="md:col-span-2 flex items-center justify-between pt-3 border-t border-slate-700">
+        <div class="text-xs text-slate-500">
+          我們承諾：<span class="text-slate-300">不主動推銷、不分享給第三方、30 天內刪除未成案資料</span>
+        </div>
+        <button type="button" class="btn-primary" onclick="submitInquiry()">送出需求 →</button>
+      </div>
+      <div id="f-result" class="md:col-span-2"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ================= Footer ================= -->
+<footer class="py-12 border-t border-slate-800">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8 text-sm">
+    <div>
+      <div class="text-lg font-black mb-2"><span class="gradient-text">凌策 LingCe</span></div>
+      <p class="text-slate-400 text-xs leading-relaxed">
+        AI Agent 服務型組織 · 1 人 + 10 AI<br>
+        用 AI 取代傳統人力，為企業交付真實商業成果
+      </p>
+    </div>
+    <div>
+      <div class="text-sm font-bold mb-3 text-slate-300">導覽</div>
+      <div class="space-y-1.5 text-slate-400 text-xs">
+        <a href="#how" class="block hover:text-blue-400">運作模式</a>
+        <a href="#modules" class="block hover:text-blue-400">AI 模組</a>
+        <a href="#cases" class="block hover:text-blue-400">成功案例</a>
+        <a href="#inquiry" class="block hover:text-blue-400">提出需求</a>
+        <a href="dashboard.html" class="block hover:text-blue-400">🔐 內部控制台（老闆視角）</a>
+      </div>
+    </div>
+    <div>
+      <div class="text-sm font-bold mb-3 text-slate-300">技術堆疊</div>
+      <div class="space-y-1.5 text-slate-400 text-xs">
+        <div>▸ Ollama Qwen 2.5 7B（本地 LLM）</div>
+        <div>▸ Flask + JSONL append-only</div>
+        <div>▸ ChromaDB 向量檢索</div>
+        <div>▸ reportlab 零依賴中文 PDF</div>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 mt-8 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
+    © 2026 凌策公司 LingCe. AI 領導人擂台大賽參賽作品. 本網站由 AI Agent（前端 Agent fe-001）全自動產出。
+  </div>
+</footer>
+
+<!-- ================= 模組資料 + 互動 ================= -->
+<script>
+const API_BASE = window.location.origin.replace(/:\d+$/, ':5000');
+
+// 14 個模組與價格（與後端 MODULE_PRICES 一致）
+const MODULES = {
+  general: [
+    { id:'doc',     icon:'📄', name:'AI 文件助理',    price:3000, desc:'合約、報價單、SOP 自動生成' },
+    { id:'meeting', icon:'📝', name:'AI 會議記錄',    price:3500, desc:'自動語音轉文字 + 行動項擷取' },
+    { id:'kb',      icon:'📚', name:'AI 知識庫',      price:5000, desc:'公司內規 / 產品資料即問即答' },
+    { id:'cs',      icon:'💬', name:'AI 客服',        price:8000, desc:'24×7 客戶問答，情緒自動辨識' },
+  ],
+  mfg: [
+    { id:'mat',   icon:'📦', name:'AI 缺料預警',  price:6000, desc:'依生產排程預測零件短缺' },
+    { id:'po',    icon:'🛒', name:'AI 採購建議',  price:5500, desc:'供應商比價 + 最佳採購量' },
+    { id:'sched', icon:'⚙️', name:'AI 生產排程',  price:8000, desc:'多線/多機台最佳化排單' },
+    { id:'qa',    icon:'🔍', name:'AI 品質分析',  price:7000, desc:'不良率追蹤 + 根因分析' },
+  ],
+  trade: [
+    { id:'mkt',   icon:'📢', name:'AI 行銷文案',  price:4500, desc:'FB/IG/Blog 自動內容產出' },
+    { id:'cust',  icon:'👥', name:'AI 客戶分析',  price:5500, desc:'RFM 分群 + 顧客終身價值' },
+    { id:'quote', icon:'💰', name:'AI 報價助理',  price:4000, desc:'詢問秒轉報價單' },
+    { id:'sales', icon:'📈', name:'AI 銷售預測',  price:6500, desc:'月/季銷售預測與趨勢' },
+  ],
+  order: [
+    { id:'order', icon:'📋', name:'AI 訂單管理',  price:5000, desc:'下單 → 出貨 → 驗收全流程' },
+    { id:'eta',   icon:'🚚', name:'AI 交期預估',  price:4000, desc:'考量產能與物流的交期預測' },
+  ],
+};
+
+let currentCat = 'general';
+let selectedMods = new Set();
+
+function renderModules() {
+  const grid = document.getElementById('modules-grid');
+  grid.innerHTML = MODULES[currentCat].map(m => `
+    <div class="card p-5 cursor-pointer ${selectedMods.has(m.id) ? 'border-blue-400' : ''}" onclick="toggleMod('${m.id}')">
+      <div class="flex items-start justify-between mb-2">
+        <div class="text-3xl">${m.icon}</div>
+        ${selectedMods.has(m.id) ? '<span class="text-green-400 text-xl">✓</span>' : '<span class="text-slate-600 text-xl">○</span>'}
+      </div>
+      <div class="font-bold mb-1">${m.name}</div>
+      <div class="text-xs text-slate-400 mb-3 min-h-[32px]">${m.desc}</div>
+      <div class="text-lg font-black text-amber-300">NT$ ${m.price.toLocaleString()}<span class="text-xs text-slate-500 font-normal"> / 月</span></div>
+    </div>
+  `).join('');
+}
+
+function toggleMod(id) {
+  if (selectedMods.has(id)) selectedMods.delete(id); else selectedMods.add(id);
+  renderModules();
+  updatePrice();
+  updateFormMods();
+}
+
+function updatePrice() {
+  let total = 0;
+  for (const cat of Object.values(MODULES)) {
+    for (const m of cat) if (selectedMods.has(m.id)) total += m.price;
+  }
+  let disc = 1.0, discLabel = '無折扣';
+  if (selectedMods.size >= 7) { disc = 0.85; discLabel = '85 折（7 項以上）'; }
+  else if (selectedMods.size >= 4) { disc = 0.90; discLabel = '9 折（4 項以上）'; }
+  document.getElementById('mod-count').textContent = selectedMods.size;
+  document.getElementById('mod-price').textContent = 'NT$ ' + Math.round(total * disc).toLocaleString();
+  document.getElementById('mod-discount').textContent = discLabel;
+}
+
+function updateFormMods() {
+  const c = document.getElementById('f-modules');
+  if (!c) return;
+  c.innerHTML = [...Object.values(MODULES).flat()].map(m => `
+    <label class="chip cursor-pointer ${selectedMods.has(m.id) ? 'border-blue-400 text-blue-200' : ''}" style="${selectedMods.has(m.id) ? 'background:rgba(96,165,250,0.18);' : ''}">
+      <input type="checkbox" ${selectedMods.has(m.id) ? 'checked' : ''} onchange="toggleMod('${m.id}')" class="accent-blue-500"> ${m.icon} ${m.name}
+    </label>
+  `).join('');
+}
+
+document.querySelectorAll('.mod-tab').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.mod-tab').forEach(x => {
+      x.classList.remove('bg-blue-600', 'text-white');
+      x.classList.add('bg-slate-800', 'text-slate-300');
+    });
+    b.classList.add('bg-blue-600', 'text-white');
+    b.classList.remove('bg-slate-800', 'text-slate-300');
+    currentCat = b.dataset.cat;
+    renderModules();
+  });
+});
+
+renderModules();
+updateFormMods();
+
+// ===== 表單送出 =====
+async function submitInquiry() {
+  const company = document.getElementById('f-company').value.trim();
+  const contact = document.getElementById('f-contact').value.trim();
+  const email   = document.getElementById('f-email').value.trim();
+  const result  = document.getElementById('f-result');
+
+  if (!company || !contact || !email) {
+    result.innerHTML = `<div class="p-3 rounded bg-red-900/30 border border-red-500/30 text-red-300 text-sm">⚠️ 請填寫公司名稱、聯絡人、Email（必填欄位）</div>`;
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    result.innerHTML = `<div class="p-3 rounded bg-red-900/30 border border-red-500/30 text-red-300 text-sm">⚠️ Email 格式不正確</div>`;
+    return;
+  }
+
+  const payload = {
+    company, contact, email,
+    phone:    document.getElementById('f-phone').value.trim(),
+    industry: document.getElementById('f-industry').value,
+    size:     document.getElementById('f-size').value,
+    modules:  [...selectedMods],
+    note:     document.getElementById('f-note').value.trim(),
+    source:   '凌策官網',
+  };
+
+  result.innerHTML = `<div class="p-3 rounded bg-blue-900/30 border border-blue-500/30 text-blue-300 text-sm">⏳ 送出中...</div>`;
+  try {
+    const r = await fetch(API_BASE + '/api/inquiry/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    result.innerHTML = `
+      <div class="p-4 rounded-xl bg-green-900/20 border border-green-500/40">
+        <div class="text-green-300 font-bold text-lg mb-2">✅ 收到您的需求！</div>
+        <div class="text-sm text-slate-300 space-y-1">
+          <div>詢問編號：<b class="font-mono text-green-300">${data.inquiry_id || '-'}</b></div>
+          <div>BD Agent 將於 24 小時內寄初步方案至 <b>${email}</b></div>
+          <div class="text-xs text-slate-500 mt-2">感謝您的信任 — 凌策 LingCe AI Agent 團隊</div>
+        </div>
+      </div>`;
+    document.getElementById('inquiry-form').reset();
+    selectedMods.clear();
+    renderModules(); updatePrice(); updateFormMods();
+  } catch(e) {
+    result.innerHTML = `
+      <div class="p-3 rounded bg-amber-900/30 border border-amber-500/30 text-amber-200 text-sm">
+        ⚠️ 後端未連線，需求已暫存於本瀏覽器：${e.message}<br>
+        <span class="text-xs text-slate-400">（demo 模式：請直接聯繫凌策，或啟動內部控制台後重新送出）</span>
+      </div>`;
+    // demo fallback：儲存到 localStorage
+    const saved = JSON.parse(localStorage.getItem('lingce_inquiries') || '[]');
+    saved.push({ ...payload, ts: new Date().toISOString() });
+    localStorage.setItem('lingce_inquiries', JSON.stringify(saved));
+  }
+}
+</script>
+</body>
+</html>

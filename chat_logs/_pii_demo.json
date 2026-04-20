@@ -1,0 +1,26 @@
+{
+  "count": 3,
+  "detections": [
+    {
+      "original_len": 10,
+      "preview": "A1***",
+      "token": "[ID_001]",
+      "type": "TW_ID"
+    },
+    {
+      "original_len": 12,
+      "preview": "09***",
+      "token": "[PHONE_001]",
+      "type": "TW_PHONE"
+    },
+    {
+      "original_len": 17,
+      "preview": "al***",
+      "token": "[EMAIL_001]",
+      "type": "EMAIL"
+    }
+  ],
+  "input": "Contact Alice at alice@example.com, phone 0912-345-678, ID A123456789",
+  "masked": "Contact Alice at [EMAIL_001], phone [PHONE_001], ID [ID_001]",
+  "ok": true
+}

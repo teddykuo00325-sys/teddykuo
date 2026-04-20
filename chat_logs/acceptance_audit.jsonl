@@ -1,0 +1,312 @@
+{"ts": "2026-04-17T20:24:12", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-17T20:24:12", "action": "pii_scan", "user": "guest", "detail": {"n": 3, "types": ["身分證字號", "手機", "Email"]}}
+{"ts": "2026-04-17T21:02:50", "action": "feedback_analysis", "user": "guest", "detail": {"n": 3}}
+{"ts": "2026-04-17T21:12:27", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-17T21:16:09", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-17T21:29:08", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-17T21:29:10", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-17T21:29:12", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-17T21:29:30", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-17T21:31:24", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-17T21:31:24", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-17T21:37:16", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-17T21:37:16", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "多久校正一次"}}
+{"ts": "2026-04-17T21:37:16", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "噴頭多久更換"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "資料保留多久"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "價格"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "價格"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "保固"}}
+{"ts": "2026-04-17T21:37:17", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "保固"}}
+{"ts": "2026-04-17T21:45:45", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-17T21:45:45", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-18T00:24:56", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T01:01:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T13:40:14", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T13:40:14", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-18T13:40:14", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "可以印在哪些材質"}}
+{"ts": "2026-04-18T13:40:14", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-18T13:40:14", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "可以同時監控幾間房"}}
+{"ts": "2026-04-18T13:40:14", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "停機恢復時間"}}
+{"ts": "2026-04-18T13:51:56", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T13:51:56", "action": "product_qa", "user": "evaluator", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T13:51:56", "action": "feedback_analysis", "user": "evaluator", "detail": {"n": 3}}
+{"ts": "2026-04-18T13:51:56", "action": "proposal", "user": "evaluator", "detail": {"customer": "microjet", "ind": "食品製造"}}
+{"ts": "2026-04-18T13:51:56", "action": "content", "user": "evaluator", "detail": {"topic": "春季過敏季", "channel": "FB"}}
+{"ts": "2026-04-18T13:51:56", "action": "csv_analysis", "user": "evaluator", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T13:51:56", "action": "pii_scan", "user": "evaluator", "detail": {"n": 3, "types": ["身分證字號", "Email", "手機"]}}
+{"ts": "2026-04-18T13:51:56", "action": "full_acceptance_run", "user": "evaluator", "detail": {"score": 110, "pass_rate": 100.0}}
+{"ts": "2026-04-18T13:51:57", "action": "feedback_analysis", "user": "guest", "detail": {"n": 1}}
+{"ts": "2026-04-18T13:59:03", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T13:59:03", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-18T13:59:03", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "可以同時監控幾間房"}}
+{"ts": "2026-04-18T13:59:03", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-18T13:59:03", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "可以印在哪些材質"}}
+{"ts": "2026-04-18T13:59:03", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "停機恢復時間"}}
+{"ts": "2026-04-18T14:04:51", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T14:16:58", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-18T14:21:51", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T14:21:56", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "可以同時監控幾間房"}}
+{"ts": "2026-04-18T14:33:48", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T14:45:22", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T15:09:22", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T15:09:25", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-18T15:09:25", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "耗電量怎麼樣"}}
+{"ts": "2026-04-18T15:09:25", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "哪些材質可以印"}}
+{"ts": "2026-04-18T15:09:25", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "xyz 亂打"}}
+{"ts": "2026-04-18T15:19:26", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T15:19:26", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "資料保留多久"}}
+{"ts": "2026-04-18T15:19:26", "action": "product_qa", "user": "prewarm", "detail": {"customer": "addwii", "q": "可以同時監控幾間房"}}
+{"ts": "2026-04-18T15:19:26", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "噴頭多久更換"}}
+{"ts": "2026-04-18T15:19:26", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "可以印在哪些材質"}}
+{"ts": "2026-04-18T15:19:26", "action": "product_qa", "user": "prewarm", "detail": {"customer": "microjet", "q": "停機恢復時間"}}
+{"ts": "2026-04-18T15:20:55", "action": "product_qa", "user": "evaluator-export", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T15:20:55", "action": "feedback_analysis", "user": "evaluator-export", "detail": {"n": 3}}
+{"ts": "2026-04-18T15:20:55", "action": "proposal", "user": "evaluator-export", "detail": {"customer": "microjet", "ind": "食品製造"}}
+{"ts": "2026-04-18T15:20:55", "action": "content", "user": "evaluator-export", "detail": {"topic": "春季過敏季", "channel": "FB"}}
+{"ts": "2026-04-18T15:20:55", "action": "csv_analysis", "user": "evaluator-export", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T15:20:55", "action": "pii_scan", "user": "evaluator-export", "detail": {"n": 3, "types": ["Email", "身分證字號", "手機"]}}
+{"ts": "2026-04-18T15:20:55", "action": "full_acceptance_run", "user": "evaluator-export", "detail": {"score": 110, "pass_rate": 100.0}}
+{"ts": "2026-04-18T16:47:08", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T16:58:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T16:58:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "有哪些產品"}}
+{"ts": "2026-04-18T16:58:04", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "CurieJet P760 規格"}}
+{"ts": "2026-04-18T16:58:04", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "ComeTrue M10 是什麼"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": ""}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "a"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "嬰兒"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "嬰兒無塵室到底適合誰家用呢？"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "xyz亂打abc123"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "pm2.5"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "unknown-customer", "q": "有哪些產品"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "有哪些產品線"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "P760"}}
+{"ts": "2026-04-18T17:06:04", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "ComeTrue M10 是什麼"}}
+{"ts": "2026-04-18T17:08:03", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T17:08:39", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": ""}}
+{"ts": "2026-04-18T17:08:39", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "xyz亂碼"}}
+{"ts": "2026-04-18T17:08:39", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "p760"}}
+{"ts": "2026-04-18T17:08:39", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "P760?"}}
+{"ts": "2026-04-18T17:08:39", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "cometrue m10"}}
+{"ts": "2026-04-18T17:08:39", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "COMETRUE T10"}}
+{"ts": "2026-04-18T17:08:40", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T17:08:40", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "有哪些產品線"}}
+{"ts": "2026-04-18T17:08:40", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "血壓模組特色"}}
+{"ts": "2026-04-18T17:08:40", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "浴室"}}
+{"ts": "2026-04-18T17:08:40", "action": "product_qa", "user": "evaluator", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T17:08:40", "action": "feedback_analysis", "user": "evaluator", "detail": {"n": 3}}
+{"ts": "2026-04-18T17:08:40", "action": "proposal", "user": "evaluator", "detail": {"customer": "microjet", "ind": "食品製造"}}
+{"ts": "2026-04-18T17:08:40", "action": "content", "user": "evaluator", "detail": {"topic": "春季過敏季", "channel": "FB"}}
+{"ts": "2026-04-18T17:08:40", "action": "csv_analysis", "user": "evaluator", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T17:08:40", "action": "pii_scan", "user": "evaluator", "detail": {"n": 3, "types": ["Email", "身分證字號", "手機"]}}
+{"ts": "2026-04-18T17:08:40", "action": "full_acceptance_run", "user": "evaluator", "detail": {"score": 110, "pass_rate": 100.0}}
+{"ts": "2026-04-18T17:12:17", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "廚房無塵室能做什麼"}}
+{"ts": "2026-04-18T17:12:19", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "浴室無塵室特色"}}
+{"ts": "2026-04-18T17:12:20", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T17:12:23", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P760 規格"}}
+{"ts": "2026-04-18T17:12:32", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "感測器應用場景"}}
+{"ts": "2026-04-18T17:12:33", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "壓電微泵浦用途"}}
+{"ts": "2026-04-18T17:12:34", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "噴墨印頭技術"}}
+{"ts": "2026-04-18T17:12:35", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "血壓模組特色"}}
+{"ts": "2026-04-18T17:12:40", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "P760"}}
+{"ts": "2026-04-18T17:12:45", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "P760詳細規格"}}
+{"ts": "2026-04-18T17:12:48", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "ComeTrue T10 是什麼"}}
+{"ts": "2026-04-18T17:12:51", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "ComeTrue M10 是什麼"}}
+{"ts": "2026-04-18T17:12:53", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P710 規格"}}
+{"ts": "2026-04-18T17:13:45", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "有哪些產品線"}}
+{"ts": "2026-04-18T17:13:50", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "專利與競爭力"}}
+{"ts": "2026-04-18T17:17:32", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T17:17:36", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "CurieJet P760 規格"}}
+{"ts": "2026-04-18T17:17:36", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "ComeTrue M10 是什麼"}}
+{"ts": "2026-04-18T17:17:36", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "壓電微泵浦用途"}}
+{"ts": "2026-04-18T17:17:36", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T17:17:36", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "xyz 亂碼"}}
+{"ts": "2026-04-18T17:18:02", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "臥室無塵室重點"}}
+{"ts": "2026-04-18T17:18:07", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "與一般空氣清淨機差異"}}
+{"ts": "2026-04-18T17:18:16", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P760 規格"}}
+{"ts": "2026-04-18T17:18:31", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "ComeTrue T10 是什麼"}}
+{"ts": "2026-04-18T17:18:35", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "ComeTrue T10 是什麼"}}
+{"ts": "2026-04-18T17:18:44", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "濾網"}}
+{"ts": "2026-04-18T17:18:57", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "濾網多久更換?"}}
+{"ts": "2026-04-18T17:19:04", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "多久校正一次"}}
+{"ts": "2026-04-18T17:19:04", "action": "feedback_analysis", "user": "BOARD-001", "detail": {"n": 3}}
+{"ts": "2026-04-18T17:19:04", "action": "proposal", "user": "BOARD-001", "detail": {"customer": "microjet", "ind": "食品製造"}}
+{"ts": "2026-04-18T17:19:04", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季", "channel": "FB"}}
+{"ts": "2026-04-18T17:19:04", "action": "csv_analysis", "user": "BOARD-001", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T17:19:04", "action": "pii_scan", "user": "BOARD-001", "detail": {"n": 3, "types": ["Email", "身分證字號", "手機"]}}
+{"ts": "2026-04-18T17:19:04", "action": "full_acceptance_run", "user": "BOARD-001", "detail": {"score": 110, "pass_rate": 100.0}}
+{"ts": "2026-04-18T17:20:07", "action": "feedback_analysis", "user": "BOARD-001", "detail": {"n": 3}}
+{"ts": "2026-04-18T17:22:58", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T17:23:00", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "有哪些產品線"}}
+{"ts": "2026-04-18T17:23:00", "action": "feedback_analysis", "user": "guest", "detail": {"n": 3}}
+{"ts": "2026-04-18T17:23:00", "action": "proposal", "user": "guest", "detail": {"customer": "addwii", "ind": "幼教"}}
+{"ts": "2026-04-18T17:23:00", "action": "content", "user": "guest", "detail": {"topic": "春季", "channel": "FB"}}
+{"ts": "2026-04-18T17:23:01", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T17:23:01", "action": "pii_scan", "user": "guest", "detail": {"n": 1, "types": ["手機"]}}
+{"ts": "2026-04-18T17:33:27", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T17:51:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T17:54:14", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "濾網多久更換?"}}
+{"ts": "2026-04-18T17:54:26", "action": "feedback_analysis", "user": "BOARD-001", "detail": {"n": 3}}
+{"ts": "2026-04-18T17:54:39", "action": "proposal", "user": "BOARD-001", "detail": {"customer": "addwii", "ind": "食品製造"}}
+{"ts": "2026-04-18T17:54:47", "action": "proposal", "user": "BOARD-001", "detail": {"customer": "microjet", "ind": "食品製造"}}
+{"ts": "2026-04-18T17:55:04", "action": "proposal", "user": "BOARD-001", "detail": {"customer": "microjet", "ind": "零售"}}
+{"ts": "2026-04-18T17:55:24", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-18T17:55:28", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG"}}
+{"ts": "2026-04-18T17:55:33", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "LinkedIn"}}
+{"ts": "2026-04-18T17:55:37", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-18T17:55:43", "action": "content", "user": "BOARD-001", "detail": {"topic": "PM2.5", "channel": "FB"}}
+{"ts": "2026-04-18T17:55:54", "action": "content", "user": "BOARD-001", "detail": {"topic": "3D列印", "channel": "FB"}}
+{"ts": "2026-04-18T17:56:10", "action": "content", "user": "BOARD-001", "detail": {"topic": "看醫生", "channel": "FB"}}
+{"ts": "2026-04-18T17:56:15", "action": "content", "user": "BOARD-001", "detail": {"topic": "看醫生", "channel": "IG"}}
+{"ts": "2026-04-18T17:56:19", "action": "content", "user": "BOARD-001", "detail": {"topic": "看醫生", "channel": "IG"}}
+{"ts": "2026-04-18T17:56:21", "action": "content", "user": "BOARD-001", "detail": {"topic": "看醫生", "channel": "LinkedIn"}}
+{"ts": "2026-04-18T17:56:28", "action": "content", "user": "BOARD-001", "detail": {"topic": "看醫生", "channel": "Blog"}}
+{"ts": "2026-04-18T17:56:32", "action": "content", "user": "BOARD-001", "detail": {"topic": "", "channel": "Blog"}}
+{"ts": "2026-04-18T17:56:33", "action": "content", "user": "BOARD-001", "detail": {"topic": "", "channel": "FB"}}
+{"ts": "2026-04-18T17:56:38", "action": "csv_analysis", "user": "BOARD-001", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T17:56:51", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "廚房無塵室能做什麼"}}
+{"ts": "2026-04-18T17:56:59", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "壓電微泵浦用途"}}
+{"ts": "2026-04-18T17:57:29", "action": "proposal", "user": "BOARD-001", "detail": {"customer": "addwii", "ind": "學校"}}
+{"ts": "2026-04-18T18:07:34", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T18:07:36", "action": "feedback_analysis", "user": "commander", "detail": {"n": 3}}
+{"ts": "2026-04-18T18:07:36", "action": "csv_analysis", "user": "commander", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T18:07:36", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet CurieJet P760 規格"}}
+{"ts": "2026-04-18T18:07:36", "action": "proposal", "user": "commander", "detail": {"customer": "microjet", "ind": "通用"}}
+{"ts": "2026-04-18T18:07:36", "action": "content", "user": "commander", "detail": {"topic": "為 addwii 寫 FB 行銷文案 春季過敏", "channel": "FB"}}
+{"ts": "2026-04-18T18:07:36", "action": "pii_scan", "user": "commander", "detail": {"n": 2, "types": ["身分證字號", "手機"]}}
+{"ts": "2026-04-18T18:18:42", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T18:18:43", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T18:18:43", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet 有哪些產品線"}}
+{"ts": "2026-04-18T18:18:44", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 產品介紹"}}
+{"ts": "2026-04-18T18:22:15", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T18:24:01", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "餐廳無塵室用途"}}
+{"ts": "2026-04-18T18:24:14", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-18T18:25:31", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 嬰兒無塵室"}}
+{"ts": "2026-04-18T18:25:31", "action": "feedback_analysis", "user": "commander", "detail": {"n": 3}}
+{"ts": "2026-04-18T18:25:31", "action": "proposal", "user": "commander", "detail": {"customer": "microjet", "ind": "通用"}}
+{"ts": "2026-04-18T18:25:31", "action": "content", "user": "commander", "detail": {"topic": "寫 FB 行銷文案", "channel": "FB"}}
+{"ts": "2026-04-18T18:25:31", "action": "csv_analysis", "user": "commander", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T18:25:31", "action": "pii_scan", "user": "commander", "detail": {"n": 0, "types": []}}
+{"ts": "2026-04-18T18:25:31", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 產品"}}
+{"ts": "2026-04-18T18:25:31", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet 產品"}}
+{"ts": "2026-04-18T18:25:31", "action": "csv_analysis", "user": "commander", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T18:25:31", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "ComeTrue 3D 印表機"}}
+{"ts": "2026-04-18T18:25:31", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "嬰兒無塵室"}}
+{"ts": "2026-04-18T18:25:31", "action": "product_qa", "user": "commander", "detail": {"customer": "weiming", "q": "維明的合約"}}
+{"ts": "2026-04-18T18:25:31", "action": "proposal", "user": "commander", "detail": {"customer": "addwii", "ind": "通用"}}
+{"ts": "2026-04-18T18:25:32", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 產品"}}
+{"ts": "2026-04-18T18:27:54", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T18:27:54", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}
+{"ts": "2026-04-18T18:27:54", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 嬰兒無塵室"}}
+{"ts": "2026-04-18T18:27:54", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet P760 規格"}}
+{"ts": "2026-04-18T18:27:54", "action": "feedback_analysis", "user": "commander", "detail": {"n": 3}}
+{"ts": "2026-04-18T18:27:54", "action": "proposal", "user": "commander", "detail": {"customer": "microjet", "ind": "通用"}}
+{"ts": "2026-04-18T18:27:54", "action": "content", "user": "commander", "detail": {"topic": "為 addwii 寫 FB 行銷文案", "channel": "FB"}}
+{"ts": "2026-04-18T18:27:54", "action": "csv_analysis", "user": "commander", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T18:27:54", "action": "pii_scan", "user": "commander", "detail": {"n": 1, "types": ["身分證字號"]}}
+{"ts": "2026-04-18T18:27:54", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "維明 有哪些產品"}}
+{"ts": "2026-04-18T18:46:26", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T18:52:56", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T19:22:49", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet P760 VOC問題 能否設計 為濕度感應啟動?"}}
+{"ts": "2026-04-18T19:36:42", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet P760有什麼功能"}}
+{"ts": "2026-04-18T20:01:45", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T20:01:53", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet CurieJet P760 規格"}}
+{"ts": "2026-04-18T20:01:54", "action": "feedback_analysis", "user": "commander", "detail": {"n": 3}}
+{"ts": "2026-04-18T20:05:13", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T20:05:43", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 嬰兒無塵室"}}
+{"ts": "2026-04-18T20:05:43", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet P760 規格"}}
+{"ts": "2026-04-18T20:05:43", "action": "content", "user": "commander", "detail": {"topic": "為 addwii 生成 FB 文案", "channel": "FB"}}
+{"ts": "2026-04-18T20:05:43", "action": "csv_analysis", "user": "commander", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T20:05:43", "action": "pii_scan", "user": "commander", "detail": {"n": 1, "types": ["手機"]}}
+{"ts": "2026-04-18T20:10:31", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T20:18:05", "action": "csv_analysis", "user": "ADW-001", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-18T20:18:29", "action": "pii_scan", "user": "ADW-001", "detail": {"n": 0, "types": []}}
+{"ts": "2026-04-18T20:18:46", "action": "content", "user": "ADW-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-18T20:18:50", "action": "content", "user": "ADW-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG"}}
+{"ts": "2026-04-18T20:22:00", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰"}}
+{"ts": "2026-04-18T20:22:02", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "廚房無塵室能做什麼"}}
+{"ts": "2026-04-18T20:22:03", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "臥室無塵室重點"}}
+{"ts": "2026-04-18T20:22:04", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "客廳無塵室為誰設計"}}
+{"ts": "2026-04-18T20:22:05", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "餐廳無塵室用途"}}
+{"ts": "2026-04-18T20:22:05", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "如何選擇適合的產品"}}
+{"ts": "2026-04-18T20:22:06", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "與一般空氣清淨機差異"}}
+{"ts": "2026-04-18T20:22:06", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "addwii", "q": "如何聯繫與體驗"}}
+{"ts": "2026-04-18T20:22:20", "action": "product_qa", "user": "ADW-001", "detail": {"customer": "microjet", "q": "CurieJet P760 規格"}}
+{"ts": "2026-04-18T20:34:43", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG"}}
+{"ts": "2026-04-18T20:34:48", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG"}}
+{"ts": "2026-04-18T20:34:51", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-18T20:52:25", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-18T21:00:11", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-18T21:26:15", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-18T21:30:52", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-18T21:33:45", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "P760 規格", "retrieval": "rag"}}
+{"ts": "2026-04-18T21:33:45", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-18T21:36:25", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "感測器尺寸多大？", "retrieval": "rag"}}
+{"ts": "2026-04-18T21:36:25", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "3D 列印機可以做哪些事", "retrieval": "rag"}}
+{"ts": "2026-04-18T21:36:25", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "家裡有小寶寶該選哪款", "retrieval": "rag"}}
+{"ts": "2026-04-18T21:36:25", "action": "product_qa", "user": "guest", "detail": {"customer": "addwii", "q": "廚房油煙會不會影響", "retrieval": "rag"}}
+{"ts": "2026-04-18T21:36:27", "action": "proposal", "user": "guest", "detail": {"customer": "addwii", "ind": "幼教"}}
+{"ts": "2026-04-18T21:41:09", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "quick test", "retrieval": "rag"}}
+{"ts": "2026-04-18T21:47:01", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-19T02:08:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T02:19:18", "action": "csv_analysis", "user": "commander", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-19T02:19:18", "action": "content", "user": "commander", "detail": {"topic": "為 addwii 寫一段適合臥室無塵室的社群貼文", "channel": "FB"}}
+{"ts": "2026-04-19T02:24:48", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB"}}
+{"ts": "2026-04-19T18:57:51", "action": "feedback_analysis", "user": "commander", "detail": {"n": 3}}
+{"ts": "2026-04-19T18:58:41", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "濾網多久更換?", "retrieval": "rag"}}
+{"ts": "2026-04-19T19:18:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T19:26:00", "action": "content", "user": "guest", "detail": {"topic": "春季過敏族必備", "channel": "IG", "use_ai": true}}
+{"ts": "2026-04-19T19:38:34", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "濾網多久更換?", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-19T19:39:53", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "濾網多久更換?", "retrieval": "rag", "use_ai": true}}
+{"ts": "2026-04-19T19:49:52", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P710 規格", "retrieval": "rag", "use_ai": true}}
+{"ts": "2026-04-19T19:50:31", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P760 規格", "retrieval": "rag", "use_ai": true}}
+{"ts": "2026-04-19T19:50:56", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P760 規格", "retrieval": "rag", "use_ai": true}}
+{"ts": "2026-04-19T19:50:57", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "microjet", "q": "CurieJet P760 規格", "retrieval": "rag", "use_ai": true}}
+{"ts": "2026-04-19T20:00:44", "action": "content", "user": "BOARD-001", "detail": {"topic": "", "channel": "IG", "use_ai": true}}
+{"ts": "2026-04-19T20:01:11", "action": "pii_scan", "user": "BOARD-001", "detail": {"n": 1, "types": ["身分證字號"]}}
+{"ts": "2026-04-19T21:25:17", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-19T21:25:19", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-19T21:25:53", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false}}
+{"ts": "2026-04-19T21:41:21", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T21:41:32", "action": "feedback_analysis", "user": "guest", "detail": {"n": 3, "use_ai": false}}
+{"ts": "2026-04-19T22:10:27", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T22:28:52", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T22:39:46", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "P760", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-19T22:39:46", "action": "feedback_analysis", "user": "guest", "detail": {"n": 3, "use_ai": false}}
+{"ts": "2026-04-19T22:39:46", "action": "content", "user": "guest", "detail": {"topic": "test", "channel": "FB", "use_ai": false}}
+{"ts": "2026-04-19T22:39:46", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-19T22:39:46", "action": "pii_scan", "user": "guest", "detail": {"n": 1, "types": ["手機"]}}
+{"ts": "2026-04-19T22:51:56", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "P760", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-19T22:52:37", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet CurieJet P760", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-19T23:02:19", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T23:04:09", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T23:04:47", "action": "proposal", "user": "guest", "detail": {"customer": "addwii", "ind": "一般企業", "use_ai": false}}
+{"ts": "2026-04-19T23:16:19", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-19T23:16:26", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-19T23:17:44", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T23:20:09", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-19T23:23:44", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T02:14:04", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-20T02:14:24", "action": "product_qa", "user": "PD1-006", "detail": {"customer": "microjet", "q": "ComeTrue M10 是什麼", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T09:53:23", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T10:25:27", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T10:37:02", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "臥室無塵室重點", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T10:37:04", "action": "product_qa", "user": "BOARD-001", "detail": {"customer": "addwii", "q": "客廳無塵室為誰設計", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T10:37:11", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false}}
+{"ts": "2026-04-20T10:37:16", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG", "use_ai": false}}
+{"ts": "2026-04-20T10:42:01", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T10:51:53", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T11:14:01", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T11:28:33", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T11:29:06", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "8 ping room recommend", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-20T11:31:05", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "8 ping room recommend", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-20T11:32:14", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "8 坪嬰兒房推薦哪款", "retrieval": "rag", "use_ai": false}}

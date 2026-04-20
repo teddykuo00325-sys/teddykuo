@@ -1,0 +1,32 @@
+{
+  "LV-185B983F": {
+    "id": "LV-185B983F",
+    "member_id": "RD2-014",
+    "leave_type": "事假",
+    "start_at": "2026-04-20T09:00:00",
+    "end_at": "2026-04-20T18:00:00",
+    "hours": 8.0,
+    "reason": "家人就醫",
+    "status": "approved",
+    "approver_id": "RD2-009",
+    "created_at": "2026-04-17T19:46:33.467943",
+    "approved_at": "2026-04-17T19:46:35.536907",
+    "rejected_at": null,
+    "reject_reason": null
+  },
+  "LV-C4464F6C": {
+    "id": "LV-C4464F6C",
+    "member_id": "RD2-007",
+    "leave_type": "事假",
+    "start_at": "2026-04-17T09:00:00",
+    "end_at": "2026-04-17T18:00:00",
+    "hours": 8.0,
+    "reason": "",
+    "status": "approved",
+    "approver_id": "RD2-002",
+    "created_at": "2026-04-18T00:19:46.975760",
+    "approved_at": "2026-04-18T00:20:40.890591",
+    "rejected_at": null,
+    "reject_reason": null
+  }
+}

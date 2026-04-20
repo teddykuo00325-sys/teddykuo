@@ -1,0 +1,2 @@
+{"ts": "2026-04-19T22:29:00", "action": "edit_request", "actor": "HRA-001", "detail": {"edit_id": "EDIT-20260419-043411", "target": "RD2-010", "date": "2026-04-16", "field": "status", "old": "online", "new": "leave", "reason": "系統漏打卡，實際為事假"}}
+{"ts": "2026-04-19T22:29:00", "action": "edit_approved", "actor": "RD2-001", "detail": {"edit_id": "EDIT-20260419-043411", "target": "RD2-010", "date": "2026-04-16", "field": "status", "old": "online", "new": "leave"}}

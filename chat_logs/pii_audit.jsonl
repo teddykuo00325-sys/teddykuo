@@ -1,0 +1,2 @@
+{"ts": "2026-04-20T11:13:50", "context": "unknown", "detections_count": 5, "types": ["CN_NAME", "EMAIL", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 63, "output_len": 68}
+{"ts": "2026-04-20T11:22:19", "context": "compliance_demo", "detections_count": 3, "types": ["EMAIL", "TW_ID", "TW_PHONE"], "input_len": 69, "output_len": 60}
