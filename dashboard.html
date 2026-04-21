@@ -133,7 +133,7 @@
           <span class="tenant-caret text-xs">▼</span>
         </button>
         <div class="tenant-body space-y-0.5 mt-1">
-          <button onclick="setTenantAndPage('lingce','customer-portal')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-200" data-page="customer-portal">👤 陳先生 12 坪案</button>
+          <button onclick="setTenantAndPage('lingce','customer-portal')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-200" data-page="customer-portal">👤 陳先生 12 坪嬰兒無塵室</button>
         </div>
       </div>
 
@@ -318,7 +318,7 @@ const SCENARIO_12P = {
     address: '台北市大安區和平東路二段 xxx 號 5F',
     channel: 'addwii 官網表單填寫',
   },
-  space: { area_ping: 12, area_m2: 39.6, height_m: 2.8, scenario: '客廳款（Living Room Clean Room）' },
+  space: { area_ping: 12, area_m2: 39.6, height_m: 2.8, scenario: '嬰兒無塵室（Baby Clean Room · 12 坪豪華款 / HCR-300）' },
   inquiry: { id: 'INQ-2026-0412', date: '2026-04-12', status: '已回覆' },
   quote:   { id: 'QUO-2026-0041', date: '2026-04-14', amount: 168000, validity: '30 天', status: '客戶已簽回' },
   order:   { id: 'ORD-2026-0028', date: '2026-04-16', amount: 168000, deposit: 84000, status: '製造中' },
@@ -333,7 +333,7 @@ const SCENARIO_12P = {
     { key:'acceptance', label:'驗收完工 + 尾款',          date:'2026-04-29', done:false },
   ],
   bom: [
-    { sku:'ADW-LR-12P',  name:'客廳無塵室主機（12 坪適用）', qty:1, unit:148000, supplier:'addwii 自製' },
+    { sku:'ADW-BABY-12P', name:'嬰兒無塵室主機 HCR-300（12 坪豪華款）', qty:1, unit:148000, supplier:'addwii 自製' },
     { sku:'CJ-P760',     name:'PM + VOC 整合感測器模組',      qty:2, unit:3200,   supplier:'microjet / CurieJet' },
     { sku:'CJ-P710',     name:'PM2.5 備援感測器模組',         qty:1, unit:2400,   supplier:'microjet / CurieJet' },
     { sku:'ADW-HEPA-H13',name:'HEPA H13 濾網組（初始配備）',  qty:1, unit:3600,   supplier:'addwii' },
@@ -351,7 +351,7 @@ const SCENARIO_12P = {
 };
 
 const ADDWII_KPIS = {
-  active_orders: 3,              // 陳先生 12 坪 + 王小姐臥室 8 坪 + 林媽媽嬰兒房 4 坪
+  active_orders: 3,              // 陳先生 12 坪嬰兒無塵室 + 王小姐臥室 8 坪 + 林媽媽嬰兒房 4 坪
   pending_purchases_to_microjet: 1,
   installing: 1,                  // 另一案上週已到府安裝中
   monthly_revenue_ntd: 384000,
@@ -9407,8 +9407,8 @@ async function renderAddwiiWorkspace() {
       </div>
 
       <div class="grid grid-cols-3 gap-4 mb-5">
-        ${quickTile('📄','下載 B2C 報價單 PDF',`${s.quote.id} · ${fmtNT(s.quote.amount)} · 陳先生 12 坪`,'window.open(API_BASE + \'/api/procurement/pdf/addwii-order\',\'_blank\')','from-blue-900/30 to-sky-900/30 border-blue-500/30')}
-        ${quickTile('👤','陳先生 12 坪案 →',`${s.order.id} · ${fmtNT(s.order.amount)} · ${s.order.status}`,'showPage(\'customer-portal\')','from-rose-900/30 to-pink-900/30 border-rose-500/30')}
+        ${quickTile('📄','下載 B2C 報價單 PDF',`${s.quote.id} · ${fmtNT(s.quote.amount)} · 陳先生 12 坪嬰兒無塵室`,'window.open(API_BASE + \'/api/procurement/pdf/addwii-order\',\'_blank\')','from-blue-900/30 to-sky-900/30 border-blue-500/30')}
+        ${quickTile('👤','陳先生 12 坪嬰兒無塵室 →',`${s.order.id} · ${fmtNT(s.order.amount)} · ${s.order.status}`,'showPage(\'customer-portal\')','from-rose-900/30 to-pink-900/30 border-rose-500/30')}
         ${quickTile('🏭','向 microjet 採購 →',`${s.purchase_to_microjet.po_id} · ${fmtNT(s.purchase_to_microjet.total)} · ${s.purchase_to_microjet.status}`,'showPage(\'microjet-ws\')','from-amber-900/30 to-orange-900/30 border-amber-500/30')}
         ${quickTile('🤖','凌策 AI 能力','AI 內容行銷 / 客訴情緒分析','ACC_TAB=\'overview\';showPage(\'acceptance\')','from-purple-900/30 to-fuchsia-900/30 border-purple-500/30')}
         ${quickTile('📝','客戶詢價','CRM 詢問單 / 報價單','showPage(\'crm\')','from-sky-900/30 to-blue-900/30 border-sky-500/30')}
@@ -9521,7 +9521,7 @@ async function renderMicrojetWorkspace() {
 
       <div class="grid grid-cols-3 gap-4 mb-5">
         ${quickTile('📄','下載 microjet 採購單 PDF',`${po.po_id} · ${fmtNT(po.total)}${boundSerials.length ? ' · 含序號' : ''}`,'window.open(API_BASE + \'/api/procurement/pdf/microjet-po\',\'_blank\')','from-amber-900/30 to-orange-900/30 border-amber-500/30')}
-        ${quickTile('👤','查看終端客戶 →',`${s.customer.name} · ${s.space.area_ping} 坪客廳無塵室`,'showPage(\'customer-portal\')','from-rose-900/30 to-pink-900/30 border-rose-500/30')}
+        ${quickTile('👤','查看終端客戶 →',`${s.customer.name} · ${s.space.area_ping} 坪嬰兒無塵室`,'showPage(\'customer-portal\')','from-rose-900/30 to-pink-900/30 border-rose-500/30')}
         ${quickTile('🏠','查看下單品牌 addwii →',`${ADDWII_KPIS.active_orders} 筆進行中訂單`,'showPage(\'addwii-ws\')','from-sky-900/30 to-blue-900/30 border-sky-500/30')}
         ${quickTile('📦','產品型錄','P710 / P760 / ComeTrue T10 M10 / 壓電微泵','showPage(\'modules\')','from-yellow-900/30 to-amber-900/30 border-yellow-500/30')}
         ${quickTile('🤖','凌策 AI 能力','Q&A 知識庫 / CSV 洞察 / PII 合規','ACC_TAB=\'overview\';showPage(\'acceptance\')','from-purple-900/30 to-fuchsia-900/30 border-purple-500/30')}
@@ -9676,15 +9676,15 @@ async function renderCustomerPortal() {
           <div class="flex gap-2">
             <div class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-xs flex-shrink-0">a</div>
             <div class="bg-sky-900/40 border border-sky-700/40 rounded-lg px-3 py-2 text-sky-100 max-w-[75%]">
-              陳先生您好，我是 addwii 客服。您的 12 坪客廳無塵室訂單已記錄，有什麼想了解的嗎？<br>
-              <span class="text-[10px] text-sky-300/70">（可問：濾網多久換 / CADR 是什麼 / 有沒有保固延長）</span>
+              陳先生您好，我是 addwii 客服。您的 <b class="text-sky-200">12 坪嬰兒無塵室（HCR-300 豪華款）</b> 訂單已記錄，有什麼想了解的嗎？<br>
+              <span class="text-[10px] text-sky-300/70">（可問：嬰兒房 PM2.5 安全標準 / 夜間噪音會吵到寶寶嗎 / 濾網多久換）</span>
             </div>
           </div>
         </div>
 
         <!-- 快速詢問按鈕 -->
         <div class="flex flex-wrap gap-1.5 mt-2">
-          ${['HEPA 濾網多久更換一次？','什麼是 CADR 值？','產品有保固嗎？','有訂閱換濾網方案嗎？'].map(q=>`
+          ${['嬰兒房的 PM2.5 安全標準是多少？','夜間運轉會吵到嬰兒嗎？','HEPA 濾網多久更換？','有保固 + 訂閱濾網方案嗎？'].map(q=>`
             <button onclick="_cpChatSend(this, decodeURIComponent('${encodeURIComponent(q)}'))" class="text-[11px] bg-slate-700 hover:bg-slate-600 rounded-full px-2.5 py-1">${q}</button>
           `).join('')}
         </div>
