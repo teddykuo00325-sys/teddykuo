@@ -1483,7 +1483,7 @@ let ORG_COLLAPSED = new Set();
 let ORG_TIMER = null;
 let ORG_ZOOM = 100;      // 組織圖縮放 %（50-150）
 let ORG_MAX_LEVEL = 5;   // 顯示到第幾階層（1=只顯示經理, 5=全部）
-let ORG_CURRENT_USER_PERSONA = 'BOARD-001'; // 當前以誰的身份操作（用於聊天）
+let ORG_CURRENT_USER_PERSONA = ''; // 當前以誰的身份操作；預設空，使用者需主動選擇
 // HR 拖曳編輯模式
 let ORG_EDIT_MODE = false;
 let ORG_PENDING_CHANGES = {};   // {member_id: new_supervisor_id}
@@ -1589,13 +1589,15 @@ async function populatePersonaDropdown() {
       return `<optgroup label="━━ ${escapeHtml(d)} ━━">${opts}</optgroup>`;
     }).join('');
 
-    select.innerHTML = topTierHtml + deptHtml;
+    // 預設置頂：空選項，強制使用者主動選身分
+    const blankOption = `<option value="">----- 請先選擇當前身分 -----</option>`;
+    select.innerHTML = blankOption + topTierHtml + deptHtml;
 
-    // 保留當前選擇（若仍存在）
+    // 保留當前選擇（若仍存在），否則維持空
     if (currentValue && members.find(m => m.id === currentValue)) {
       select.value = currentValue;
     } else {
-      select.value = 'BOARD-001';
+      select.value = '';   // 強制空，讓使用者主動選
     }
   } catch(e) {
     console.error('populatePersonaDropdown failed:', e);
@@ -1653,29 +1655,31 @@ function renderOrgChart() {
       <!-- Stats bar -->
       <div id="org-stats-bar" class="grid grid-cols-6 gap-3"></div>
 
-      <!-- 🎯 我的視角卡 + 搜尋 + 過濾器（同事回饋後新增）-->
+      <!-- 🎯 部門導覽 + 過濾器（姓名已遮蔽，改用部門+職階+編號快速定位）-->
       <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-500/30 rounded-xl p-4 space-y-3">
         <div class="flex items-center justify-between gap-3 flex-wrap">
-          <div class="flex items-center gap-3 flex-wrap">
-            <span class="text-lg">🎯</span>
-            <span class="text-sm font-bold text-blue-300">快速找人</span>
-            <input type="text" id="org-search-input"
-                   placeholder="🔍 輸入姓名 / 部門 / 職稱 / 編號…"
-                   oninput="applyOrgSearch(this.value)"
-                   class="flex-1 min-w-[280px] bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:border-blue-400 outline-none">
-            <button onclick="scrollToMe()" title="自動捲動到你當前身分的位置並高亮閃動"
-                    class="px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-xs font-bold flex items-center gap-1 whitespace-nowrap">
-              🎯 找到我
-            </button>
+          <div class="flex items-center gap-3 flex-wrap flex-1">
+            <span class="text-lg">🗂️</span>
+            <span class="text-sm font-bold text-blue-300">部門導覽</span>
+            <!-- 部門快速按鈕列（最快找到自己部門的方式）-->
+            <div id="org-dept-quickbar" class="flex gap-1 flex-wrap"></div>
           </div>
+          <button onclick="scrollToMe()" title="自動捲動到你當前身分的位置並高亮閃動"
+                  class="px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-xs font-bold flex items-center gap-1 whitespace-nowrap">
+            🎯 找到我
+          </button>
           <button onclick="toggleMyViewCard()" id="my-view-toggle"
                   class="text-xs text-cyan-300 hover:text-white px-3 py-1 border border-slate-700 rounded">
             <span id="my-view-toggle-label">📋 展開我的視角</span>
           </button>
         </div>
-        <!-- 過濾器列 -->
+        <!-- 詳細過濾器列 -->
         <div class="flex items-center gap-2 text-xs flex-wrap">
           <span class="text-slate-500">過濾：</span>
+          <input type="text" id="org-search-input"
+                 placeholder="🔍 編號 / 部門關鍵字（例：MGR / addwii / RD2）"
+                 oninput="applyOrgSearch(this.value)"
+                 class="flex-1 min-w-[260px] bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs focus:border-blue-400 outline-none">
           <select id="org-filter-dept" onchange="applyOrgSearch()"
                   class="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs">
             <option value="">全部部門</option>
@@ -1689,10 +1693,13 @@ function renderOrgChart() {
           </select>
           <label class="flex items-center gap-1 text-slate-400 cursor-pointer">
             <input type="checkbox" id="org-filter-hr" onchange="applyOrgSearch()" class="accent-rose-500">
-            <span>僅顯示 HR</span>
+            <span>僅 HR</span>
           </label>
           <button onclick="clearOrgFilters()" class="text-slate-400 hover:text-white ml-1">✕ 清除</button>
           <span id="org-search-count" class="ml-auto text-slate-500"></span>
+        </div>
+        <div class="text-[10px] text-slate-500 -mt-1">
+          💡 因個資遮蔽規則，姓名均顯示為「姓+OO」 — 建議以 <b class="text-slate-400">部門</b> 或 <b class="text-slate-400">職階</b> 定位
         </div>
         <!-- 我的視角卡片（預設收合）-->
         <div id="my-view-card" class="hidden bg-slate-900/60 border border-slate-700 rounded-lg p-4"></div>
@@ -1737,7 +1744,7 @@ function renderOrgChart() {
           <span class="text-xs text-slate-400">👤 當前身份</span>
           <select id="persona-select" onchange="switchPersona(this.value)"
                   class="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white max-w-[300px]">
-            <option value="BOARD-001">董事長（載入中...）</option>
+            <option value="">----- 請先選擇當前身分 -----</option>
           </select>
           <button onclick="openMyPanel()"
                   title="開啟我的詳情面板（查看我的任務、目標、上下級）"
@@ -1918,6 +1925,7 @@ function renderOrgChart() {
       renderOrgStats();
       await populatePersonaDropdown();
       renderOrgTree();
+      _orgPopulateDeptOptions();   // 渲染部門快速按鈕列 + 下拉選單
       updateMyPanelButtonLabel();
       // Start auto-refresh (every 30s)
       if (ORG_TIMER) clearInterval(ORG_TIMER);
@@ -2290,16 +2298,60 @@ function _orgFlatMembers() {
   return out;
 }
 
-// 填充部門 dropdown（第一次進頁時）
+// 填充部門 dropdown（第一次進頁時）+ 渲染部門快速按鈕列
 function _orgPopulateDeptOptions() {
   const sel = document.getElementById('org-filter-dept');
-  if (!sel || sel.options.length > 1) return;
-  const depts = [...new Set(_orgFlatMembers().map(m => m.dept).filter(Boolean))].sort();
-  depts.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    sel.appendChild(opt);
+  const flat = _orgFlatMembers();
+  const deptCounts = {};
+  flat.forEach(m => {
+    const d = m.dept || '(未分類)';
+    deptCounts[d] = (deptCounts[d] || 0) + 1;
   });
+  const depts = Object.keys(deptCounts).sort((a, b) => {
+    // 集團在前、addwii 在後、其他依字母
+    if (a.includes('集團')) return -1;
+    if (b.includes('集團')) return 1;
+    if (a.includes('addwii')) return 1;
+    if (b.includes('addwii')) return -1;
+    return a.localeCompare(b);
+  });
+
+  // dropdown 只填一次
+  if (sel && sel.options.length <= 1) {
+    depts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = `${d} (${deptCounts[d]})`;
+      sel.appendChild(opt);
+    });
+  }
+
+  // quickbar：點部門即過濾
+  const qb = document.getElementById('org-dept-quickbar');
+  if (qb && !qb.dataset.filled) {
+    const colors = ['amber', 'blue', 'emerald', 'purple', 'rose', 'cyan', 'indigo', 'fuchsia'];
+    qb.innerHTML = depts.map((d, i) => {
+      const c = colors[i % colors.length];
+      return `<button onclick="selectDeptQuick('${escapeHtml(d).replace(/'/g,"\\'")}')"
+                      class="text-[11px] px-2 py-1 rounded-full bg-${c}-900/30 border border-${c}-500/30 text-${c}-200 hover:bg-${c}-700/50">
+                ${escapeHtml(d)} <span class="text-${c}-400 font-mono">${deptCounts[d]}</span>
+              </button>`;
+    }).join('') + `<button onclick="selectDeptQuick('')"
+                           class="text-[11px] px-2 py-1 rounded-full bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600">
+                     全部 <span class="font-mono">${flat.length}</span>
+                   </button>`;
+    qb.dataset.filled = '1';
+  }
+}
+
+function selectDeptQuick(d) {
+  const sel = document.getElementById('org-filter-dept');
+  if (sel) sel.value = d;
+  applyOrgSearch();
+  // 視覺反饋：按鈕高亮（簡化：scroll to first matching node）
+  if (d) {
+    const first = document.querySelector(`[data-dept="${d}"]`);
+    if (first) first.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
 }
 
 // 搜尋 + 過濾：高亮匹配成員 + 淡化不符者 + 更新計數
@@ -2454,6 +2506,18 @@ function setMaxLevel(val) {
 async function switchPersona(id) {
   ORG_CURRENT_USER_PERSONA = id;
   updateChatUnreadBadge();
+  // 空身分 → 隱藏權限按鈕、不做 API 呼叫
+  if (!id) {
+    const btn = document.getElementById('hr-org-edit-btn');
+    const dragBtn = document.getElementById('hr-drag-mode-btn');
+    CURRENT_CAN_SEE_ALL = false;
+    if (btn) btn.classList.add('hidden');
+    if (dragBtn) dragBtn.classList.add('hidden');
+    // 清空「我的視角卡」內容
+    const mvEl = document.getElementById('my-view-card');
+    if (mvEl) mvEl.innerHTML = '<div class="text-slate-500 text-sm text-center py-4">請先選擇當前身分</div>';
+    return;
+  }
   // 檢查權限（組織編輯 + 全組織檢視）
   const btn = document.getElementById('hr-org-edit-btn');
   const dragBtn = document.getElementById('hr-drag-mode-btn');
