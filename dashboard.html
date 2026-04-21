@@ -9561,7 +9561,40 @@ async function renderCustomerPortal() {
   document.getElementById('main-content').innerHTML = `
     <div class="max-w-5xl mx-auto">
       ${perspectiveBanner(`終端客戶 · ${s.customer.name}（${s.space.area_ping} 坪無塵居家案）`,
-        '一般消費者視角 · 透過 addwii 下單 · 核心感測器由 microjet / CurieJet 供貨', 'from-rose-900/40 to-pink-900/40')}
+        '🛒 向 addwii 下單 → 💬 找 addwii 客服（AI 模組向凌策訂閱）→ 🔬 感測器由 microjet/CurieJet 供貨',
+        'from-rose-900/40 to-pink-900/40')}
+
+      <!-- B2B2C 架構圖（讓評審一眼看懂金流/資料流） -->
+      <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-3 mb-5">
+        <div class="text-[11px] text-slate-400 mb-2">🔗 服務鏈結構（B2B2C · 3 家 tenant 的跨公司協作）</div>
+        <div class="grid grid-cols-4 gap-2 text-[11px] items-center">
+          <div class="bg-rose-900/30 border border-rose-600/40 rounded p-2 text-center">
+            <div class="text-lg">👤</div>
+            <div class="text-rose-200 font-bold">陳先生</div>
+            <div class="text-slate-400">終端客戶</div>
+          </div>
+          <div class="text-center text-slate-500 text-[10px]">下單<br>→<br>付款</div>
+          <div class="bg-sky-900/30 border border-sky-600/40 rounded p-2 text-center">
+            <div class="text-lg">🏠</div>
+            <div class="text-sky-200 font-bold">addwii</div>
+            <div class="text-slate-400">B2C 品牌（客服介面在此）</div>
+          </div>
+          <div class="text-center text-slate-500 text-[10px]">↗ AI 客服 NT$8K/月（訂閱）<br>↘ 感測器採購</div>
+        </div>
+        <div class="grid grid-cols-4 gap-2 text-[11px] items-center mt-2">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div class="flex flex-col gap-1">
+            <div class="bg-blue-900/30 border border-blue-600/40 rounded p-1.5 text-center text-[10px]">
+              <span class="text-blue-200 font-bold">🏛️ 凌策</span> — AI 客服模組後台
+            </div>
+            <div class="bg-amber-900/30 border border-amber-600/40 rounded p-1.5 text-center text-[10px]">
+              <span class="text-amber-200 font-bold">🏭 microjet</span> — CurieJet 感測器
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="grid grid-cols-3 gap-4 mb-5">
         ${kpiMini('我的訂單', s.order.id, `${fmtNT(s.order.amount)} · ${s.order.status}`, 'text-rose-300')}
@@ -9624,11 +9657,119 @@ async function renderCustomerPortal() {
         <div class="flex items-center overflow-x-auto pb-2">${milestoneHtml}</div>
       </div>
 
+      <!-- ═══ addwii 客服（原地即時 AI 對答 · 陳先生不用離開此頁）═══ -->
+      <div class="bg-slate-800 border border-sky-500/40 rounded-xl p-5 mb-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center text-xl">💬</div>
+          <div class="flex-1">
+            <div class="text-sm font-bold text-sky-200">addwii 智能客服</div>
+            <div class="text-[10px] text-slate-500 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+              線上服務中 · 後台 Powered by 凌策 AI 客服模組（addwii 月訂閱）
+            </div>
+          </div>
+          <button onclick="_cpChatReset()" class="text-[10px] text-slate-400 hover:text-white">清空</button>
+        </div>
+
+        <!-- 訊息容器 -->
+        <div id="cp-chat-box" class="bg-slate-900/60 rounded-lg p-3 h-56 overflow-y-auto space-y-2 text-sm">
+          <div class="flex gap-2">
+            <div class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-xs flex-shrink-0">a</div>
+            <div class="bg-sky-900/40 border border-sky-700/40 rounded-lg px-3 py-2 text-sky-100 max-w-[75%]">
+              陳先生您好，我是 addwii 客服。您的 12 坪客廳無塵室訂單已記錄，有什麼想了解的嗎？<br>
+              <span class="text-[10px] text-sky-300/70">（可問：濾網多久換 / CADR 是什麼 / 有沒有保固延長）</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 快速詢問按鈕 -->
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          ${['HEPA 濾網多久更換一次？','什麼是 CADR 值？','產品有保固嗎？','有訂閱換濾網方案嗎？'].map(q=>`
+            <button onclick="_cpChatSend(this, decodeURIComponent('${encodeURIComponent(q)}'))" class="text-[11px] bg-slate-700 hover:bg-slate-600 rounded-full px-2.5 py-1">${q}</button>
+          `).join('')}
+        </div>
+
+        <!-- 輸入框 -->
+        <div class="flex gap-2 mt-2">
+          <input id="cp-chat-input" class="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm" placeholder="輸入您的問題…" onkeydown="if(event.key==='Enter')_cpChatSend()">
+          <button onclick="_cpChatSend()" class="bg-sky-600 hover:bg-sky-500 rounded px-4 py-2 text-sm font-bold">送出</button>
+        </div>
+        <div class="text-[10px] text-slate-500 mt-2 flex items-center gap-3">
+          <span>🔒 本地 LLM 推論 · 個資零外流</span>
+          <span>·</span>
+          <span>對話將寫入 addwii 客服 AI 模組的稽核 log</span>
+          <span class="ml-auto">訂閱：NT$8,000/月（AI 客服）</span>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-4">
-        ${quickTile('💬','找凌策 AI 客服','PM2.5 / CADR / 濾網更換 即問即答','showPage(\'simulator\')','from-green-900/30 to-emerald-900/30 border-green-500/30')}
         ${quickTile('📄','下載 addwii 報價單 PDF',`${s.quote.id} · ${fmtNT(s.quote.amount)} · 含 BOM 與里程碑`,'window.open(API_BASE + \'/api/procurement/pdf/addwii-order\',\'_blank\')','from-blue-900/30 to-sky-900/30 border-blue-500/30')}
+        ${quickTile('🔬','查看感測器即時數據','CurieJet P760/P710 · PM2.5 / CO₂ / VOC','showPage(\'attn\')','from-amber-900/30 to-orange-900/30 border-amber-500/30')}
       </div>
     </div>`;
+}
+
+// ═══ 陳先生頁「addwii 客服」inline chat widget ═══
+let _CP_CHAT_SESSION = 'cp-customer-' + Date.now();
+function _cpChatReset() {
+  _CP_CHAT_SESSION = 'cp-customer-' + Date.now();
+  renderCustomerPortal();
+}
+async function _cpChatSend(btn, quick) {
+  const input = document.getElementById('cp-chat-input');
+  const q = quick || (input && input.value.trim());
+  if (!q) return;
+  if (input) input.value = '';
+  const box = document.getElementById('cp-chat-box');
+  if (!box) return;
+
+  // 使用者訊息
+  const userEl = document.createElement('div');
+  userEl.className = 'flex gap-2 justify-end';
+  userEl.innerHTML = `
+    <div class="bg-slate-700 rounded-lg px-3 py-2 max-w-[75%] text-white">${escapeHtml(q)}</div>
+    <div class="w-7 h-7 rounded-full bg-rose-600 flex items-center justify-center text-xs flex-shrink-0">陳</div>`;
+  box.appendChild(userEl);
+  box.scrollTop = box.scrollHeight;
+
+  // AI 訊息（打字動畫）
+  const aiEl = document.createElement('div');
+  aiEl.className = 'flex gap-2';
+  aiEl.innerHTML = `
+    <div class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-xs flex-shrink-0">a</div>
+    <div class="bg-sky-900/40 border border-sky-700/40 rounded-lg px-3 py-2 text-sky-100 max-w-[75%]">
+      <span class="text-[11px] text-sky-300/70">✨ addwii 客服思考中…</span>
+    </div>`;
+  box.appendChild(aiEl);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const r = await fetch(API_BASE + '/api/acceptance/qa-chat', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        session_id: _CP_CHAT_SESSION,
+        customer: 'addwii',      // ★ 架構：陳先生 → addwii 客服（非凌策）
+        question: q, user: 'customer_portal'
+      }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const d = await r.json();
+    const answer = d.answer || d.reply || (d.error ? `很抱歉，系統錯誤：${d.error}` : '抱歉，暫時無法回覆，請稍後再試。');
+    const refs = (d.references || []).slice(0, 2);
+    aiEl.innerHTML = `
+      <div class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-xs flex-shrink-0">a</div>
+      <div class="bg-sky-900/40 border border-sky-700/40 rounded-lg px-3 py-2 text-sky-100 max-w-[75%]">
+        <div class="whitespace-pre-wrap">${escapeHtml(answer)}</div>
+        ${refs.length ? `<div class="text-[10px] text-sky-300/60 mt-1.5 pt-1.5 border-t border-sky-700/30">📚 參考：${refs.map(r=>escapeHtml(r.q||r.title||'')).join(' · ')}</div>` : ''}
+      </div>`;
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {
+    aiEl.innerHTML = `
+      <div class="w-7 h-7 rounded-full bg-sky-600 flex items-center justify-center text-xs flex-shrink-0">a</div>
+      <div class="bg-red-900/40 border border-red-700/40 rounded-lg px-3 py-2 text-red-200 max-w-[75%]">
+        連線超時（30s），可能後端正在處理其他請求，請稍後再試。
+      </div>`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
