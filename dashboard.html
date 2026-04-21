@@ -5268,18 +5268,83 @@ async function openChatRoom(roomId) {
   CHAT_POLL_TIMER = setInterval(refreshChatRoom, 3000);
 }
 
+// 從 room_id 'room_A_B' 解出對方 ID
+function _parseChatPartner(roomId, myId) {
+  if (!roomId || !roomId.startsWith('room_')) return null;
+  const body = roomId.slice(5);
+  // 嘗試各種 split 找出匹配的配對
+  const members = _orgFlatMembers();
+  const memberIds = new Set(members.map(m => m.id));
+  const parts = body.split('_');
+  for (let i = 1; i < parts.length; i++) {
+    const a = parts.slice(0, i).join('_');
+    const b = parts.slice(i).join('_');
+    if (memberIds.has(a) && memberIds.has(b)) {
+      if (a === myId) return b;
+      if (b === myId) return a;
+    }
+  }
+  return null;
+}
+
+// 收到「聊天室不存在」→ 自動重新發起與對方的對話（idempotent）
+async function _autoRecoverChat(otherId) {
+  if (!ORG_CURRENT_USER_PERSONA) { alert('請先選擇當前身分'); return; }
+  const r = await fetch(API_BASE + '/api/chat/create', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({initiator_id: ORG_CURRENT_USER_PERSONA, target_id: otherId})
+  });
+  const d = await r.json();
+  if (!d.success) {
+    alert('重建失敗：' + (d.error || '未知'));
+    return;
+  }
+  CHAT_ACTIVE_ROOM = d.room.id;
+  CHAT_RENDERED_ROOM = null;
+  refreshChatRoom();
+}
+
 async function refreshChatRoom() {
   if (!CHAT_ACTIVE_ROOM) return;
+  // 防呆：未選 persona 不該 poll
+  if (!ORG_CURRENT_USER_PERSONA) {
+    document.getElementById('chat-panel-content').innerHTML = `
+      <div class="p-5 text-center text-slate-400">
+        <div class="text-3xl mb-2">👤</div>
+        <div class="text-sm">請先在組織頁選擇「當前身分」才能開啟聊天</div>
+        <button onclick="closeChatPanel()" class="mt-3 px-3 py-1.5 bg-slate-700 rounded text-xs">關閉</button>
+      </div>`;
+    return;
+  }
   const url = `${API_BASE}/api/chat/messages/${CHAT_ACTIVE_ROOM}?member_id=${ORG_CURRENT_USER_PERSONA}`;
   try {
     const r = await fetch(url);
     const data = await r.json();
     if (!data.success) {
+      // 若是 room 不存在，嘗試自動「重新發起聊天」(idempotent — 會重建 room)
+      const canAutoRecover = (data.error_code === 'ROOM_NOT_FOUND' && CHAT_ACTIVE_ROOM);
+      const otherId = canAutoRecover ? _parseChatPartner(CHAT_ACTIVE_ROOM, ORG_CURRENT_USER_PERSONA) : null;
+
       document.getElementById('chat-panel-content').innerHTML = `
         <div class="p-5 text-center text-slate-400">
           <div class="text-3xl mb-2">🚫</div>
-          <div>${data.error || '無法開啟聊天室'}</div>
-          <button onclick="closeChatPanel()" class="mt-3 px-3 py-1.5 bg-slate-700 rounded text-xs">關閉</button>
+          <div class="text-sm text-red-300 font-bold mb-1">${escapeHtml(data.error || '無法開啟聊天室')}</div>
+          <div class="text-[11px] text-slate-500 mb-3 font-mono">${escapeHtml(CHAT_ACTIVE_ROOM)}</div>
+          <div class="text-[11px] text-slate-400 mb-3">
+            可能原因：<br>
+            • 當前身分（${escapeHtml(ORG_CURRENT_USER_PERSONA || '未選')}）不是此對話參與者<br>
+            • 伺服器重啟後索引遺失<br>
+            • 對話需跨部門核准
+          </div>
+          ${otherId ? `
+            <button onclick="_autoRecoverChat('${otherId}')"
+                    class="w-full mt-2 px-3 py-2 bg-purple-600 hover:bg-purple-500 rounded text-xs font-bold">
+              🔁 自動重建與「${escapeHtml(otherId)}」的對話
+            </button>` : ''}
+          <div class="flex gap-2 mt-3">
+            <button onclick="refreshChatRoom()" class="flex-1 px-3 py-1.5 bg-slate-700 rounded text-xs">🔄 重試</button>
+            <button onclick="closeChatPanel()" class="flex-1 px-3 py-1.5 bg-slate-700 rounded text-xs">關閉</button>
+          </div>
         </div>`;
       CHAT_RENDERED_ROOM = null;
       return;

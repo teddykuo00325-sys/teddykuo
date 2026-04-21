@@ -547,7 +547,18 @@ class ChatManager:
                      ai_generated: bool = False, trigger_ai_reply: bool = True) -> Dict:
         room = self.rooms.get(room_id)
         if not room:
-            return {'success': False, 'error': '聊天室不存在'}
+            # 自動恢復
+            rebuilt = self._try_rebuild_room(room_id, sender_id)
+            if rebuilt:
+                room = rebuilt
+            else:
+                detail = self._diagnose_room_id(room_id)
+                return {
+                    'success': False,
+                    'error': f'聊天室不存在（{detail}）',
+                    'error_code': 'ROOM_NOT_FOUND',
+                    'room_id': room_id,
+                }
 
         if not room.can_send(sender_id) and not ai_generated:
             return {'success': False, 'error': '您不在此聊天室'}
@@ -850,11 +861,66 @@ class ChatManager:
         result.sort(key=lambda x: x['last_activity'], reverse=True)
         return result
 
+    def _try_rebuild_room(self, room_id: str, requester_id: str):
+        """嘗試從 room_id 'room_<id1>_<id2>' 解出雙方成員並重建聊天室"""
+        if not room_id.startswith('room_'): return None
+        body = room_id[5:]   # 去 'room_' 前綴
+        # 兩個 member id 用 '_' 分隔，但 id 本身可能含 '-'（MGR-001）不含 '_'
+        # 嘗試各種 split 位置
+        parts = body.split('_')
+        if len(parts) < 2: return None
+        # 嘗試前 n 段 + 後 m 段組合（簡化：前 1 段 + 後 1 段）
+        candidates = []
+        for i in range(1, len(parts)):
+            a = '_'.join(parts[:i])
+            b = '_'.join(parts[i:])
+            candidates.append((a, b))
+        for a, b in candidates:
+            if a in self.attn.members and b in self.attn.members:
+                # 必須有一邊是 requester 才重建（避免任意重建）
+                if requester_id not in (a, b):
+                    continue
+                result = self.create_or_get_room(a, b)
+                if result.get('success'):
+                    print(f'[ChatManager] 自動恢復聊天室 {room_id}（{a} ↔ {b}）')
+                    return self.rooms.get(room_id)
+        return None
+
+    def _diagnose_room_id(self, room_id: str) -> str:
+        """給 friendly 錯誤訊息，告訴 UI 為什麼找不到"""
+        if not room_id: return '未提供 room_id'
+        if not room_id.startswith('room_'): return '格式錯誤（應為 room_xxx_yyy）'
+        body = room_id[5:]
+        parts = body.split('_')
+        # 嘗試識別成員
+        for i in range(1, len(parts)):
+            a = '_'.join(parts[:i]); b = '_'.join(parts[i:])
+            if a in self.attn.members and b in self.attn.members:
+                return f'{a} ↔ {b} 尚未建立對話'
+        return '無法識別參與者 ID'
+
+
     def get_messages(self, room_id: str, member_id: str, since: Optional[str] = None) -> Dict:
-        """取得聊天室訊息。若傳入 since (ISO timestamp) 只回傳之後的新訊息"""
+        """取得聊天室訊息。若傳入 since (ISO timestamp) 只回傳之後的新訊息
+
+        ★ 自動恢復：若 room_id 符合 'room_<id1>_<id2>' 格式但 room 不在記憶體（例如
+          server 重啟後 index.json 載入不完整、或房間被意外清除），嘗試重建。
+        """
         room = self.rooms.get(room_id)
         if not room:
-            return {'success': False, 'error': '聊天室不存在'}
+            # 嘗試自動恢復
+            rebuilt = self._try_rebuild_room(room_id, member_id)
+            if rebuilt:
+                room = rebuilt
+            else:
+                # 額外診斷訊息：是否是 room_id 格式錯誤、還是參與者不存在
+                detail = self._diagnose_room_id(room_id)
+                return {
+                    'success': False,
+                    'error': f'聊天室不存在（{detail}）',
+                    'error_code': 'ROOM_NOT_FOUND',
+                    'room_id': room_id,
+                }
         if not room.can_view(member_id):
             return {'success': False, 'error': '無權查看'}
 
