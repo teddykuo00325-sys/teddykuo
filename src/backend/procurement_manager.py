@@ -26,7 +26,7 @@ _DEFAULT = {
     },
     'space': {
         'area_ping': 12, 'area_m2': 39.6, 'height_m': 2.8,
-        'scenario': '客廳款（Living Room Clean Room）',
+        'scenario': '嬰兒無塵室（Baby Clean Room · 12 坪豪華款 / HCR-300）',
     },
     'inquiry': {'id': 'INQ-2026-0412', 'date': '2026-04-12', 'status': '已回覆'},
     'quote':   {'id': 'QUO-2026-0041', 'date': '2026-04-14',
@@ -48,7 +48,7 @@ _DEFAULT = {
         {'key':'acceptance',  'label':'驗收完工 + 尾款',             'date':'2026-04-29'},
     ],
     'bom': [
-        {'sku':'ADW-LR-12P',   'name':'客廳無塵室主機（12 坪適用）', 'qty':1, 'unit':148000, 'supplier':'addwii 自製'},
+        {'sku':'ADW-BABY-12P', 'name':'嬰兒無塵室主機 HCR-300（12 坪豪華款）', 'qty':1, 'unit':148000, 'supplier':'addwii 自製'},
         {'sku':'CJ-P760',      'name':'PM + VOC 整合感測器模組',      'qty':2, 'unit':3200,   'supplier':'microjet / CurieJet'},
         {'sku':'CJ-P710',      'name':'PM2.5 備援感測器模組',          'qty':1, 'unit':2400,   'supplier':'microjet / CurieJet'},
         {'sku':'ADW-HEPA-H13', 'name':'HEPA H13 濾網組（初始配備）',   'qty':1, 'unit':3600,   'supplier':'addwii'},
