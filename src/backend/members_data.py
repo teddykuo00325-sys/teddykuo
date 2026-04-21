@@ -228,6 +228,17 @@ def build_initial_org():
         Member('ADW-005', '杜怡旻', '副理', ADDWII, 'ADW-001', '📒', title='主辦會計暨行政主管'),
         Member('ADW-006', '吳維禎', '工程師', ADDWII, 'ADW-001', '📱', title='社群行銷專員'),
     ]
+    # ── 個資遮蔽：統一把所有中文姓名改為「姓 + OO」──
+    # 例：薛秀霞 → 薛OO；張馨文 → 張OO；職稱為「董事長」「X 姓」等非人名保留
+    import re as _re
+    _HANZI = _re.compile(r'^[\u4e00-\u9fa5]{2,4}$')
+    _EXEMPT_NAMES = {'董事長', '總經理', '經理', '協理', '副理', '課長', '專員', '工程師'}
+    for _m in members:
+        _nm = getattr(_m, 'name', '') or ''
+        if _nm in _EXEMPT_NAMES:
+            continue
+        if _HANZI.match(_nm):
+            _m.name = _nm[0] + 'OO'   # 保留姓（第 1 字），其餘以 OO 取代
     return members
 
 

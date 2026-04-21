@@ -168,8 +168,17 @@ class AttendanceManager:
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             self.members = {}
+            # 個資遮蔽：載入時一併把中文姓名改為「姓+OO」
+            import re as _re
+            _HANZI = _re.compile(r'^[\u4e00-\u9fa5]{2,4}$')
+            _EXEMPT = {'董事長','總經理','經理','協理','副理','課長','專員','工程師'}
+            def _mask(nm):
+                if not nm or nm in _EXEMPT: return nm
+                if nm.endswith('OO'): return nm   # 已遮蔽過
+                return nm[0] + 'OO' if _HANZI.match(nm) else nm
             for row in data:
-                m = Member(row['id'], row['name'], row['role'], row['dept'],
+                row_name = _mask(row.get('name',''))
+                m = Member(row['id'], row_name, row['role'], row['dept'],
                           row.get('supervisor_id'), row.get('avatar', '👤'),
                           is_hr=row.get('is_hr', False), title=row.get('title'))
                 self.members[m.id] = m
