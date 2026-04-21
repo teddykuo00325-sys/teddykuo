@@ -46,7 +46,10 @@ from chat_manager import ChatManager, ChatRelation
 from task_manager import TaskManager
 import acceptance_scenarios as accs
 from crm_manager import CRMManager, MODULE_NAMES, MODULE_PRICES, calc_quote
-crm = CRMManager(db_path=os.path.join(os.path.dirname(__file__), '..', '..', 'chat_logs', 'lingce_crm.db'))
+# 多租戶 Context（lingce / microjet / addwii / weiming）— 每家獨立 CRM / Org
+from tenant_context import TENANT_CTX, TENANT_IDS, TENANT_META, parse_tenant
+# ★ 相容別名：crm 仍指向 lingce 的 CRM（凌策自己的 AI 模組授權客戶）
+crm = TENANT_CTX.get('lingce').crm
 # 啟動即在背景預熱 CSV 快取，使用者第一次開頁面就是秒開
 threading.Thread(target=lambda: accs.analyze_all_csv('system-prewarm'), daemon=True).start()
 # 預熱 Ollama：用 1 token 的小請求讓模型載入記憶體，避免首問等 10~20 秒冷啟動
@@ -70,11 +73,10 @@ app = Flask(__name__, static_folder='../../', static_url_path='')
 CORS(app)
 
 # ══════════════════════════════════════
-# 出缺勤系統初始化（支援組織變更持久化）
+# 出缺勤系統初始化（多租戶 — 共 4 個 tenant）
+# ★ attendance_mgr 別名指向 microjet（134 人，最大組織，舊 API 預設）
 # ══════════════════════════════════════
-_ORG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         '..', '..', 'chat_logs', 'org_data.json')
-attendance_mgr = AttendanceManager(build_initial_org(), org_file=_ORG_FILE)
+attendance_mgr = TENANT_CTX.get('microjet').attendance
 
 # 模擬：讓全體成員已打卡（展示時有資料可看）
 # 保留約 3% 成員「異常未打卡」以展示紅燈效果
@@ -120,28 +122,21 @@ for _m in attendance_mgr.members.values():
     if _m.weekly_objective:
         _m.weekly_objective['progress'] = _rnd.randint(20, 95)
 
-# 聊天管理器（共用 attendance_mgr 的組織資訊，自動從磁碟載入既有對話）
-chat_mgr = ChatManager(attendance_mgr, enable_ai_reply=True)
+# 聊天管理器：舊別名指向 microjet（最多人使用）
+chat_mgr = TENANT_CTX.get('microjet').chat
 
-# 任務管理器
-_TASK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           '..', '..', 'chat_logs', 'tasks.json')
+# 任務管理器（tasks.json 留在 lingce/audit）
+_TASK_FILE = TENANT_CTX.get('lingce').paths.tasks
 task_mgr = TaskManager(attendance_mgr, _TASK_FILE, chat_mgr=chat_mgr)
 
-# 請假 & 加班管理器
-_LEAVE_OT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              '..', '..', 'chat_logs', 'leave_overtime')
-leave_ot_mgr = LeaveOvertimeManager(attendance_mgr, _LEAVE_OT_DIR)
+# 請假 & 加班管理器（microjet 版，別名用）
+leave_ot_mgr = TENANT_CTX.get('microjet').leave_ot
 
-# 出缺勤統計與編輯審批
-_ATTN_ANALYTICS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                    '..', '..', 'chat_logs', 'attendance_analytics')
-attn_analytics = AttendanceAnalyticsManager(attendance_mgr, leave_ot_mgr, _ATTN_ANALYTICS_DIR)
+# 出缺勤統計與編輯審批（microjet 版，別名用）
+attn_analytics = TENANT_CTX.get('microjet').analytics
 
-# Phase 3：addwii→microjet 採購流程 + 感測器序號綁定
-_PROCUREMENT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 '..', '..', 'chat_logs', 'procurement_state.json')
-procurement_mgr = ProcurementManager(_PROCUREMENT_FILE)
+# 採購管理（跨 tenant 共享）
+procurement_mgr = ProcurementManager(TENANT_CTX.get('lingce').paths.procurement_state)
 
 # ══════════════════════════════════════
 # Ollama 模型配置
@@ -825,20 +820,24 @@ def attendance_members():
 
 @app.route('/api/attendance/stats')
 def attendance_stats():
-    """統計資料（在線/休息/離線/異常）"""
-    stats = attendance_mgr.stats()
-    now = attendance_mgr.now()
+    """統計資料（在線/休息/離線/異常）· 支援 ?tenant=xxx"""
+    tenant = parse_tenant(request.args, default='microjet')
+    mgr = TENANT_CTX.get(tenant).attendance
+    stats = mgr.stats()
+    now = mgr.now()
     stats['current_time'] = now.strftime('%Y-%m-%d %H:%M:%S')
     stats['current_time_hhmm'] = now.strftime('%H:%M')
     stats['weekday'] = ['週一','週二','週三','週四','週五','週六','週日'][now.weekday()]
     stats['is_in_rest'] = TimeWindows.is_in_rest_period(now.time())
     stats['rest_type'] = TimeWindows.current_rest_type(now.time())
+    stats['tenant'] = tenant
     return jsonify(stats)
 
 @app.route('/api/attendance/org-tree')
 def attendance_org_tree():
-    """組織樹狀結構"""
-    return jsonify(attendance_mgr.build_org_tree())
+    """組織樹狀結構 · 支援 ?tenant=xxx"""
+    tenant = parse_tenant(request.args, default='microjet')
+    return jsonify(TENANT_CTX.get(tenant).attendance.build_org_tree())
 
 @app.route('/api/attendance/clock-in', methods=['POST'])
 def api_clock_in():
@@ -1206,11 +1205,35 @@ def api_org_audit_log():
 
 @app.route('/api/org/members-flat')
 def api_members_flat():
-    """扁平列表（供 HR 編輯時使用）"""
+    """扁平列表（供 HR 編輯時使用）· 支援 ?tenant= 切換租戶"""
+    tenant = parse_tenant(request.args, default='microjet')
+    mgr = TENANT_CTX.get(tenant).attendance
     return jsonify([
-        {**m.to_dict(), 'supervisor_name': attendance_mgr.members[m.supervisor_id].name if m.supervisor_id and m.supervisor_id in attendance_mgr.members else None}
-        for m in attendance_mgr.members.values()
+        {**m.to_dict(), 'supervisor_name': mgr.members[m.supervisor_id].name if m.supervisor_id and m.supervisor_id in mgr.members else None}
+        for m in mgr.members.values()
     ])
+
+@app.route('/api/tenant/weiming/evaluation')
+def api_weiming_evaluation():
+    """維明顧問評估進度"""
+    path = os.path.join(TENANT_CTX.get('weiming').paths.root, 'evaluation.json')
+    if not os.path.exists(path):
+        return jsonify({'error': 'not found'}), 404
+    with open(path, 'r', encoding='utf-8') as f:
+        return jsonify(json.load(f))
+
+
+@app.route('/api/tenants')
+def api_list_tenants():
+    """回傳所有租戶的 metadata 給前端（side bar / context switcher 用）"""
+    out = []
+    for tid in TENANT_IDS:
+        meta = dict(TENANT_META[tid])
+        meta['id'] = tid
+        bundle = TENANT_CTX.get(tid)
+        meta['member_count'] = len(bundle.attendance.members)
+        out.append(meta)
+    return jsonify(out)
 
 # ══════════════════════════════════════════════════════════
 # 請假 & 加班 API
@@ -1582,30 +1605,36 @@ def api_acc_qa_reset():
 # ══════════════════════════════════════════════════════════
 # CRM 營運 API（詢問單 → 報價單 → 訂單 → 安裝記錄）
 # ══════════════════════════════════════════════════════════
+def _tenant_crm():
+    """依 request 的 tenant 參數取得對應 CRM（預設 lingce）"""
+    t = parse_tenant(request.args, default='lingce')
+    return TENANT_CTX.get(t).crm
+
 @app.route('/api/crm/summary')
 def api_crm_summary():
-    return jsonify(crm.summary())
+    return jsonify(_tenant_crm().summary())
 
 @app.route('/api/crm/inquiries')
 def api_crm_list_inq():
-    return jsonify(crm.list_inquiries(status=request.args.get('status')))
+    return jsonify(_tenant_crm().list_inquiries(status=request.args.get('status')))
 
 @app.route('/api/crm/quotes')
 def api_crm_list_quo():
-    return jsonify(crm.list_quotes(status=request.args.get('status')))
+    return jsonify(_tenant_crm().list_quotes(status=request.args.get('status')))
 
 @app.route('/api/crm/orders')
 def api_crm_list_ord():
-    return jsonify(crm.list_orders(status=request.args.get('status')))
+    return jsonify(_tenant_crm().list_orders(status=request.args.get('status')))
 
 @app.route('/api/crm/installations')
 def api_crm_list_ins():
-    return jsonify(crm.list_installations(status=request.args.get('status')))
+    return jsonify(_tenant_crm().list_installations(status=request.args.get('status')))
 
 @app.route('/api/crm/inquiry', methods=['POST'])
 def api_crm_create_inq():
-    data = request.json or {}
-    return jsonify(crm.create_inquiry(data))
+    data = request.get_json(silent=True) or {}
+    tenant = data.get('tenant') or request.args.get('tenant') or 'lingce'
+    return jsonify(TENANT_CTX.get(tenant).crm.create_inquiry(data))
 
 @app.route('/api/crm/inquiry/<iid>/to-quote', methods=['POST'])
 def api_crm_to_quote(iid):

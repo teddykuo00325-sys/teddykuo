@@ -329,7 +329,3 @@
 {"ts": "2026-04-21T14:57:13", "action": "csv_analysis", "user": "BOARD-001", "detail": {"files": 0, "cached": true}}
 {"ts": "2026-04-21T14:57:19", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false, "seo_coverage": 100}}
 {"ts": "2026-04-21T14:59:01", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG", "use_ai": true, "seo_coverage": 100}}
-{"ts": "2026-04-21T17:41:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
-{"ts": "2026-04-21T17:49:54", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
-{"ts": "2026-04-21T17:54:09", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
-{"ts": "2026-04-21T18:02:38", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}

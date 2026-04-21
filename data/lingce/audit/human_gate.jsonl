@@ -1,0 +1,3 @@
+{"ts": "2026-04-20T13:01:00", "operation": "DELETE_USER_DATA", "target": "addwii.users.roomId_07", "actor": "BOARD-001", "reason": "客戶申請個資刪除權利，依 GDPR Art.17 執行", "status": "approved_by_human"}
+{"ts": "2026-04-20T13:01:01", "operation": "EXPORT_CSV", "target": "microjet.attendance.2026-04", "actor": "HRA-002", "reason": "月報稽核匯出，需提交至會計審閱", "status": "approved_by_human"}
+{"ts": "2026-04-20T13:01:01", "operation": "ARCHIVE_OLD_LOG", "target": "chat_logs.2025-Q4", "actor": "BOARD-001", "reason": "年度歸檔，依法保存 7 年後轉入冷儲存", "status": "approved_by_human"}

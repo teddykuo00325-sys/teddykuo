@@ -1,0 +1,194 @@
+{
+  "room_RD2-017_RD2-018": {
+    "id": "room_RD2-017_RD2-018",
+    "participants": [
+      "RD2-018",
+      "RD2-017"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "RD2-018",
+    "created_at": "2026-04-17T19:09:14.959139",
+    "last_activity": "2026-04-17T19:16:19.197708",
+    "ai_enabled": true,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_RD2-007_RD2-016": {
+    "id": "room_RD2-007_RD2-016",
+    "participants": [
+      "RD2-007",
+      "RD2-016"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "RD2-007",
+    "created_at": "2026-04-18T00:17:25.956052",
+    "last_activity": "2026-04-18T00:17:25.956052",
+    "ai_enabled": true,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_ENG-004_ENG-010": {
+    "id": "room_ENG-004_ENG-010",
+    "participants": [
+      "ENG-004",
+      "ENG-010"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "ENG-004",
+    "created_at": "2026-04-18T18:40:32.226034",
+    "last_activity": "2026-04-18T18:40:32.226034",
+    "ai_enabled": true,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_ENG-004_ENG-011": {
+    "id": "room_ENG-004_ENG-011",
+    "participants": [
+      "ENG-004",
+      "ENG-011"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "ENG-004",
+    "created_at": "2026-04-18T18:41:33.376483",
+    "last_activity": "2026-04-18T18:41:33.376483",
+    "ai_enabled": true,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_RD2-004_RD2-018": {
+    "id": "room_RD2-004_RD2-018",
+    "participants": [
+      "RD2-004",
+      "RD2-018"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "RD2-004",
+    "created_at": "2026-04-18T18:41:59.844669",
+    "last_activity": "2026-04-18T18:41:59.844669",
+    "ai_enabled": true,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_RD2-004_RD2-009": {
+    "id": "room_RD2-004_RD2-009",
+    "participants": [
+      "RD2-004",
+      "RD2-009"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "RD2-004",
+    "created_at": "2026-04-18T18:42:37.940134",
+    "last_activity": "2026-04-18T18:42:37.940134",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_ENG-006_ENG-008": {
+    "id": "room_ENG-006_ENG-008",
+    "participants": [
+      "ENG-008",
+      "ENG-006"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "ENG-008",
+    "created_at": "2026-04-18T18:43:41.058088",
+    "last_activity": "2026-04-18T18:43:41.058088",
+    "ai_enabled": true,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_ENG-008_ENG-009": {
+    "id": "room_ENG-008_ENG-009",
+    "participants": [
+      "ENG-008",
+      "ENG-009"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "ENG-008",
+    "created_at": "2026-04-18T18:44:04.185436",
+    "last_activity": "2026-04-18T18:44:04.185436",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_ENG-004_ENG-012": {
+    "id": "room_ENG-004_ENG-012",
+    "participants": [
+      "ENG-004",
+      "ENG-012"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "ENG-004",
+    "created_at": "2026-04-18T18:46:51.575168",
+    "last_activity": "2026-04-18T18:46:51.575168",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_PD1-006_PD1-008": {
+    "id": "room_PD1-006_PD1-008",
+    "participants": [
+      "PD1-008",
+      "PD1-006"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "PD1-008",
+    "created_at": "2026-04-20T02:02:08.029784",
+    "last_activity": "2026-04-20T02:02:13.276542",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_RD2-018_RD2-025": {
+    "id": "room_RD2-018_RD2-025",
+    "participants": [
+      "RD2-018",
+      "RD2-025"
+    ],
+    "observers": [],
+    "relation": "downward_direct",
+    "created_by": "RD2-018",
+    "created_at": "2026-04-20T02:17:00.372037",
+    "last_activity": "2026-04-20T02:17:00.372037",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  },
+  "room_PS-001_PS-004": {
+    "id": "room_PS-001_PS-004",
+    "participants": [
+      "PS-001",
+      "PS-004"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "PS-001",
+    "created_at": "2026-04-20T10:38:15.544167",
+    "last_activity": "2026-04-20T10:38:24.275001",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  }
+}

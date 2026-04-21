@@ -22,6 +22,7 @@ from typing import Dict, List, Optional
 from collections import defaultdict
 
 # 聊天紀錄儲存目錄
+# 預設舊路徑（向後相容）；多租戶模式下由 ChatManager(__init__) 以 chat_log_dir 參數覆寫
 CHAT_LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'chat_logs')
 os.makedirs(CHAT_LOG_DIR, exist_ok=True)
 
@@ -224,13 +225,16 @@ class ChatRoom:
 class ChatManager:
     """聊天管理器 — 整合 AttendanceManager 的組織層級資訊 + 檔案持久化 + AI 回覆"""
 
-    def __init__(self, attendance_mgr, enable_ai_reply=True):
+    def __init__(self, attendance_mgr, enable_ai_reply=True, chat_log_dir: str = None):
         self.attn = attendance_mgr
         self.rooms: Dict[str, ChatRoom] = {}
         self.unread_count: Dict[str, int] = defaultdict(int)
         self.enable_ai_reply = enable_ai_reply
         self._ai_lock = threading.Lock()
         self._save_lock = threading.Lock()
+        # 多租戶：每個租戶有自己的聊天室目錄
+        self._chat_dir = chat_log_dir or CHAT_LOG_DIR
+        os.makedirs(self._chat_dir, exist_ok=True)
         # 從磁碟載入既有對話
         self._load_from_disk()
 
@@ -238,11 +242,11 @@ class ChatManager:
     # 持久化 — JSONL 檔案儲存
     # ════════════════════════════════════════════════
     def _index_path(self):
-        return os.path.join(CHAT_LOG_DIR, 'index.json')
+        return os.path.join(self._chat_dir, 'index.json')
 
     def _room_log_path(self, room_id):
         safe_id = room_id.replace('/', '_').replace('\\', '_')
-        return os.path.join(CHAT_LOG_DIR, f'{safe_id}.jsonl')
+        return os.path.join(self._chat_dir, f'{safe_id}.jsonl')
 
     def _save_index(self):
         with self._save_lock:

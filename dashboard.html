@@ -38,27 +38,95 @@
       </p>
       <p class="text-[10px] text-slate-500 mt-0.5">服務 addwii / microjet / 維明</p>
     </div>
-    <nav class="flex-1 p-4 space-y-1" id="nav">
-      <button onclick="showPage('dashboard')" class="nav-btn active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm" data-page="dashboard">📊 總覽儀表板</button>
-      <button onclick="showPage('agents')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300" data-page="agents">🤖 AI Agent 管理</button>
-      <button onclick="showPage('modules')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300" data-page="modules">💼 AI 模組商品</button>
-      <button onclick="showPage('crm')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300" data-page="crm">📋 客戶管理</button>
-      <button onclick="showPage('tokens')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300" data-page="tokens">💰 Token 成本監控</button>
-      <button onclick="showPage('arch')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300" data-page="arch">🏗️ 系統架構</button>
-      <div class="mt-3 pt-3 border-t border-slate-700">
-        <button onclick="showPage('commander')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-500/30 glow" data-page="commander">⚡ AI 指揮官</button>
-        <button onclick="showPage('acceptance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-yellow-900/50 to-amber-900/50 border border-yellow-500/30 mt-1" data-page="acceptance">🏆 客戶驗收中心</button>
-        <button onclick="showPage('simulator')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-green-900/50 to-cyan-900/50 border border-green-500/30 mt-1" data-page="simulator">🎯 凌策客戶模擬器</button>
-        <button onclick="showPage('org')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-orange-900/50 to-red-900/50 border border-orange-500/30 mt-1" data-page="org">🏢 組織出缺勤</button>
-        <button onclick="showPage('attn')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-teal-900/50 to-cyan-900/50 border border-teal-500/30 mt-1" data-page="attn">📈 出缺勤統計</button>
-        <button onclick="showPage('compliance')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-red-900/50 to-rose-900/50 border border-red-500/30 mt-1" data-page="compliance">🛡️ 合規中心</button>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="nav">
+
+      <!-- 🏛️ 凌策公司 (ourselves) -->
+      <div class="tenant-group" data-tenant="lingce">
+        <button onclick="toggleTenantGroup('lingce')"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-blue-900/60 to-indigo-900/60 border border-blue-500/40 text-blue-200">
+          <span class="text-base">🏛️</span>
+          <span class="flex-1 text-left">凌策公司</span>
+          <span class="text-[10px] text-blue-300 bg-blue-950/60 px-1.5 rounded-full">11 人</span>
+          <span class="tenant-caret text-xs">▼</span>
+        </button>
+        <div class="tenant-body space-y-0.5 mt-1">
+          <button onclick="setTenantAndPage('lingce','dashboard')" class="nav-btn active w-full flex items-center gap-2 px-3 py-2 rounded text-xs" data-page="dashboard">📊 總覽儀表板</button>
+          <button onclick="setTenantAndPage('lingce','agents')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="agents">🤖 10 位 AI Agent 員工</button>
+          <button onclick="setTenantAndPage('lingce','modules')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="modules">💼 14 AI 模組商品</button>
+          <button onclick="setTenantAndPage('lingce','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 凌策 CRM（AI 模組授權）</button>
+          <button onclick="setTenantAndPage('lingce','commander')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-blue-300" data-page="commander">⚡ AI 指揮官</button>
+          <button onclick="setTenantAndPage('lingce','acceptance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-yellow-300" data-page="acceptance">🏆 客戶驗收中心</button>
+          <button onclick="setTenantAndPage('lingce','simulator')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-green-300" data-page="simulator">🎯 客戶模擬器</button>
+          <button onclick="setTenantAndPage('lingce','tokens')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="tokens">💰 Token 成本</button>
+          <button onclick="setTenantAndPage('lingce','arch')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="arch">🏗️ 系統架構</button>
+        </div>
       </div>
-      <div class="mt-3 pt-3 border-t border-slate-700">
-        <div class="text-[10px] text-slate-500 px-2 pb-1">🎭 客戶視角（模擬客戶端）</div>
-        <button onclick="showPage('addwii-ws')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-sky-900/40 to-blue-900/40 border border-sky-500/30 mt-1" data-page="addwii-ws">🏠 addwii 工作台</button>
-        <button onclick="showPage('microjet-ws')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-amber-900/40 to-orange-900/40 border border-amber-500/30 mt-1" data-page="microjet-ws">🏭 microjet 工作台</button>
-        <button onclick="showPage('customer-portal')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-slate-300 bg-gradient-to-r from-rose-900/40 to-pink-900/40 border border-rose-500/30 mt-1" data-page="customer-portal">👤 終端客戶門戶</button>
+
+      <!-- 🏭 microjet -->
+      <div class="tenant-group mt-3" data-tenant="microjet">
+        <button onclick="toggleTenantGroup('microjet')"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-900/60 to-orange-900/60 border border-amber-500/40 text-amber-200">
+          <span class="text-base">🏭</span>
+          <span class="flex-1 text-left">microjet</span>
+          <span class="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 rounded-full">134 人</span>
+          <span class="tenant-caret text-xs">▼</span>
+        </button>
+        <div class="tenant-body space-y-0.5 mt-1">
+          <button onclick="setTenantAndPage('microjet','microjet-ws')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-amber-200" data-page="microjet-ws">📊 microjet 儀表板</button>
+          <button onclick="setTenantAndPage('microjet','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 microjet CRM（B2B 採購）</button>
+          <button onclick="setTenantAndPage('microjet','org')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="org">🏢 組織出缺勤（134 人）</button>
+          <button onclick="setTenantAndPage('microjet','attn')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="attn">📈 出缺勤統計</button>
+          <button onclick="setTenantAndPage('microjet','compliance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-300" data-page="compliance">🛡️ 合規中心</button>
+        </div>
       </div>
+
+      <!-- 🏠 addwii -->
+      <div class="tenant-group mt-3" data-tenant="addwii">
+        <button onclick="toggleTenantGroup('addwii')"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-sky-900/60 to-blue-900/60 border border-sky-500/40 text-sky-200">
+          <span class="text-base">🏠</span>
+          <span class="flex-1 text-left">addwii</span>
+          <span class="text-[10px] text-sky-300 bg-sky-950/60 px-1.5 rounded-full">6 人</span>
+          <span class="tenant-caret text-xs">▼</span>
+        </button>
+        <div class="tenant-body space-y-0.5 mt-1">
+          <button onclick="setTenantAndPage('addwii','addwii-ws')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-sky-200" data-page="addwii-ws">📊 addwii 儀表板</button>
+          <button onclick="setTenantAndPage('addwii','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 addwii CRM（B2C 客戶）</button>
+          <button onclick="setTenantAndPage('addwii','org')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="org">🏢 組織出缺勤（6 人）</button>
+          <button onclick="setTenantAndPage('addwii','attn')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="attn">📈 出缺勤統計</button>
+          <button onclick="setTenantAndPage('addwii','compliance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-300" data-page="compliance">🛡️ 合規中心</button>
+        </div>
+      </div>
+
+      <!-- 📋 維明顧問 -->
+      <div class="tenant-group mt-3" data-tenant="weiming">
+        <button onclick="toggleTenantGroup('weiming')"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-slate-500/40 text-slate-300">
+          <span class="text-base">📋</span>
+          <span class="flex-1 text-left">維明顧問</span>
+          <span class="text-[10px] text-slate-400 bg-slate-900/60 px-1.5 rounded-full">評估中</span>
+          <span class="tenant-caret text-xs">▼</span>
+        </button>
+        <div class="tenant-body space-y-0.5 mt-1">
+          <button onclick="setTenantAndPage('weiming','weiming-eval')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="weiming-eval">📝 評估進度</button>
+          <button onclick="setTenantAndPage('weiming','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-400" data-page="crm">📋 維明 CRM（未啟用）</button>
+        </div>
+      </div>
+
+      <!-- 👤 外部客戶 -->
+      <div class="tenant-group mt-3 mb-2" data-tenant="external">
+        <button onclick="toggleTenantGroup('external')"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-rose-900/60 to-pink-900/60 border border-rose-500/40 text-rose-200">
+          <span class="text-base">👤</span>
+          <span class="flex-1 text-left">外部客戶</span>
+          <span class="text-[10px] text-rose-300 bg-rose-950/60 px-1.5 rounded-full">終端</span>
+          <span class="tenant-caret text-xs">▼</span>
+        </button>
+        <div class="tenant-body space-y-0.5 mt-1">
+          <button onclick="setTenantAndPage('lingce','customer-portal')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-200" data-page="customer-portal">👤 陳先生 12 坪案</button>
+        </div>
+      </div>
+
     </nav>
     <div class="p-4 border-t border-slate-700">
       <div class="flex items-center gap-2 mb-2" id="live-indicator"><span class="w-2 h-2 rounded-full bg-slate-500"></span><span class="text-xs text-slate-500">檢查連線中...</span></div>
@@ -77,6 +145,42 @@
 const API_BASE = (window.location.protocol === 'file:')
   ? 'http://127.0.0.1:5000'
   : window.location.origin;
+
+// ═══════════════════════════════════════════════════════════
+// 多租戶狀態（4 家：lingce / microjet / addwii / weiming）
+// ═══════════════════════════════════════════════════════════
+let CURRENT_TENANT = 'lingce';   // 預設進 lingce 儀表板
+
+function setTenantAndPage(tenant, page) {
+  CURRENT_TENANT = tenant;
+  // 更新視覺：其他 tenant-group 收合（保留當前展開）
+  document.querySelectorAll('.tenant-group').forEach(g => {
+    const body = g.querySelector('.tenant-body');
+    const caret = g.querySelector('.tenant-caret');
+    if (g.getAttribute('data-tenant') === tenant) {
+      body.style.display = ''; if (caret) caret.textContent = '▼';
+    }
+    // 其他 group 保持使用者的展開/收合狀態
+  });
+  showPage(page);
+}
+
+function toggleTenantGroup(tenant) {
+  const group = document.querySelector(`.tenant-group[data-tenant="${tenant}"]`);
+  if (!group) return;
+  const body = group.querySelector('.tenant-body');
+  const caret = group.querySelector('.tenant-caret');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  if (caret) caret.textContent = isOpen ? '▶' : '▼';
+}
+
+// API 呼叫時附 tenant 參數
+function withTenant(url) {
+  const sep = url.includes('?') ? '&' : '?';
+  return url + sep + 'tenant=' + encodeURIComponent(CURRENT_TENANT);
+}
+
 let LIVE_MODE = false;
 let LIVE_STATUS = null;
 
@@ -331,7 +435,7 @@ function showPage(page){
   });
   const btn=document.querySelector(`[data-page="${page}"]`);
   if(btn){btn.classList.add('active');btn.classList.remove('text-slate-300');}
-  const renders={dashboard:renderDashboard,agents:renderAgents,modules:renderModules,crm:renderCRM,tokens:renderTokens,arch:renderArch,commander:renderCommander,simulator:renderSimulator,org:renderOrgChart,attn:renderAttendanceStats,acceptance:renderAcceptance,compliance:renderCompliance,'addwii-ws':renderAddwiiWorkspace,'microjet-ws':renderMicrojetWorkspace,'customer-portal':renderCustomerPortal};
+  const renders={dashboard:renderDashboard,agents:renderAgents,modules:renderModules,crm:renderCRM,tokens:renderTokens,arch:renderArch,commander:renderCommander,simulator:renderSimulator,org:renderOrgChart,attn:renderAttendanceStats,acceptance:renderAcceptance,compliance:renderCompliance,'addwii-ws':renderAddwiiWorkspace,'microjet-ws':renderMicrojetWorkspace,'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval};
   (renders[page]||renderDashboard)();
 }
 
@@ -489,10 +593,22 @@ function renderDashboard(){
 
 async function updateDashboardOrgStats(){
   try{
+    // 多租戶版：直接呼叫 /api/tenants 取 4 家人數
+    const tr = await fetch(API_BASE + '/api/tenants', {signal: AbortSignal.timeout(5000)});
+    if (tr.ok) {
+      const tenants = await tr.json();
+      const mj = tenants.find(t => t.id === 'microjet');
+      const ad = tenants.find(t => t.id === 'addwii');
+      const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+      set('dash-microjet-count', mj ? mj.member_count : '--');
+      set('dash-addwii-count',   ad ? ad.member_count : '--');
+      set('dash-org-count2',     ((mj?.member_count||0) + (ad?.member_count||0)));
+      return;
+    }
+    // Fallback to legacy path
     const r = await fetch(API_BASE + '/api/org/members-flat', {signal: AbortSignal.timeout(5000)});
     if(!r.ok) return;
     const members = await r.json();
-    // 分別統計兩家客戶人數
     let microjetCount = 0, addwiiCount = 0;
     for(const m of members){
       const dept = m.dept || '';
@@ -888,7 +1004,7 @@ async function renderCRM(){
 
 async function _crmLoadKPI(){
   try{
-    const s = await fetch(API_BASE + '/api/crm/summary').then(r=>r.json());
+    const s = await fetch(API_BASE + withTenant('/api/crm/summary')).then(r=>r.json());
     const el = document.getElementById('crm-kpis');
     if(!el) return;
     el.innerHTML = `
@@ -921,7 +1037,7 @@ async function _crmLoadTab(){
   };
   const m = mapping[CRM_TAB];
   try{
-    const data = await fetch(API_BASE + m.url).then(r=>r.json());
+    const data = await fetch(API_BASE + withTenant(m.url)).then(r=>r.json());
     body.innerHTML = m.render(data);
   }catch(e){
     body.innerHTML = '<div class="text-red-400 text-sm">讀取失敗</div>';
@@ -1519,8 +1635,8 @@ async function fetchOrgData() {
   // 不再仰賴 LIVE_MODE：直接嘗試連接，失敗才回報
   try {
     const [treeR, statsR] = await Promise.all([
-      fetch(API_BASE + '/api/attendance/org-tree', {signal: AbortSignal.timeout(5000)}),
-      fetch(API_BASE + '/api/attendance/stats', {signal: AbortSignal.timeout(5000)}),
+      fetch(API_BASE + withTenant('/api/attendance/org-tree'), {signal: AbortSignal.timeout(5000)}),
+      fetch(API_BASE + withTenant('/api/attendance/stats'), {signal: AbortSignal.timeout(5000)}),
     ]);
     if (!treeR.ok || !statsR.ok) throw new Error(`HTTP ${treeR.status}/${statsR.status}`);
     ORG_DATA = await treeR.json();
@@ -1538,7 +1654,7 @@ async function populatePersonaDropdown() {
   const select = document.getElementById('persona-select');
   if (!select) return;
   try {
-    const r = await fetch(API_BASE + '/api/org/members-flat', {signal: AbortSignal.timeout(5000)});
+    const r = await fetch(API_BASE + withTenant('/api/org/members-flat'), {signal: AbortSignal.timeout(5000)});
     if (!r.ok) return;
     const members = await r.json();
     const currentValue = select.value;
@@ -9907,6 +10023,93 @@ function showToast(msg, color='green') {
 setTimeout(checkOllamaAndPrompt, 3000);
 // 每 30 秒重新檢查（抓使用者手動裝好的狀態）
 setInterval(() => { if (!OLLAMA_POLL_TIMER) checkOllamaAndPrompt(); }, 30000);
+
+// ═══════════════════════════════════════════════════════════
+// 📋 維明顧問 評估進度頁
+// ═══════════════════════════════════════════════════════════
+async function renderWeimingEval() {
+  const box = document.getElementById('main-content');
+  box.innerHTML = '<div class="text-slate-400">載入評估資料中...</div>';
+  let data = null;
+  try {
+    const r = await fetch(API_BASE + '/api/tenant/weiming/evaluation');
+    if (r.ok) data = await r.json();
+  } catch {}
+
+  // fallback 靜態資料
+  if (!data) {
+    data = {
+      name: '維明顧問', status: 'evaluation', stage: 'BD Agent 訪談中',
+      industry: '企業顧問業', started_at: '2026-04-10',
+      interviews: [
+        {date: '2026-04-10', topic: '首次接觸 · 商業模式說明', notes: '客戶對 AI 模組感興趣'},
+        {date: '2026-04-15', topic: '深度訪談 · 需求盤點',    notes: '欲先試用 AI 會議記錄 + 文件助理'},
+        {date: '2026-04-20', topic: '試算報價 · 商業條款',    notes: '預估月費 NT$ 6,500（2 模組）'},
+      ],
+      pending_items: ['NDA 保密協議簽署', '3 個月試用期條款確認', '客戶內部預算審核'],
+      next_step: '2026-04-28 安排技術 Demo',
+    };
+  }
+
+  box.innerHTML = `
+    <div class="max-w-5xl mx-auto space-y-4">
+      <div class="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-500/50 rounded-xl p-5">
+        <div class="flex items-center gap-4">
+          <div class="text-5xl">📋</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold">${escapeHtml(data.name)}</h1>
+              <span class="text-[10px] bg-slate-600 text-slate-200 rounded-full px-2 py-0.5">${escapeHtml(data.status)}</span>
+            </div>
+            <div class="text-sm text-slate-400 mt-1">${escapeHtml(data.industry)} · 追蹤自 ${escapeHtml(data.started_at)}</div>
+            <div class="text-xs text-amber-300 mt-1">目前階段：${escapeHtml(data.stage)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+          <div class="text-[11px] text-slate-500">訪談場次</div>
+          <div class="text-3xl font-bold text-cyan-300 mt-1">${data.interviews.length}</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+          <div class="text-[11px] text-slate-500">待處理項目</div>
+          <div class="text-3xl font-bold text-amber-300 mt-1">${data.pending_items.length}</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+          <div class="text-[11px] text-slate-500">下一步</div>
+          <div class="text-sm font-bold text-emerald-300 mt-2">${escapeHtml(data.next_step)}</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+        <h2 class="text-sm font-bold text-blue-300 mb-3">📅 訪談歷程</h2>
+        <div class="space-y-3">
+          ${data.interviews.map(iv => `
+            <div class="flex gap-3 bg-slate-900/60 rounded p-3">
+              <div class="text-xs text-slate-500 font-mono w-24">${escapeHtml(iv.date)}</div>
+              <div class="flex-1">
+                <div class="text-sm font-bold text-white">${escapeHtml(iv.topic)}</div>
+                <div class="text-xs text-slate-400 mt-0.5">${escapeHtml(iv.notes)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="bg-slate-800 border border-amber-500/30 rounded-xl p-5">
+        <h2 class="text-sm font-bold text-amber-300 mb-3">⏳ 待處理項目</h2>
+        <ul class="space-y-1.5 text-sm text-slate-200">
+          ${data.pending_items.map(it => `<li>○ ${escapeHtml(it)}</li>`).join('')}
+        </ul>
+      </div>
+
+      <div class="bg-slate-800/60 border border-dashed border-slate-600 rounded-xl p-4 text-xs text-slate-400 text-center">
+        💡 維明尚未正式簽約 · CRM 功能暫未啟用 · BD Agent 持續追蹤訪談進度
+      </div>
+    </div>
+  `;
+}
 
 // Init
 showPage('dashboard');
