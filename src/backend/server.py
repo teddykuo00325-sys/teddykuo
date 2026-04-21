@@ -1573,7 +1573,8 @@ def api_acc_feedback_accuracy():
 @app.route('/api/acceptance/proposal', methods=['POST'])
 def api_acc_proposal():
     d = request.json or {}
-    return jsonify(accs.generate_proposal(d.get('customer', 'addwii'), d.get('profile', {}),
+    profile = d.get('client_profile') or d.get('profile') or {}
+    return jsonify(accs.generate_proposal(d.get('customer', 'addwii'), profile,
                                           d.get('user', 'guest'), use_ai=bool(d.get('use_ai'))))
 
 @app.route('/api/acceptance/content', methods=['POST'])
@@ -1743,6 +1744,7 @@ def api_compliance_trust_report():
     評審截圖就看這頁
     """
     import pii_guard as pg
+    from pii_guard import CLAUDE_API_DISABLED
     base = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'chat_logs')
 
     def _tail(path, n=5):
