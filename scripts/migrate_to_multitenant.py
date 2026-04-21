@@ -72,8 +72,13 @@ LINGCE_ORG = [
 ]
 by_tenant['lingce'] = LINGCE_ORG
 
-# 寫入 4 個 org.json
+# 寫入 4 個 org.json（同時修正跨 tenant 的孤兒 supervisor：本 tenant 不存在的 sup → None）
 for t, members in by_tenant.items():
+    ids_in_tenant = {m['id'] for m in members}
+    for m in members:
+        sup = m.get('supervisor_id')
+        if sup and sup not in ids_in_tenant:
+            m['supervisor_id'] = None   # 變成本 tenant 的 root
     path = os.path.join(DATA, t, 'org.json')
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(members, f, ensure_ascii=False, indent=2)
