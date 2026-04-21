@@ -1,0 +1,112 @@
+[
+  {
+    "id": "LC-BOSS",
+    "name": "凌策老闆",
+    "role": "經理",
+    "dept": "凌策管理層",
+    "supervisor_id": null,
+    "avatar": "👑",
+    "is_hr": true,
+    "title": "創辦人 / 唯一人類員工"
+  },
+  {
+    "id": "AI-ORCH",
+    "name": "Orchestrator",
+    "role": "工程師",
+    "dept": "指揮中心",
+    "supervisor_id": "LC-BOSS",
+    "avatar": "🎯",
+    "is_hr": false,
+    "title": "AI 協調指揮"
+  },
+  {
+    "id": "AI-BD",
+    "name": "BD Agent",
+    "role": "工程師",
+    "dept": "業務開發",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "🤝",
+    "is_hr": false,
+    "title": "AI 業務"
+  },
+  {
+    "id": "AI-CS",
+    "name": "客服 Agent",
+    "role": "工程師",
+    "dept": "業務開發",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "💬",
+    "is_hr": false,
+    "title": "AI 客服"
+  },
+  {
+    "id": "AI-PROP",
+    "name": "提案 Agent",
+    "role": "工程師",
+    "dept": "業務開發",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "📋",
+    "is_hr": false,
+    "title": "AI 提案"
+  },
+  {
+    "id": "AI-FE",
+    "name": "前端 Agent",
+    "role": "工程師",
+    "dept": "技術研發",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "🎨",
+    "is_hr": false,
+    "title": "AI 前端"
+  },
+  {
+    "id": "AI-BE",
+    "name": "後端 Agent",
+    "role": "工程師",
+    "dept": "技術研發",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "⚙️",
+    "is_hr": false,
+    "title": "AI 後端"
+  },
+  {
+    "id": "AI-QA",
+    "name": "QA Agent",
+    "role": "工程師",
+    "dept": "技術研發",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "🔍",
+    "is_hr": false,
+    "title": "AI 品管"
+  },
+  {
+    "id": "AI-FIN",
+    "name": "財務 Agent",
+    "role": "工程師",
+    "dept": "營運管理",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "💰",
+    "is_hr": false,
+    "title": "AI 財務"
+  },
+  {
+    "id": "AI-LEGAL",
+    "name": "法務 Agent",
+    "role": "工程師",
+    "dept": "營運管理",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "⚖️",
+    "is_hr": false,
+    "title": "AI 法務"
+  },
+  {
+    "id": "AI-DOC",
+    "name": "文件 Agent",
+    "role": "工程師",
+    "dept": "營運管理",
+    "supervisor_id": "AI-ORCH",
+    "avatar": "📄",
+    "is_hr": false,
+    "title": "AI 文件"
+  }
+]
