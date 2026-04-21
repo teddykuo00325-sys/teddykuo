@@ -1653,6 +1653,51 @@ function renderOrgChart() {
       <!-- Stats bar -->
       <div id="org-stats-bar" class="grid grid-cols-6 gap-3"></div>
 
+      <!-- 🎯 我的視角卡 + 搜尋 + 過濾器（同事回饋後新增）-->
+      <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-500/30 rounded-xl p-4 space-y-3">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-lg">🎯</span>
+            <span class="text-sm font-bold text-blue-300">快速找人</span>
+            <input type="text" id="org-search-input"
+                   placeholder="🔍 輸入姓名 / 部門 / 職稱 / 編號…"
+                   oninput="applyOrgSearch(this.value)"
+                   class="flex-1 min-w-[280px] bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:border-blue-400 outline-none">
+            <button onclick="scrollToMe()" title="自動捲動到你當前身分的位置並高亮閃動"
+                    class="px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-xs font-bold flex items-center gap-1 whitespace-nowrap">
+              🎯 找到我
+            </button>
+          </div>
+          <button onclick="toggleMyViewCard()" id="my-view-toggle"
+                  class="text-xs text-cyan-300 hover:text-white px-3 py-1 border border-slate-700 rounded">
+            <span id="my-view-toggle-label">📋 展開我的視角</span>
+          </button>
+        </div>
+        <!-- 過濾器列 -->
+        <div class="flex items-center gap-2 text-xs flex-wrap">
+          <span class="text-slate-500">過濾：</span>
+          <select id="org-filter-dept" onchange="applyOrgSearch()"
+                  class="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs">
+            <option value="">全部部門</option>
+          </select>
+          <select id="org-filter-role" onchange="applyOrgSearch()"
+                  class="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs">
+            <option value="">全部職階</option>
+            <option>經理</option><option>協理</option><option>副理</option>
+            <option>課長</option><option>副課長</option>
+            <option>專員</option><option>工程師</option><option>總機</option>
+          </select>
+          <label class="flex items-center gap-1 text-slate-400 cursor-pointer">
+            <input type="checkbox" id="org-filter-hr" onchange="applyOrgSearch()" class="accent-rose-500">
+            <span>僅顯示 HR</span>
+          </label>
+          <button onclick="clearOrgFilters()" class="text-slate-400 hover:text-white ml-1">✕ 清除</button>
+          <span id="org-search-count" class="ml-auto text-slate-500"></span>
+        </div>
+        <!-- 我的視角卡片（預設收合）-->
+        <div id="my-view-card" class="hidden bg-slate-900/60 border border-slate-700 rounded-lg p-4"></div>
+      </div>
+
       <!-- Time controls (Demo mode) -->
       <div class="bg-slate-800 rounded-xl border border-slate-700 p-4">
         <div class="flex items-center justify-between flex-wrap gap-3">
@@ -2227,6 +2272,171 @@ function applyOrgZoom() {
   if (container) {
     container.style.transform = `scale(${ORG_ZOOM/100})`;
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🎯 組織頁 UX 升級：搜尋 / 過濾 / 找到我 / 我的視角卡
+// ═══════════════════════════════════════════════════════════
+
+// 把所有成員攤平為陣列（給搜尋/過濾用）
+function _orgFlatMembers() {
+  const out = [];
+  function walk(n) {
+    if (!n) return;
+    out.push(n);
+    (n.children || []).forEach(walk);
+  }
+  walk(ORG_DATA);
+  return out;
+}
+
+// 填充部門 dropdown（第一次進頁時）
+function _orgPopulateDeptOptions() {
+  const sel = document.getElementById('org-filter-dept');
+  if (!sel || sel.options.length > 1) return;
+  const depts = [...new Set(_orgFlatMembers().map(m => m.dept).filter(Boolean))].sort();
+  depts.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+}
+
+// 搜尋 + 過濾：高亮匹配成員 + 淡化不符者 + 更新計數
+function applyOrgSearch(_override) {
+  _orgPopulateDeptOptions();
+  const qEl = document.getElementById('org-search-input');
+  const q = (_override !== undefined ? _override : (qEl?.value || '')).trim().toLowerCase();
+  const dept = document.getElementById('org-filter-dept')?.value || '';
+  const role = document.getElementById('org-filter-role')?.value || '';
+  const hrOnly = document.getElementById('org-filter-hr')?.checked || false;
+
+  const nodes = document.querySelectorAll('[data-member-id]');
+  let matchCount = 0;
+  nodes.forEach(el => {
+    const id = el.getAttribute('data-member-id') || '';
+    const name = (el.getAttribute('data-name') || '').toLowerCase();
+    const nodeDept = el.getAttribute('data-dept') || '';
+    const nodeRole = el.getAttribute('data-role') || '';
+    const nodeTitle = (el.getAttribute('data-title') || '').toLowerCase();
+    const nodeIsHr = el.getAttribute('data-is-hr') === '1';
+
+    const matchQ = !q || id.toLowerCase().includes(q) || name.includes(q)
+                        || nodeDept.toLowerCase().includes(q) || nodeTitle.includes(q);
+    const matchDept = !dept || nodeDept === dept;
+    const matchRole = !role || nodeRole === role;
+    const matchHr = !hrOnly || nodeIsHr;
+    const ok = matchQ && matchDept && matchRole && matchHr;
+
+    el.style.transition = 'opacity .2s';
+    el.style.opacity = ok ? '1' : '0.15';
+    if (ok) {
+      matchCount++;
+      el.classList.add('search-hit');
+    } else {
+      el.classList.remove('search-hit');
+    }
+  });
+  const cnt = document.getElementById('org-search-count');
+  if (cnt) cnt.textContent = (q || dept || role || hrOnly) ? `符合 ${matchCount} 人` : '';
+}
+
+function clearOrgFilters() {
+  const qEl = document.getElementById('org-search-input'); if (qEl) qEl.value = '';
+  const d = document.getElementById('org-filter-dept'); if (d) d.value = '';
+  const r = document.getElementById('org-filter-role'); if (r) r.value = '';
+  const h = document.getElementById('org-filter-hr'); if (h) h.checked = false;
+  applyOrgSearch('');
+}
+
+// 🎯 找到我：捲動到當前 persona 節點，閃動金色邊框
+function scrollToMe() {
+  const me = ORG_CURRENT_USER_PERSONA;
+  if (!me) { alert('請先在下方「當前身份」下拉選擇一位成員'); return; }
+  const el = document.querySelector(`[data-member-id="${me}"]`);
+  if (!el) {
+    alert('當前身分不在可見的組織樹中（可能被部門聚焦篩掉）。請切到「全組織」或改變身分重試。');
+    return;
+  }
+  el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  // 金色光暈閃動 3 秒
+  el.style.transition = 'box-shadow .5s, transform .3s';
+  el.style.boxShadow = '0 0 0 4px #fbbf24, 0 0 40px rgba(251,191,36,0.8)';
+  el.style.transform = 'scale(1.05)';
+  el.style.zIndex = '10';
+  el.style.opacity = '1';
+  setTimeout(() => {
+    el.style.boxShadow = '';
+    el.style.transform = '';
+    el.style.zIndex = '';
+  }, 3000);
+}
+
+// 📋 我的視角卡 — 主管 / 同部門 / 下屬 快速一覽
+function toggleMyViewCard() {
+  const el = document.getElementById('my-view-card');
+  const lbl = document.getElementById('my-view-toggle-label');
+  if (!el) return;
+  if (el.classList.contains('hidden')) {
+    renderMyViewCard();
+    el.classList.remove('hidden');
+    lbl.textContent = '📋 收合我的視角';
+  } else {
+    el.classList.add('hidden');
+    lbl.textContent = '📋 展開我的視角';
+  }
+}
+
+function renderMyViewCard() {
+  const el = document.getElementById('my-view-card');
+  if (!el) return;
+  const me = ORG_CURRENT_USER_PERSONA;
+  const flat = _orgFlatMembers();
+  const meNode = flat.find(m => m.id === me);
+  if (!meNode) {
+    el.innerHTML = '<div class="text-slate-500 text-sm">請先選擇當前身份</div>';
+    return;
+  }
+  // 建立 id → parent 映射
+  const byId = new Map(flat.map(m => [m.id, m]));
+  const parentOf = new Map();
+  function walk(n, p=null) { parentOf.set(n.id, p); (n.children||[]).forEach(c => walk(c, n)); }
+  walk(ORG_DATA);
+
+  const supervisor = parentOf.get(me);
+  const sameDept = flat.filter(m => m.dept === meNode.dept && m.id !== me);
+  const subs = meNode.children || [];
+
+  const card = (title, items, color, emptyMsg) => `
+    <div class="bg-slate-800/60 border border-${color}-500/30 rounded-lg p-3">
+      <div class="text-xs text-${color}-300 font-bold mb-2">${title} (${items.length})</div>
+      ${items.length === 0 ? `<div class="text-xs text-slate-500">${emptyMsg}</div>` :
+        `<div class="space-y-1">${items.slice(0, 8).map(m => `
+          <div class="flex items-center gap-2 text-xs hover:bg-slate-700/50 rounded px-2 py-1 cursor-pointer"
+               onclick="switchPersona('${m.id}')">
+            <span class="text-base">${m.avatar||'👤'}</span>
+            <span class="text-white">${escapeHtml(m.name||'-')}</span>
+            <span class="text-slate-500">${escapeHtml(m.title||m.role||'')}</span>
+            <span class="ml-auto text-[10px] text-slate-600 font-mono">${escapeHtml(m.id)}</span>
+          </div>`).join('')}
+        ${items.length > 8 ? `<div class="text-[10px] text-slate-500 pl-2">+ 還有 ${items.length-8} 位...</div>` : ''}</div>`}
+    </div>`;
+
+  el.innerHTML = `
+    <div class="flex items-center gap-3 mb-3 pb-3 border-b border-slate-700">
+      <div class="text-4xl">${meNode.avatar||'👤'}</div>
+      <div class="flex-1">
+        <div class="text-base font-bold text-white">${escapeHtml(meNode.name||'-')}</div>
+        <div class="text-xs text-slate-400">${escapeHtml(meNode.title||meNode.role||'')} · ${escapeHtml(meNode.dept||'')}</div>
+        <div class="text-[10px] text-slate-500 font-mono mt-0.5">${escapeHtml(meNode.id)}${meNode.is_hr?' · 🏷️ HR':''}</div>
+      </div>
+      <button onclick="scrollToMe()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded text-xs font-bold">🎯 在組織圖上定位</button>
+    </div>
+    <div class="grid grid-cols-3 gap-3">
+      ${card('👑 我的主管', supervisor ? [supervisor] : [], 'purple', '（我是最高層）')}
+      ${card('👥 同部門同事', sameDept, 'cyan', '（本部門僅我一人）')}
+      ${card('👇 我的下屬', subs, 'emerald', '（無直屬下屬）')}
+    </div>`;
 }
 
 function setOrgZoom(val) {
@@ -3607,7 +3817,13 @@ function renderOrgNode(node, depth) {
     : `title="${isSelf?'這是我':(node.status==='online'?'點擊發起對話':'點擊查看詳情')}"`;
 
   const nodeHtml = `
-    <div class="org-node-wrapper inline-flex flex-col items-center" style="min-width: 170px;">
+    <div class="org-node-wrapper inline-flex flex-col items-center" style="min-width: 170px;"
+         data-member-id="${escapeHtml(node.id||'')}"
+         data-name="${escapeHtml(node.name||'')}"
+         data-dept="${escapeHtml(node.dept||'')}"
+         data-role="${escapeHtml(node.role||'')}"
+         data-title="${escapeHtml(node.title||'')}"
+         data-is-hr="${node.is_hr?'1':'0'}">
       <div class="org-node relative transition-all hover:scale-105 ${ORG_EDIT_MODE?'':'cursor-pointer'}"
            style="margin: 4px;"${dragAttrs}>
         <div class="bg-gradient-to-br ${roleCol} border-2 rounded-xl p-3 min-w-[160px] shadow-lg ${node.status==='abnormal'?'animate-pulse':''} ${isSelf?'ring-4 ring-amber-400':''} ${node.status==='online' && !isSelf && !ORG_EDIT_MODE ? 'hover:ring-2 hover:ring-purple-400' : ''} ${hasPendingChange?'ring-4 ring-green-400 ring-dashed':''}"
