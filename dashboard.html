@@ -5354,6 +5354,10 @@ async function refreshChatRoom() {
     if (CHAT_RENDERED_ROOM !== CHAT_ACTIVE_ROOM) {
       renderChatPanel(data);
       CHAT_RENDERED_ROOM = CHAT_ACTIVE_ROOM;
+      // 重置指紋（確保下次輪詢時能正確計算 delta）
+      CHAT_MESSAGES_FP = _fpMessages(data);
+      CHAT_TYPING_FP = _fpTyping(data);
+      CHAT_HEADER_FP = '';
     } else {
       updateChatPanelDynamic(data);
     }
@@ -5364,30 +5368,84 @@ async function refreshChatRoom() {
 }
 
 // 部分更新：只改 header/observers/messages/typing，輸入框保留不動
+// ★ 反閃爍：用內容指紋比對，完全相同時跳過 DOM 更新
+let CHAT_MESSAGES_FP = '';   // 上次訊息區塊的指紋
+let CHAT_TYPING_FP   = '';   // 上次 typing 指示的指紋
+let CHAT_HEADER_FP   = '';   // 上次 header 狀態的指紋
+
+function _fpMessages(data) {
+  // 訊息指紋：id + read_by 狀態（已讀標記也算變化）
+  return data.messages.map(m => {
+    const rbCount = Object.keys(m.read_by || {}).length;
+    return `${m.id || m.timestamp}:${rbCount}`;
+  }).join('|');
+}
+function _fpTyping(data) {
+  const typing = (data.room?.typing_now || []).filter(t => t.id !== ORG_CURRENT_USER_PERSONA);
+  return typing.map(t => t.id).join(',');
+}
+
 function updateChatPanelDynamic(data) {
   const room = data.room;
   const myPersona = ORG_CURRENT_USER_PERSONA;
 
-  // Header 狀態（對方在線狀態）
+  // ── Header 狀態（有變才更新）
   const otherParticipant = room.participants.find(p => p.id !== myPersona);
-  const headerStatusEl = document.getElementById('cp-other-status');
-  if (headerStatusEl && otherParticipant) {
+  if (otherParticipant) {
     const node = ORG_DATA ? findNodeById(ORG_DATA, otherParticipant.id) : null;
-    if (node) {
-      const sc = STATUS_COLORS[node.status] || STATUS_COLORS.offline;
-      headerStatusEl.innerHTML = `<span class="w-2 h-2 rounded-full ${sc.dot}"></span><span class="${sc.text}">${node.status_label}</span>`;
+    const statusFp = node ? `${node.status}:${node.status_label}` : '';
+    if (statusFp !== CHAT_HEADER_FP) {
+      const headerStatusEl = document.getElementById('cp-other-status');
+      if (headerStatusEl && node) {
+        const sc = STATUS_COLORS[node.status] || STATUS_COLORS.offline;
+        headerStatusEl.innerHTML = `<span class="w-2 h-2 rounded-full ${sc.dot}"></span><span class="${sc.text}">${node.status_label}</span>`;
+      }
+      CHAT_HEADER_FP = statusFp;
     }
   }
 
-  // 訊息區
+  // ── 訊息區：先比對指紋
   const msgsEl = document.getElementById('cp-messages');
-  if (msgsEl) {
-    const wasNearBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 60;
+  if (!msgsEl) return;
+
+  const newMsgFp = _fpMessages(data);
+  const newTypingFp = _fpTyping(data);
+  const messagesChanged = newMsgFp !== CHAT_MESSAGES_FP;
+  const typingChanged = newTypingFp !== CHAT_TYPING_FP;
+
+  // 完全沒變 → 不做任何 DOM 動作（避免閃爍）
+  if (!messagesChanged && !typingChanged) return;
+
+  const wasNearBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 60;
+  const scrollPos = msgsEl.scrollTop;
+
+  if (messagesChanged) {
+    // 只有訊息變：重建訊息 + typing
     msgsEl.innerHTML = buildMessagesHtml(data) + buildTypingHtml(data);
-    // 若原本已看到最底，保持在最底；否則不打擾
-    if (wasNearBottom || data.messages.length > CHAT_LAST_MSG_COUNT) {
-      msgsEl.scrollTop = msgsEl.scrollHeight;
+    CHAT_MESSAGES_FP = newMsgFp;
+    CHAT_TYPING_FP = newTypingFp;
+  } else if (typingChanged) {
+    // 只有 typing 變 → 只動 typing 區塊，不碰訊息氣泡（避免閃爍）
+    let typingEl = msgsEl.querySelector('#cp-typing-slot');
+    if (!typingEl) {
+      // 第一次：在末尾加一個 slot
+      const slot = document.createElement('div');
+      slot.id = 'cp-typing-slot';
+      msgsEl.appendChild(slot);
+      typingEl = slot;
     }
+    typingEl.innerHTML = buildTypingHtml(data);
+    CHAT_TYPING_FP = newTypingFp;
+  }
+
+  // 捲動處理
+  if (messagesChanged && data.messages.length > CHAT_LAST_MSG_COUNT) {
+    // 有新訊息 → 若原本在底部就捲到新訊息，否則維持原位
+    if (wasNearBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
+    else msgsEl.scrollTop = scrollPos;
+  } else if (messagesChanged) {
+    // 訊息更新但不是新增（如已讀狀態變）→ 維持位置
+    msgsEl.scrollTop = scrollPos;
   }
 }
 
