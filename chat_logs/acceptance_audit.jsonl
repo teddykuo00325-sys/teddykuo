@@ -343,3 +343,24 @@
 {"ts": "2026-04-21T19:16:36", "action": "csv_analysis", "user": "", "detail": {"files": 0, "cached": true}}
 {"ts": "2026-04-21T19:16:37", "action": "csv_analysis", "user": "", "detail": {"files": 0, "rows": 0}}
 {"ts": "2026-04-21T19:28:57", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T20:44:45", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T20:46:50", "action": "product_qa", "user": "judge", "detail": {"customer": "addwii", "q": "我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-21T20:47:28", "action": "feedback_analysis", "user": "guest", "detail": {"n": 3, "use_ai": false}}
+{"ts": "2026-04-21T20:48:34", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T20:49:19", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-E99D7B72", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-21T20:49:35", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-CDE09AE8", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T20:49:55", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-E6B43295", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T20:51:46", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-6C240BA3", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T20:52:27", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-7AD49FA6", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T20:53:48", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T20:57:11", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-90258945", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T20:57:58", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-24DCFF25", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T21:00:40", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T21:01:44", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-0E871411", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-21T21:02:05", "action": "content", "user": "judge", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "website", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-21T21:02:27", "action": "content", "user": "judge", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "website", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-21T21:03:03", "action": "content", "user": "judge", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "website", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-21T21:04:25", "action": "csv_pii_gated_analysis", "user": "judge", "detail": {"task_id": "COMP-CSV-1776776665", "pii_count": 4, "reason": "addwii 驗收構面 5 測試題逐項執行", "summary": {"rows": 2, "pm25_avg": 25.35, "pm25_max": 32.5, "pm25_over35_ratio": 0.0, "co2_avg": 796.0, "co2_max": 812.0, "co2_over1000_ratio": 0.0, "voc_avg": 0.0, "voc_max": 0.0, "temp_avg": 24.4, "temp_range": "24.3 ~ 24.5°C", "hum_avg": 58.0, "hum_range": "58.0 ~ 58.0%", "power_on_ratio": 100.0, "pm25_on_avg": 25.35, "pm25_off_avg": 0, "reduction_pct": null, "slot_avg": {"凌晨(0-5)": 0, "早上(6-11)": 25.35, "下午(12-17)": 0, "晚上(18-23)": 0}, "worst_slot": "早上(6-11)", "auto_mode_ratio": 100.0}}}
+{"ts": "2026-04-21T21:06:30", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T21:28:00", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T21:29:29", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-3EE5AA65", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}

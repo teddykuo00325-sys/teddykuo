@@ -5,3 +5,6 @@
 {"ts": "2026-04-20T13:00:59", "context": "compliance_demo", "detections_count": 1, "types": ["CREDIT"], "input_len": 33, "output_len": 24}
 {"ts": "2026-04-20T13:00:59", "context": "compliance_demo", "detections_count": 1, "types": ["ROOM_ID"], "input_len": 27, "output_len": 28}
 {"ts": "2026-04-20T13:01:00", "context": "compliance_demo", "detections_count": 2, "types": ["CN_NAME", "EN_NAME"], "input_len": 38, "output_len": 47}
+{"ts": "2026-04-21T21:04:25", "context": "csv_preview", "detections_count": 4, "types": ["CN_NAME", "TW_ID"], "input_len": 270, "output_len": 280}
+{"ts": "2026-04-21T21:04:25", "context": "csv_gated_analysis", "detections_count": 4, "types": ["CN_NAME", "TW_ID"], "input_len": 270, "output_len": 280}
+{"ts": "2026-04-21T21:29:56", "context": "compliance_demo", "detections_count": 3, "types": ["CN_NAME", "TW_ID", "TW_PHONE"], "input_len": 27, "output_len": 31}
