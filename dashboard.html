@@ -9702,9 +9702,8 @@ async function renderCustomerPortal() {
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 gap-4">
         ${quickTile('📄','下載 addwii 報價單 PDF',`${s.quote.id} · ${fmtNT(s.quote.amount)} · 含 BOM 與里程碑`,'window.open(API_BASE + \'/api/procurement/pdf/addwii-order\',\'_blank\')','from-blue-900/30 to-sky-900/30 border-blue-500/30')}
-        ${quickTile('🔬','查看感測器即時數據','CurieJet P760/P710 · PM2.5 / CO₂ / VOC','showPage(\'attn\')','from-amber-900/30 to-orange-900/30 border-amber-500/30')}
       </div>
     </div>`;
 }
