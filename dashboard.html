@@ -2009,7 +2009,10 @@ function renderOrgTree() {
   }
 
   // 非編輯模式：非特權者不可離開聚焦檢視
-  if (!CURRENT_CAN_SEE_ALL && ORG_VIEW_DEPT !== '__MY_FOCUS__') {
+  // 例外：__DEPT_FOCUS__（部門快速導覽）純瀏覽，任何人都可用
+  if (!CURRENT_CAN_SEE_ALL
+      && ORG_VIEW_DEPT !== '__MY_FOCUS__'
+      && ORG_VIEW_DEPT !== '__DEPT_FOCUS__') {
     ORG_VIEW_DEPT = '__MY_FOCUS__';
   }
 
@@ -2446,7 +2449,20 @@ function selectDeptQuick(d) {
     _DEPT_FOCUS_NAME = '';
     FOCUS_VISIBLE_IDS = null;
     EXPANDED_OTHERS = new Set();
-    ORG_VIEW_DEPT = CURRENT_CAN_SEE_ALL ? '__ALL__' : '__MY_FOCUS__';
+    if (CURRENT_CAN_SEE_ALL) {
+      ORG_VIEW_DEPT = '__ALL__';
+    } else if (ORG_CURRENT_USER_PERSONA) {
+      ORG_VIEW_DEPT = '__MY_FOCUS__';
+    } else {
+      // 未選身分 + 無權限 → 保持部門導覽模式（可在當前部門瀏覽）
+      // 但 _DEPT_FOCUS_NAME 已清空，預設跳到第一個部門
+      const flat = _orgFlatMembers();
+      const depts = [...new Set(flat.map(m => m.dept).filter(Boolean))];
+      if (depts[0]) {
+        _DEPT_FOCUS_NAME = depts[0];
+        ORG_VIEW_DEPT = '__DEPT_FOCUS__';
+      }
+    }
     renderOrgTree();
     const tree = document.getElementById('org-tree-scroll');
     if (tree) tree.scrollTo({ top: 0, behavior: 'smooth' });
