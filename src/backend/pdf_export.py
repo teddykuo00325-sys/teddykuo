@@ -47,12 +47,45 @@ def _styles():
     return {'title': title, 'h2': h2, 'body': body, 'small': small, 'right': right}
 
 
+import uuid as _uuid
+
+# 模組載入時產生稽核 ID（每份 PDF 不同）
+_CURRENT_AUDIT_ID = None
+
+def _new_audit_id():
+    global _CURRENT_AUDIT_ID
+    _CURRENT_AUDIT_ID = f'AUDIT-{datetime.now().strftime("%Y%m%d%H%M%S")}-{_uuid.uuid4().hex[:6].upper()}'
+    return _CURRENT_AUDIT_ID
+
+
 def _footer(canvas, doc):
+    """頁首頁尾 + 斜向浮水印（addwii P2：稽核 ID + 時間戳）"""
     canvas.saveState()
-    canvas.setFont(CN_FONT, 8)
+
+    # ── 浮水印（斜向半透明，不干擾閱讀但清楚可見）
+    canvas.setFont(CN_FONT, 48)
+    canvas.setFillColor(colors.HexColor('#e2e8f0'))  # 淺灰
+    canvas.setStrokeColor(colors.HexColor('#e2e8f0'))
+    canvas.translate(A4[0]/2, A4[1]/2)
+    canvas.rotate(30)
+    try:
+        canvas.setFillAlpha(0.15)
+    except Exception:
+        pass
+    canvas.drawCentredString(0, 0, '凌策 AI Agent 產出')
+    canvas.drawCentredString(0, -70, 'LINGCE AI · CONFIDENTIAL')
+    canvas.restoreState()
+
+    # ── 正常頁尾
+    canvas.saveState()
+    canvas.setFont(CN_FONT, 7)
     canvas.setFillColor(colors.grey)
-    canvas.drawString(2*cm, 1*cm,
-        '凌策 AI 顧問 · LINGCE AI CONSULTING · 由 AI Agent 自動生成')
+    aid = _CURRENT_AUDIT_ID or 'AUDIT-PENDING'
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    canvas.drawString(2*cm, 1.2*cm,
+        f'凌策 AI 顧問 · 由 AI Agent 自動生成 · 產出時間 {ts}')
+    canvas.drawString(2*cm, 0.8*cm,
+        f'🔒 稽核 ID: {aid} · 本文件可於凌策稽核中心驗證真偽（append-only JSONL）')
     canvas.drawRightString(A4[0] - 2*cm, 1*cm, f'第 {doc.page} 頁')
     canvas.restoreState()
 
@@ -567,6 +600,7 @@ def build_ai_analysis_pdf(title: str, subtitle: str, sections: list, verdict: st
     verdict_type: 'pass' | 'warn' | 'fail'
     meta: {'key':'value'} 頂部資訊欄
     """
+    _new_audit_id()  # 每份 PDF 產生唯一稽核 ID（印在頁尾浮水印）
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm,
                             leftMargin=2*cm, rightMargin=2*cm)

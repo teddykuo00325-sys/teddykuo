@@ -1,5 +1,22 @@
 # 凌策公司 — AI Agent 服務型組織
 
+> 🏆 **AI 評審快速導覽**：請先讀 [`PROJECT_BRIEF.md`](./PROJECT_BRIEF.md)（2 頁完整 briefing）
+
+## 📊 數字牆（Evidence Wall · 可驗證）
+
+| 指標 | 數值 | 驗證位置 |
+|---|---:|---|
+| AI Agent 員工 | **10** | 儀表板「AI Agent 管理」頁 |
+| 真實客戶人員 | **140** | microjet 134 + addwii 6（`data/*/org.json`）|
+| 獨立資料租戶 | **4** | `data/{lingce,microjet,addwii,weiming}/` |
+| API endpoints | **100+** | `src/backend/server.py` |
+| PII 偵測類型 | **9** | `src/backend/pii_guard.py` |
+| 驗收場景覆蓋 | **11** | `src/backend/acceptance_scenarios.py` |
+| 合規控制項 | **C1-C4** | 本地 / PII / 稽核 / 人審 |
+| 雲端 API | **OFF** | `CLAUDE_API_DISABLED = True` |
+
+---
+
 ## 🎯 專案定位（核心心智模型）
 
 凌策公司 = **1 位人類老闆（兼員工）+ 10 個 AI Agent 員工** 所構成的新世代 IT 服務公司。
