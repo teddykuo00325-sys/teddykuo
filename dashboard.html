@@ -4350,6 +4350,20 @@ function showMemberActionMenu(id, name, role, status) {
       </div>
       <div class="p-4 space-y-2">
         ${warnOffline}
+        <!-- ★ 設定當前身分（最常用，置頂）-->
+        ${id === ORG_CURRENT_USER_PERSONA ? `
+        <div class="w-full bg-amber-900/30 border border-amber-500/40 rounded-lg p-3 text-center text-xs text-amber-200">
+          ✓ 您目前就是以「${escapeHtml(name)}」身分操作
+        </div>` : `
+        <button onclick="document.getElementById('member-action-menu').remove(); setAsCurrentPersona('${id}')"
+                class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 rounded-lg p-3 text-left flex items-center gap-3 transition shadow-lg">
+          <span class="text-2xl">🎯</span>
+          <div class="flex-1">
+            <div class="text-sm font-bold text-white">以「${escapeHtml(name)}」身分操作</div>
+            <div class="text-xs text-amber-100">切換當前身分 · 下拉同步 · 頁面閃光提示</div>
+          </div>
+          <span class="text-amber-100 font-bold">→</span>
+        </button>`}
         <button onclick="document.getElementById('member-action-menu').remove(); initiateChat('${id}','${escapeHtml(name)}','${escapeHtml(role)}')"
                 class="w-full bg-purple-700 hover:bg-purple-600 rounded-lg p-3 text-left flex items-center gap-3 transition">
           <span class="text-2xl">💬</span>
