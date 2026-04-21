@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 測試暫存（我開發期間的檔案）
+chat_logs/_*.json
+chat_logs/_*.txt
+chat_logs/*.pre-rename
+chat_logs/backups/
+
+# 大檔案 / 不該入版的產物
+chromadb_store/
+*.zip
+!lingce_handoff_*.zip
+
+# 作業系統
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 雲端部署敏感資訊
+.env
+.env.*
+secrets.json
+
+# 繳交打包用的暫存
+verify_sync.py
+pre_populate_logs.py

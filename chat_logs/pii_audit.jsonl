@@ -1,2 +1,7 @@
 {"ts": "2026-04-20T11:13:50", "context": "unknown", "detections_count": 5, "types": ["CN_NAME", "EMAIL", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 63, "output_len": 68}
 {"ts": "2026-04-20T11:22:19", "context": "compliance_demo", "detections_count": 3, "types": ["EMAIL", "TW_ID", "TW_PHONE"], "input_len": 69, "output_len": 60}
+{"ts": "2026-04-20T13:00:58", "context": "compliance_demo", "detections_count": 3, "types": ["TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 47, "output_len": 44}
+{"ts": "2026-04-20T13:00:59", "context": "compliance_demo", "detections_count": 2, "types": ["EMAIL", "TW_PHONE"], "input_len": 59, "output_len": 52}
+{"ts": "2026-04-20T13:00:59", "context": "compliance_demo", "detections_count": 1, "types": ["CREDIT"], "input_len": 33, "output_len": 24}
+{"ts": "2026-04-20T13:00:59", "context": "compliance_demo", "detections_count": 1, "types": ["ROOM_ID"], "input_len": 27, "output_len": 28}
+{"ts": "2026-04-20T13:01:00", "context": "compliance_demo", "detections_count": 2, "types": ["CN_NAME", "EN_NAME"], "input_len": 38, "output_len": 47}

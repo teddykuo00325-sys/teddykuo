@@ -1,0 +1,12 @@
+# 凌策公司 Python 依賴清單
+# 啟動指令：pip install -r requirements.txt
+
+flask>=2.3
+flask-cors>=4.0
+requests>=2.31
+reportlab>=4.0
+python-docx>=1.0
+
+# 向量檢索（RAG）— 可選，沒裝也能跑 bigram fallback
+chromadb>=0.4
+sentence-transformers>=2.5

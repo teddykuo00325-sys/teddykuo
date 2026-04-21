@@ -1,0 +1,23 @@
+# Render.com 一鍵部署設定
+# 使用方式：
+#   1. git init && git add . && git commit -m "lingce"
+#   2. 推到 GitHub private repo
+#   3. Render.com → New + → Web Service → 連 GitHub → 選此 repo
+#   4. Render 自動偵測 render.yaml → 部署（~3 分鐘）
+#   5. 拿到公開 URL 如 https://lingce-demo.onrender.com
+
+services:
+  - type: web
+    name: lingce-demo
+    runtime: docker
+    plan: free                           # 免費方案（休眠後首次訪問會等 30~60 秒喚醒）
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: OLLAMA_URL
+        value: http://disabled-in-cloud:11434
+      - key: OLLAMA_MODEL
+        value: none
+      - key: PORT
+        value: 5000
+    autoDeploy: true                      # main 分支有 push 就自動重新部署
+    healthCheckPath: /api/health

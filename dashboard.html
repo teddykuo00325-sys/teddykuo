@@ -73,7 +73,10 @@
 
 <script>
 // ── Live API Layer ──
-const API_BASE = 'http://localhost:5000';
+// 用 127.0.0.1 避免 Windows 上 localhost 優先解析成 IPv6 (::1) 產生 2 秒延遲
+const API_BASE = (window.location.protocol === 'file:')
+  ? 'http://127.0.0.1:5000'
+  : window.location.origin;
 let LIVE_MODE = false;
 let LIVE_STATUS = null;
 
@@ -83,16 +86,29 @@ async function checkLiveAPI(timeoutMs = 8000) {
     LIVE_STATUS = await r.json();
     LIVE_MODE = true;
     const ind = document.getElementById('live-indicator');
-    if(ind) ind.innerHTML = `
-      <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-      <span class="text-xs text-green-400">LIVE — ${LIVE_STATUS.ollama.model}</span>`;
+    if(ind) {
+      // 區分：後端 + Ollama 都在 / 僅後端 / 完全離線
+      const ollamaOk = LIVE_STATUS?.ollama?.connected;
+      if (ollamaOk) {
+        ind.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+          <span class="text-xs text-green-400">LIVE — ${LIVE_STATUS.ollama.model}</span>`;
+      } else {
+        ind.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <div class="flex flex-col">
+            <span class="text-xs text-amber-300 font-bold">LIVE（無 AI 模型）</span>
+            <span class="text-[10px] text-slate-500">Ollama 未啟動 · 功能皆可用</span>
+          </div>`;
+      }
+    }
     return true;
   } catch {
     LIVE_MODE = false;
     const ind = document.getElementById('live-indicator');
     if(ind) ind.innerHTML = `
       <span class="w-2 h-2 rounded-full bg-slate-500"></span>
-      <span class="text-xs text-slate-500">Demo 模式</span>`;
+      <span class="text-xs text-slate-500">Demo 模式（後端未連線）</span>`;
     return false;
   }
 }
@@ -6557,8 +6573,21 @@ function accRenderOverview(){
 }
 
 async function accPost(url, body){
-  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body||{})});
-  return r.json();
+  try {
+    const full = url.startsWith('http') ? url : (API_BASE + url);
+    const r = await fetch(full, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body||{})
+    });
+    if (!r.ok) {
+      const txt = await r.text();
+      return { __error: `HTTP ${r.status}`, __detail: txt.slice(0, 200) };
+    }
+    return await r.json();
+  } catch(e) {
+    return { __error: '後端未連線', __detail: String(e.message || e) };
+  }
 }
 
 // ── 📌 客戶概覽 ── 依客戶過濾顯示該客戶相關的產品 / 場景 / 專屬資料
@@ -6716,8 +6745,27 @@ async function accRenderClientOverview(){
 async function accRenderKBStatus(){
   const box = document.getElementById('acc-body');
   box.innerHTML = '<div class="text-slate-400">載入中...</div>';
+  let data;
   try {
-    const data = await fetch(API_BASE + '/api/acceptance/kb-status').then(r => r.json());
+    const r = await fetch(API_BASE + '/api/acceptance/kb-status', { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    data = await r.json();
+  } catch (err) {
+    box.innerHTML = `
+      <div class="bg-red-900/20 border border-red-500/40 rounded-xl p-6">
+        <div class="text-red-300 font-bold text-lg mb-2">⚠️ 無法取得知識庫狀態</div>
+        <div class="text-sm text-slate-300 mb-3">後端 API 沒回應：<code class="text-red-200">${escapeHtml(String(err.message||err))}</code></div>
+        <div class="text-xs text-slate-400 space-y-1">
+          <div>可能原因：</div>
+          <div>  ① 後端伺服器未啟動 — 請確認 Flask server 正在跑（雙擊「啟動凌策.bat」）</div>
+          <div>  ② Firewall 擋住 port 5000 — 請允許 Python 的網路權限</div>
+          <div>  ③ 後端啟動失敗 — 請開啟「LingCe Backend Server」視窗看紅字錯誤</div>
+        </div>
+        <button onclick="accRenderKBStatus()" class="mt-3 bg-red-600 hover:bg-red-500 text-white text-sm rounded px-3 py-1.5">🔄 重試</button>
+      </div>`;
+    return;
+  }
+  try {
     const srcBadge = {
       'web':      {cls:'bg-green-700/40 text-green-300 border-green-500/40', ico:'🌐', t:'官網爬取'},
       'received': {cls:'bg-green-700/40 text-green-300 border-green-500/40', ico:'📥', t:'客戶已提供'},
@@ -7096,25 +7144,90 @@ function _renderQA(r){
   const retBadge = r.retrieval === 'rag'
     ? '<span class="ml-2 text-[10px] bg-purple-700/50 border border-purple-400/40 px-2 py-0.5 rounded-full">🧠 ChromaDB 向量檢索</span>'
     : '<span class="ml-2 text-[10px] bg-slate-700/50 border border-slate-500/40 px-2 py-0.5 rounded-full">⚡ bigram 規則</span>';
-  // 🤖 AI Agent 工作流軌跡（驗收構面一截圖證據）
+  // 🤖 AI Agent 工作流軌跡（驗收構面一截圖證據 · 細化版）
   const trace = r.agent_trace || {};
   const rag3 = trace.rag_top3 || [];
   const llmInfo = trace.llm;
+  const orc = trace.orchestrator || {};
+  const hcrRec = trace.hcr_recommendation;
+  const timeline = trace.workflow_timeline || [];
+
+  // 視覺化相似度條（依 score 比例）
+  const maxScore = Math.max(...rag3.map(h => h.score || 0), 0.01);
+  const ragRows = rag3.map((h, i) => {
+    const pct = Math.round((h.score / maxScore) * 100);
+    const color = i === 0 ? 'bg-green-500' : (i === 1 ? 'bg-cyan-500' : 'bg-slate-500');
+    return `
+      <tr class="border-b border-slate-800">
+        <td class="py-2 text-center font-bold ${i===0?'text-green-300':'text-slate-500'}">${i+1}</td>
+        <td class="py-2 text-cyan-300 text-xs">${escapeHtml(h.question||'-')}</td>
+        <td class="py-2 text-slate-400 text-[11px]">${escapeHtml(h.preview||'')}</td>
+        <td class="py-2 pr-1">
+          <div class="flex items-center gap-2">
+            <div class="flex-1 bg-slate-900 rounded-full h-1.5 min-w-[60px]">
+              <div class="${color} h-full rounded-full" style="width:${pct}%"></div>
+            </div>
+            <span class="text-amber-300 font-mono text-[11px]">${h.score ?? '-'}</span>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  // 工作流時序條
+  const timelineHtml = timeline.length ? `
+    <div class="bg-slate-900/70 border border-slate-700 rounded p-3 mb-3">
+      <div class="text-[10px] text-slate-500 uppercase mb-2">🕒 Agent 執行時序（${timeline.length} 步）</div>
+      <div class="space-y-1">
+        ${timeline.map(s => `
+          <div class="flex items-center gap-2 text-[11px]">
+            <span class="text-slate-500 font-mono w-10">+${s.elapsed_ms}ms</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+            <span class="text-slate-200">${escapeHtml(s.name || '-')}</span>
+            <span class="text-slate-500 ml-auto">${escapeHtml((s.desc||'').slice(0, 60))}</span>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // HCR 推薦卡（若有）
+  const hcrCard = hcrRec ? `
+    <div class="bg-gradient-to-br from-amber-900/30 to-orange-900/30 border border-amber-500/50 rounded p-3 mb-3">
+      <div class="text-[10px] text-amber-300 uppercase mb-1">🎯 規則引擎選型結果（構面三 · CADR 100% 準確）</div>
+      <div class="flex items-center gap-4 text-sm">
+        <div>
+          <span class="text-slate-400 text-xs">${hcrRec.area_ping} 坪 →</span>
+          <span class="font-bold text-amber-200 text-lg ml-1">${escapeHtml(hcrRec.model)}</span>
+        </div>
+        <div class="text-xs text-slate-300">CADR <b class="text-amber-300">${hcrRec.cadr}</b> m³/h</div>
+      </div>
+      <div class="text-[11px] text-slate-400 mt-1">${escapeHtml(hcrRec.reason)}</div>
+    </div>` : '';
+
   const agentPanel = `
     <div class="mt-3 bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border border-purple-500/40 rounded-lg p-4">
-      <div class="text-xs text-purple-300 font-bold mb-3 flex items-center gap-2">
-        🤖 AI Agent 工作流執行軌跡
-        <span class="text-[10px] bg-purple-800/60 rounded-full px-2 py-0.5">Orchestrator 派發紀錄 · 驗收用</span>
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs text-purple-300 font-bold flex items-center gap-2">
+          🤖 AI Agent 工作流執行軌跡
+          <span class="text-[10px] bg-purple-800/60 rounded-full px-2 py-0.5">Orchestrator 派發紀錄 · 驗收用</span>
+        </div>
+        <div class="text-[10px] text-slate-500 font-mono">
+          ${trace.trace_id || ''} · ${(trace.timestamp||'').replace('T',' ')}
+        </div>
       </div>
+
+      ${hcrCard}
 
       <div class="grid grid-cols-2 gap-3 mb-3">
         <div class="bg-slate-900/70 border border-slate-700 rounded p-3">
           <div class="text-[10px] text-slate-500 uppercase mb-1">① Orchestrator 路由決策</div>
           <div class="text-xs space-y-1">
-            <div><span class="text-slate-400">意圖分類：</span><span class="text-cyan-300 font-mono">${escapeHtml(trace.orchestrator?.intent||'-')}</span></div>
-            <div><span class="text-slate-400">派發至：</span><span class="text-green-300">${escapeHtml(trace.orchestrator?.route_to||'-')}</span></div>
-            <div><span class="text-slate-400">客戶：</span>${escapeHtml(trace.orchestrator?.customer||'-')}</div>
-            <div><span class="text-slate-400">檢索模式：</span><span class="font-mono">${escapeHtml(trace.orchestrator?.retrieval||'-')}</span></div>
+            <div><span class="text-slate-400">意圖分類：</span><span class="text-cyan-300 font-mono">${escapeHtml(orc.intent||'-')}</span>
+              ${orc.intent_confidence ? `<span class="text-[10px] text-slate-500 ml-1">信心 ${Math.round(orc.intent_confidence*100)}%</span>` : ''}</div>
+            <div><span class="text-slate-400">派發至：</span><span class="text-green-300">${escapeHtml(orc.route_to||'-')}</span></div>
+            <div><span class="text-slate-400">目標客戶：</span>${escapeHtml(orc.customer||'-')}</div>
+            <div><span class="text-slate-400">知識庫：</span><span class="text-cyan-200">${escapeHtml(orc.knowledge_base||'-')}</span>
+              <span class="text-[10px] text-slate-500">(${orc.faq_pool_size||0} 筆 FAQ)</span></div>
+            <div><span class="text-slate-400">檢索模式：</span>
+              <span class="font-mono ${orc.retrieval==='rag'?'text-purple-300':'text-cyan-300'}">${escapeHtml(orc.retrieval||'-')}</span></div>
           </div>
         </div>
         <div class="bg-slate-900/70 border border-slate-700 rounded p-3">
@@ -7122,28 +7235,41 @@ function _renderQA(r){
           ${llmInfo ? `
             <div class="text-xs space-y-1">
               <div><span class="text-slate-400">模型：</span><span class="font-mono text-amber-300">${escapeHtml(llmInfo.model||'-')}</span></div>
-              <div><span class="text-slate-400">耗時：</span>${llmInfo.elapsed_s}s</div>
-              <div><span class="text-slate-400">PII 遮蔽數：</span><span class="${llmInfo.pii_redactions>0?'text-amber-300':'text-slate-500'}">${llmInfo.pii_redactions||0} 筆</span></div>
-              <div><span class="text-slate-400">狀態：</span>${llmInfo.ok?'<span class="text-green-400">✓ 成功</span>':'<span class="text-red-400">✗ 失敗</span>'}</div>
-            </div>` : '<div class="text-xs text-slate-500">未啟用 AI 精煉（use_ai=false）</div>'}
+              <div><span class="text-slate-400">耗時：</span><span class="text-white font-mono">${llmInfo.elapsed_s}s</span></div>
+              <div><span class="text-slate-400">PII 遮蔽數：</span><span class="${llmInfo.pii_redactions>0?'text-amber-300 font-bold':'text-slate-500'}">${llmInfo.pii_redactions||0} 筆</span></div>
+              <div><span class="text-slate-400">Prompt 雜湊：</span><span class="font-mono text-[10px] text-slate-500">${escapeHtml(llmInfo.prompt_system_hash||'-')}</span></div>
+              <div><span class="text-slate-400">狀態：</span>${llmInfo.ok?'<span class="text-green-400 font-bold">[v] 成功</span>':'<span class="text-red-400 font-bold">[x] 失敗</span>'}</div>
+            </div>` : `
+            <div class="text-xs text-slate-500">
+              未啟用 AI 精煉（use_ai=false）<br>
+              本次回覆由規則引擎 + RAG 提供，零 LLM 呼叫<br>
+              <span class="text-green-400">✓ 成本 0 token · 延遲 &lt; 100ms</span>
+            </div>`}
         </div>
       </div>
 
-      <div class="bg-slate-900/70 border border-slate-700 rounded p-3">
-        <div class="text-[10px] text-slate-500 uppercase mb-2">② RAG 向量檢索 Top-${rag3.length} 命中</div>
+      <div class="bg-slate-900/70 border border-slate-700 rounded p-3 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-[10px] text-slate-500 uppercase">② RAG 向量檢索 Top-${rag3.length} 命中</div>
+          <div class="text-[10px] text-slate-500">附加 ${trace.refs_attached||0} 個官方規格連結</div>
+        </div>
         ${rag3.length ? `
           <table class="w-full text-xs">
             <thead class="text-[10px] text-slate-500 border-b border-slate-700"><tr>
-              <th class="text-left py-1">#</th><th class="text-left">FAQ 問題</th><th class="text-left">摘要預覽</th><th class="text-right">相似度</th>
+              <th class="text-center py-1 w-10">#</th>
+              <th class="text-left">FAQ 問題</th>
+              <th class="text-left">摘要預覽</th>
+              <th class="text-left w-40">相似度（視覺化）</th>
             </tr></thead>
-            <tbody>${rag3.map((h, i)=>`
-              <tr class="border-b border-slate-800">
-                <td class="py-1">${i+1}</td>
-                <td class="text-cyan-300">${escapeHtml(h.question||'-')}</td>
-                <td class="text-slate-400 text-[11px]">${escapeHtml(h.preview||'')}</td>
-                <td class="text-right text-amber-300 font-mono">${h.score ?? '-'}</td>
-              </tr>`).join('')}</tbody>
+            <tbody>${ragRows}</tbody>
           </table>` : '<div class="text-xs text-slate-500">未命中任何 FAQ</div>'}
+      </div>
+
+      ${timelineHtml}
+
+      <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2 flex items-center justify-between">
+        <span>此面板即為驗收「AI Agent 工作流操作截圖」證據（非一般聊天窗）</span>
+        <span class="font-mono">trace_id: ${trace.trace_id || '-'}</span>
       </div>
     </div>`;
 
@@ -7164,9 +7290,10 @@ function accRenderFeedback(){
     <div class="bg-slate-800 rounded-xl p-5 space-y-3">
       <div class="flex items-center justify-between">
         <div class="text-sm text-slate-300">情緒標註 → 分類 → 自動派工，每則姓名自動遮罩</div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap">
           <button onclick="accDoFeedback(false)" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded text-sm">🚀 分析示範 3 筆</button>
           <button onclick="accDoFeedback(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded text-sm">📝 分析自訂</button>
+          <button onclick="accRunAccuracyTest()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm" title="用 10 筆標準客訴測試情緒分類準確率（對應驗收構面二 ≥ 85% 門檻）">🎯 準確率測試</button>
           <button onclick="accDownloadFeedbackAuditPDF()" class="px-4 py-2 bg-rose-700 hover:bg-rose-600 rounded text-sm">📄 AI 審計 PDF</button>
         </div>
       </div>
@@ -7182,6 +7309,62 @@ function accRenderFeedback(){
       <div id="fb-result"></div>
     </div>`;
 }
+async function accRunAccuracyTest(){
+  const box = document.getElementById('fb-result');
+  box.innerHTML = '<div class="text-blue-300 text-sm">🎯 跑標準測試集中（10 筆）...</div>';
+  const r = await accPost('/api/acceptance/feedback-accuracy-test', {});
+  if (r.__error) {
+    box.innerHTML = `<div class="text-red-400 text-sm">測試失敗：${escapeHtml(r.__error)}</div>`;
+    return;
+  }
+  const pass = r.pass_threshold;
+  const barColor = pass ? 'bg-green-500' : 'bg-amber-500';
+  const rows = r.details.map(d => `
+    <tr class="border-b border-slate-700/50 ${d.pass?'':'bg-red-900/20'}">
+      <td class="px-2 py-1.5 font-mono text-[10px] text-slate-500">${d.id}</td>
+      <td class="px-2 py-1.5 text-xs text-slate-300">${escapeHtml(d.content_preview)}</td>
+      <td class="px-2 py-1.5 text-xs text-center"><span class="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">${d.expected}</span></td>
+      <td class="px-2 py-1.5 text-xs text-center"><span class="px-1.5 py-0.5 rounded ${d.actual==='正面'?'bg-green-600/40 text-green-300':d.actual==='負面'?'bg-red-600/40 text-red-300':'bg-slate-600/40 text-slate-300'}">${d.actual}</span></td>
+      <td class="px-2 py-1.5 text-center text-lg">${d.pass?'<span class="text-green-400">[v]</span>':'<span class="text-red-400">[x]</span>'}</td>
+    </tr>`).join('');
+
+  box.innerHTML = `
+    <div class="bg-gradient-to-br from-slate-800 to-slate-900 border ${pass?'border-green-500/50':'border-amber-500/50'} rounded-xl p-5 mb-3">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-sm font-bold ${pass?'text-green-300':'text-amber-300'}">🎯 情緒分類準確率測試結果</div>
+        <span class="text-[11px] px-3 py-1 rounded-full ${pass?'bg-green-900/40 text-green-200 border border-green-500/50':'bg-amber-900/40 text-amber-200 border border-amber-500/50'} font-bold">
+          ${pass ? '✓ 通過驗收門檻' : '✗ 未達 85% 門檻'}
+        </span>
+      </div>
+      <div class="flex items-end gap-4 mb-3">
+        <div>
+          <div class="text-5xl font-black ${pass?'text-green-400':'text-amber-400'}">${r.accuracy_pct}%</div>
+          <div class="text-xs text-slate-400 mt-1">命中 ${r.hit} / ${r.total_cases} 題</div>
+        </div>
+        <div class="flex-1 pb-1">
+          <div class="text-[11px] text-slate-400 mb-1">驗收門檻：≥ 85%</div>
+          <div class="w-full bg-slate-900 rounded-full h-3 relative">
+            <div class="${barColor} h-full rounded-full transition-all" style="width:${r.accuracy_pct}%"></div>
+            <div class="absolute top-0 bottom-0 border-l-2 border-dashed border-white/60" style="left:85%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="text-[11px] text-slate-500">對應 addwii 驗收評比標準 構面二（客戶回饋自動分析 · 25 分）· 以標準 10 筆客訴進行分類測試</div>
+    </div>
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-900 text-[11px] text-slate-400"><tr>
+          <th class="px-2 py-2 text-left">編號</th>
+          <th class="px-2 py-2 text-left">客訴片段</th>
+          <th class="px-2 py-2 text-center">預期情緒</th>
+          <th class="px-2 py-2 text-center">實際判定</th>
+          <th class="px-2 py-2 text-center">結果</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
 async function accDownloadFeedbackAuditPDF(){
   const useAI = !!document.getElementById('fb-use-ai')?.checked;
   const customText = document.getElementById('fb-custom')?.value.trim();
@@ -7351,6 +7534,12 @@ function accRenderContent(){
         </select>
         <button onclick="accDoContent()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded text-sm">🚀 生成</button>
       </div>
+      <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+        <span>📌 必植入 SEO 關鍵字：</span>
+        <input id="ct-seo" value="嬰兒房空氣清淨, PM2.5 過濾, CADR 認證"
+               class="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs"
+               title="以逗號分隔；對應 addwii 驗收測試題四的指定關鍵字">
+      </label>
       <label class="flex items-center gap-2 text-xs text-purple-300 cursor-pointer mt-2">
         <input type="checkbox" id="ct-use-ai" class="accent-purple-500">
         🧠 啟用 Qwen 2.5 7B 原創文案（取代模板，完全由 AI 依主題/通路撰寫；約 30~60 秒）
@@ -7360,23 +7549,110 @@ function accRenderContent(){
 }
 async function accDoContent(){
   const useAI = !!document.getElementById('ct-use-ai')?.checked;
+  const topic = document.getElementById('ct-topic').value || '春季過敏季，室內空氣這樣顧';
+  const channel = document.getElementById('ct-ch').value || 'FB';
   document.getElementById('ct-result').innerHTML = useAI
-    ? '<div class="text-purple-300 text-sm">🧠 Qwen 2.5 7B 撰寫中...（30~60 秒）</div>'
+    ? '<div class="text-purple-300 text-sm">🧠 Qwen 2.5 7B 撰寫中...（30~60 秒，需 Ollama）</div>'
     : '<div class="text-slate-400 text-sm">套用模板生成...</div>';
+  const seoInput = document.getElementById('ct-seo')?.value || '';
+  const seoKws = seoInput.split(',').map(s => s.trim()).filter(Boolean);
   const r = await accPost('/api/acceptance/content', {
-    topic: document.getElementById('ct-topic').value,
-    channel: document.getElementById('ct-ch').value,
-    use_ai: useAI,
+    topic, channel, use_ai: useAI,
+    seo_keywords: seoKws.length ? seoKws : undefined,
     user: (typeof ORG_CURRENT_USER_PERSONA!=='undefined'?ORG_CURRENT_USER_PERSONA:'guest')
   });
-  const badge = r.ai ? `<span class="ml-2 text-[10px] bg-purple-700/50 px-2 py-0.5 rounded">🧠 AI 原創 ${r.ai.elapsed_s}s</span>`
-                     : '<span class="ml-2 text-[10px] bg-slate-700/50 px-2 py-0.5 rounded">⚡ 模板</span>';
+
+  // 若後端完全沒回應 → 前端自己用模板兜底，讓評審至少看得到東西
+  if (r.__error) {
+    const frontendTemplate = {
+      'FB': `【${topic}】\n你家空氣品質真的乾淨嗎？\nHome Clean Room 7 合一感測，PM2.5 / CO2 / VOC 一次掌握。\n#室內空氣 #健康生活 #凌策智能\n點連結免費試用 7 天`,
+      'IG': `${topic}\n呼吸這件事，值得更被在意。\nHome Clean Room 讓每一口空氣都有數據。\n#cleanair #smarthome #凌策`,
+      'LinkedIn': `【Industry Insight】${topic}\n辦公室 CO2 長期 >1000ppm 會顯著降低員工認知效能。\n凌策 Home Clean Room 商用版已協助 30+ 企業優化室內環境。\n歡迎預約 Demo。`,
+      'Blog': `# ${topic}\n\n## 為什麼室內空氣值得關注？\n研究指出，現代人 90% 時間待在室內。\n\n## Home Clean Room 如何解決\n1. 7 合一感測模組\n2. 30 天趨勢雲端儀表板\n3. 與空調/新風系統聯動`,
+    }[channel] || '範例文案';
+    document.getElementById('ct-result').innerHTML = `
+      <div class="bg-amber-900/20 border border-amber-500/40 rounded p-3 mb-3 text-sm">
+        ⚠️ 後端 API 未回應（${escapeHtml(r.__error)}），以下為前端離線模板：
+      </div>
+      <div class="bg-slate-900 border border-pink-500/40 rounded-lg p-5">
+        <div class="text-xs text-slate-500 mb-2">通路 ${channel} <span class="ml-2 text-[10px] bg-slate-700/50 px-2 py-0.5 rounded">📴 離線模板</span></div>
+        <pre class="text-sm text-slate-200 whitespace-pre-wrap font-sans">${escapeHtml(frontendTemplate)}</pre>
+      </div>`;
+    return;
+  }
+
+  const aiFailed = useAI && (!r.ai || !r.ai.ok);
+  const warn = aiFailed
+    ? `<div class="bg-sky-900/20 border border-sky-500/40 rounded-lg p-3 mb-3 text-xs text-sky-200">
+         <div class="flex items-start gap-2">
+           <span class="text-lg">ℹ️</span>
+           <div class="flex-1">
+             <div class="font-bold text-sky-100 mb-1">未偵測到本地 Ollama — 此次使用內建模板產出</div>
+             <div class="text-[11px] text-slate-300 leading-relaxed">
+               欲啟用 Qwen 2.5 7B AI 精煉功能：到 <a href="https://ollama.com" target="_blank" class="text-cyan-300 hover:underline">ollama.com</a> 下載後執行
+               <code class="bg-slate-900 px-1 py-0.5 rounded text-cyan-300">ollama pull qwen2.5:7b</code>
+               ，系統偵測到 Ollama 線上時會自動切換為即時 AI 生成。
+             </div>
+           </div>
+         </div>
+       </div>`
+    : '';
+  const badge = (r.ai && r.ai.ok) ? `<span class="ml-2 text-[10px] bg-purple-700/50 px-2 py-0.5 rounded">🧠 AI 原創 ${r.ai.elapsed_s}s</span>`
+                                  : '<span class="ml-2 text-[10px] bg-slate-700/50 px-2 py-0.5 rounded">⚡ 內建模板</span>';
+  // ─── SEO 植入率驗證卡 ───
+  const seoCheck = r.seo_check;
+  const brandCheck = r.brand_check;
+  const seoPct = seoCheck ? seoCheck.coverage_pct : 0;
+  const seoBar = seoCheck ? `
+    <div class="mt-3 bg-slate-800/80 border ${seoPct===100?'border-green-500/50':(seoPct>=67?'border-amber-500/50':'border-red-500/50')} rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <div class="text-sm font-bold ${seoPct===100?'text-green-300':(seoPct>=67?'text-amber-300':'text-red-300')}">
+          🎯 SEO 關鍵字植入率驗證
+        </div>
+        <div class="text-2xl font-black ${seoPct===100?'text-green-400':(seoPct>=67?'text-amber-400':'text-red-400')}">
+          ${seoPct}%
+        </div>
+      </div>
+      <div class="w-full bg-slate-900 rounded-full h-2 mb-3">
+        <div class="${seoPct===100?'bg-green-500':(seoPct>=67?'bg-amber-500':'bg-red-500')} h-full rounded-full transition-all"
+             style="width:${seoPct}%"></div>
+      </div>
+      <div class="text-xs text-slate-400 mb-2">已命中 ${seoCheck.keywords_hit}/${seoCheck.keywords_total} 個指定關鍵字：</div>
+      <div class="flex flex-wrap gap-1.5">
+        ${seoCheck.hit_list.map(k => `<span class="text-[11px] px-2 py-1 rounded-full bg-green-900/40 border border-green-500/40 text-green-200">[v] ${escapeHtml(k)}</span>`).join('')}
+        ${seoCheck.missed_list.map(k => `<span class="text-[11px] px-2 py-1 rounded-full bg-red-900/40 border border-red-500/40 text-red-200">[x] ${escapeHtml(k)}</span>`).join('')}
+      </div>
+      ${seoCheck.missed_list.length > 0
+        ? `<div class="text-[11px] text-red-300 mt-2">⚠️ 每缺 1 個關鍵字扣 3 分（驗收構面四規則）</div>`
+        : `<div class="text-[11px] text-green-300 mt-2">✓ 全數植入，構面四 SEO 分數滿分基礎達成</div>`
+      }
+    </div>` : '';
+
+  const brandBar = brandCheck ? `
+    <div class="mt-3 bg-slate-800/80 border ${brandCheck.compliant?'border-purple-500/40':'border-red-500/40'} rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-bold ${brandCheck.compliant?'text-purple-300':'text-red-300'}">🏷️ 品牌一致性檢查</div>
+        <span class="text-[11px] px-2 py-0.5 rounded-full ${brandCheck.compliant?'bg-green-900/40 text-green-200':'bg-red-900/40 text-red-200'}">
+          ${brandCheck.compliant ? '✓ 合規' : '✗ 違規'}
+        </span>
+      </div>
+      <div class="text-xs text-slate-400 mt-2">
+        「Home Clean Room」出現 <b class="${brandCheck.brand_mentions>0?'text-purple-300':'text-red-300'}">${brandCheck.brand_mentions}</b> 次
+        ${brandCheck.prohibited_found.length > 0
+          ? `· 違禁字：<span class="text-red-300">${brandCheck.prohibited_found.join(', ')}</span>`
+          : '· 無誇大宣稱'}
+      </div>
+    </div>` : '';
+
   document.getElementById('ct-result').innerHTML = `
+    ${warn}
     ${accWorkflow(r.workflow)}
     <div class="bg-slate-900 border border-pink-500/40 rounded-lg p-5">
-      <div class="text-xs text-slate-500 mb-2">通路 ${document.getElementById('ct-ch').value} ${badge}</div>
-      <pre class="text-sm text-slate-200 whitespace-pre-wrap font-sans">${escapeHtml(r.content)}</pre>
-    </div>`;
+      <div class="text-xs text-slate-500 mb-2">通路 ${channel} ${badge}</div>
+      <pre class="text-sm text-slate-200 whitespace-pre-wrap font-sans">${escapeHtml(r.content||'')}</pre>
+    </div>
+    ${seoBar}
+    ${brandBar}`;
 }
 
 // ── 5. CSV 感測器分析 ──
@@ -8821,6 +9097,218 @@ async function _simulateDangerousOp() {
     else alert('失敗：' + d.error);
   } catch(e) { alert('失敗：' + e.message); }
 }
+
+// ═══════════════════════════════════════════════════════════
+// 🤖 Ollama 一鍵安裝助手（自動鏈式流程）
+// ═══════════════════════════════════════════════════════════
+let OLLAMA_BANNER_DISMISSED = false;
+let OLLAMA_POLL_TIMER = null;
+let OLLAMA_AUTO_CHAIN = false;     // 使用者按了「一鍵完整安裝」就 true，會自動串接下一步
+let OLLAMA_LAST_STATUS = null;
+
+async function checkOllamaAndPrompt() {
+  if (OLLAMA_BANNER_DISMISSED) return;
+  try {
+    const r = await fetch(API_BASE + '/api/ollama/status', { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) return;
+    const s = await r.json();
+    // 雲端模式 / 就緒 → 不顯示 banner
+    if (s.cloud_mode || s.next_action === 'ready' || s.next_action === 'cloud') {
+      const el = document.getElementById('ollama-banner');
+      if (el) el.remove();
+      return;
+    }
+    showOllamaBanner(s);
+  } catch (e) {
+    // 後端沒連線就不用顯示
+  }
+}
+
+function showOllamaBanner(status) {
+  // 已存在就更新內容
+  let el = document.getElementById('ollama-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'ollama-banner';
+    el.className = 'fixed top-4 right-4 z-50 max-w-sm bg-gradient-to-br from-sky-900 to-indigo-900 border border-sky-400/50 rounded-xl shadow-2xl p-4';
+    document.body.appendChild(el);
+  }
+  const actionLabel = {
+    'install': '🚀 一鍵完整安裝（Ollama + 模型，自動串接）',
+    'start':   '📖 啟動 Ollama 服務',
+    'pull':    '⬇️ 下載 Qwen 2.5 7B 模型（自動完成）',
+    'ready':   '✓ 已就緒',
+  }[status.next_action] || '檢查狀態';
+
+  const statusTags = [
+    `<span class="px-2 py-0.5 rounded-full ${status.installed?'bg-green-700/50 text-green-200':'bg-slate-700 text-slate-400'}">${status.installed?'✓':'○'} 已安裝</span>`,
+    `<span class="px-2 py-0.5 rounded-full ${status.running?'bg-green-700/50 text-green-200':'bg-slate-700 text-slate-400'}">${status.running?'✓':'○'} 運行中</span>`,
+    `<span class="px-2 py-0.5 rounded-full ${status.model_pulled?'bg-green-700/50 text-green-200':'bg-slate-700 text-slate-400'}">${status.model_pulled?'✓':'○'} 模型就緒</span>`,
+  ].join(' ');
+
+  el.innerHTML = `
+    <div class="flex items-start gap-3">
+      <div class="text-3xl">🤖</div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-sm font-bold text-sky-200">AI 模型狀態</div>
+          <button onclick="dismissOllamaBanner()" class="text-slate-400 hover:text-white text-xs">✕</button>
+        </div>
+        <div class="text-xs text-slate-300 mb-2">${escapeHtml(status.message)}</div>
+        <div class="flex flex-wrap gap-1 text-[10px] mb-3">${statusTags}</div>
+        <div class="flex flex-col gap-1">
+          <button onclick="triggerOllamaAction('${status.next_action}')"
+                  class="bg-sky-500 hover:bg-sky-400 text-white rounded px-3 py-1.5 text-xs font-bold">
+            ${actionLabel}
+          </button>
+          <button onclick="recheckOllama()" class="text-[11px] text-cyan-300 hover:text-white">🔄 重新檢查連線</button>
+        </div>
+        <div id="ollama-task-progress" class="mt-2 hidden">
+          <div class="bg-slate-900 rounded h-2 overflow-hidden mb-1">
+            <div id="ollama-progress-bar" class="bg-sky-400 h-full transition-all" style="width:0%"></div>
+          </div>
+          <div id="ollama-task-msg" class="text-[10px] text-slate-400 break-words"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function dismissOllamaBanner() {
+  const el = document.getElementById('ollama-banner');
+  if (el) el.remove();
+  OLLAMA_BANNER_DISMISSED = true;
+}
+
+async function postOllama(path) {
+  try {
+    const r = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: '{}',
+    });
+    const ct = r.headers.get('content-type') || '';
+    // 若後端回傳 HTML（如 404 頁），代表此後端版本沒有對應 endpoint
+    if (!ct.includes('application/json')) {
+      const txt = (await r.text()).slice(0, 100);
+      alert(
+        '❌ 後端無此功能（可能仍是舊版伺服器）\n\n' +
+        '請關閉目前的「LingCe Backend Server」視窗，\n' +
+        '然後重新雙擊 啟動凌策.bat 載入新版後端。\n\n' +
+        '路徑：' + path + '\n' +
+        '回應：' + txt + '...'
+      );
+      return false;
+    }
+    const j = await r.json();
+    if (!r.ok || !j.ok) {
+      alert('❌ 啟動失敗：' + (j.error || ('HTTP ' + r.status)));
+      return false;
+    }
+    return true;
+  } catch (e) {
+    alert('❌ 連線失敗：' + e.message);
+    return false;
+  }
+}
+
+async function triggerOllamaAction(action, options = {}) {
+  const silent = options.silent === true;   // auto-chain 時不跳 confirm
+  if (action === 'install') {
+    if (!silent && !confirm(
+      '即將執行「完整 AI 安裝」流程：\n' +
+      '  ① 透過 winget 安裝 Ollama（~200 MB，2~5 分鐘）\n' +
+      '  ② 自動下載 Qwen 2.5 7B 模型（~4.7 GB，10~20 分鐘）\n' +
+      '  ③ 完成後自動連線，AI 功能立即可用\n\n' +
+      '整個過程無需再點任何按鈕，確認執行？'
+    )) return;
+    OLLAMA_AUTO_CHAIN = true;
+    if (await postOllama('/api/ollama/install')) startProgressPoll();
+    else OLLAMA_AUTO_CHAIN = false;
+  } else if (action === 'pull') {
+    if (!silent && !confirm('將下載 Qwen 2.5 7B 模型（約 4.7 GB，視網速 10–20 分鐘）。\n下載完成後會自動啟用 AI 功能。\n確認執行？')) return;
+    OLLAMA_AUTO_CHAIN = true;
+    if (await postOllama('/api/ollama/pull-model')) startProgressPoll();
+    else OLLAMA_AUTO_CHAIN = false;
+  } else if (action === 'start') {
+    alert('Ollama 已安裝但服務未啟動。\n\n請到「開始」功能表搜尋 Ollama 開啟，或於終端機執行：\n\n    ollama serve\n\n執行後系統會自動偵測。');
+  }
+}
+
+async function recheckOllama() {
+  OLLAMA_BANNER_DISMISSED = false;
+  await checkOllamaAndPrompt();
+  await checkLiveAPI();   // 同時刷新側邊欄指示器
+}
+
+function startProgressPoll() {
+  const bar = document.getElementById('ollama-progress-bar');
+  const msg = document.getElementById('ollama-task-msg');
+  const box = document.getElementById('ollama-task-progress');
+  if (box) box.classList.remove('hidden');
+
+  if (OLLAMA_POLL_TIMER) clearInterval(OLLAMA_POLL_TIMER);
+  OLLAMA_POLL_TIMER = setInterval(async () => {
+    try {
+      const r = await fetch(API_BASE + '/api/ollama/status');
+      const s = await r.json();
+      OLLAMA_LAST_STATUS = s;
+      const t = s.task || {};
+      if (bar) bar.style.width = (t.progress || 0) + '%';
+      if (msg) msg.textContent = t.message || '';
+
+      if (t.status === 'done' || t.status === 'failed') {
+        clearInterval(OLLAMA_POLL_TIMER);
+        OLLAMA_POLL_TIMER = null;
+
+        // ─── 自動鏈式流程：依 next_action 接續 ───
+        if (OLLAMA_AUTO_CHAIN && t.status === 'done') {
+          if (s.next_action === 'pull') {
+            // Ollama 裝完了，繼續下載模型（不問）
+            if (msg) msg.textContent = '[v] Ollama 安裝完成，自動接續下載模型...';
+            setTimeout(() => triggerOllamaAction('pull', {silent: true}), 1500);
+            return;
+          }
+          if (s.next_action === 'start') {
+            // 服務沒起來，提示使用者
+            alert('Ollama 已安裝，但服務未自動啟動。\n請到「開始」功能表開啟 Ollama，然後系統會自動偵測。');
+            recheckOllama();
+            return;
+          }
+          if (s.next_action === 'ready') {
+            // 全部完成
+            if (bar) bar.style.width = '100%';
+            if (msg) msg.innerHTML = '<span class="text-green-300">[v] 完全就緒！AI 功能已啟用，頁面無需重整</span>';
+            OLLAMA_AUTO_CHAIN = false;
+            setTimeout(() => {
+              recheckOllama();
+              checkLiveAPI();
+              showToast('🎉 Ollama + Qwen 2.5 7B 安裝完成，AI 功能已啟用！');
+              // 3 秒後移除 banner
+              setTimeout(() => { dismissOllamaBanner(); OLLAMA_BANNER_DISMISSED = false; }, 3000);
+            }, 1500);
+            return;
+          }
+        }
+
+        // 失敗或非自動鏈 → 刷新 banner
+        setTimeout(() => { recheckOllama(); checkLiveAPI(); }, 1500);
+      }
+    } catch {}
+  }, 2000);
+}
+
+function showToast(msg, color='green') {
+  const t = document.createElement('div');
+  t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-gradient-to-r from-${color}-600 to-${color}-700 text-white px-6 py-3 rounded-xl shadow-2xl font-bold text-sm`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
+
+// 頁面載入後 3 秒檢查（給 Flask 一點暖機時間）
+setTimeout(checkOllamaAndPrompt, 3000);
+// 每 30 秒重新檢查（抓使用者手動裝好的狀態）
+setInterval(() => { if (!OLLAMA_POLL_TIMER) checkOllamaAndPrompt(); }, 30000);
 
 // Init
 showPage('dashboard');

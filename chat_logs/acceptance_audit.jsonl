@@ -310,3 +310,22 @@
 {"ts": "2026-04-20T11:29:06", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "8 ping room recommend", "retrieval": "bigram", "use_ai": false}}
 {"ts": "2026-04-20T11:31:05", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "8 ping room recommend", "retrieval": "bigram", "use_ai": false}}
 {"ts": "2026-04-20T11:32:14", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "8 坪嬰兒房推薦哪款", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T12:52:30", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T13:00:35", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T13:01:01", "action": "product_qa", "user": "judge", "detail": {"customer": "addwii", "q": "8 坪嬰兒房推薦哪款", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T13:01:02", "action": "product_qa", "user": "judge", "detail": {"customer": "addwii", "q": "HCR-200 規格", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T13:01:02", "action": "product_qa", "user": "judge", "detail": {"customer": "addwii", "q": "餐廳無塵室用途", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T13:01:02", "action": "product_qa", "user": "judge", "detail": {"customer": "microjet", "q": "CurieJet P760 規格", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T13:01:03", "action": "product_qa", "user": "judge", "detail": {"customer": "microjet", "q": "有哪些產品線", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T13:01:03", "action": "product_qa", "user": "judge", "detail": {"customer": "microjet", "q": "兩大子品牌", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T17:04:48", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet 3D列印機方案", "retrieval": "rag", "use_ai": false}}
+{"ts": "2026-04-20T17:10:59", "action": "proposal", "user": "BOARD-001", "detail": {"customer": "addwii", "ind": "食品製造", "use_ai": false}}
+{"ts": "2026-04-20T17:11:10", "action": "csv_analysis", "user": "BOARD-001", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-20T17:47:23", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-20T20:12:02", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T14:49:05", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T14:49:29", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-21T14:49:31", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-21T14:57:13", "action": "csv_analysis", "user": "BOARD-001", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-21T14:57:19", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-21T14:59:01", "action": "content", "user": "BOARD-001", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "IG", "use_ai": true, "seo_coverage": 100}}

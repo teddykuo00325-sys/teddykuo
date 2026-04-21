@@ -10,7 +10,29 @@ import time
 import threading
 import uuid
 import sys
+import os as _os_early
 from datetime import datetime
+
+# ─── Windows 專用：關閉 cmd 視窗的「快速編輯模式」 ───
+# 預設 CMD 視窗只要使用者點到文字區就會進入選取模式，暫停 Python 程序
+# 造成瀏覽器卡住、API 無回應等假性故障。這裡用 Win32 API 強制關閉
+if _os_early.name == 'nt':
+    try:
+        import ctypes as _ctypes
+        _k32 = _ctypes.windll.kernel32
+        _ENABLE_QUICK_EDIT = 0x0040
+        _ENABLE_INSERT     = 0x0020
+        _ENABLE_MOUSE      = 0x0010
+        _ENABLE_EXT_FLAGS  = 0x0080
+        _hin = _k32.GetStdHandle(-10)  # STD_INPUT_HANDLE
+        _mode = _ctypes.c_uint()
+        if _k32.GetConsoleMode(_hin, _ctypes.byref(_mode)):
+            # 清掉 QuickEdit 與 Mouse input，啟用 Extended Flags
+            _new = (_mode.value | _ENABLE_EXT_FLAGS) & ~_ENABLE_QUICK_EDIT & ~_ENABLE_MOUSE
+            _k32.SetConsoleMode(_hin, _new)
+            print('[Console] 已關閉 Quick Edit Mode（避免點視窗凍結 Python）')
+    except Exception as _e:
+        print(f'[Console] Quick Edit 關閉失敗（不影響運作）: {_e}')
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS  # type: ignore
 import requests
@@ -1488,9 +1510,16 @@ def api_acc_product_qa_stream():
 
 @app.route('/api/acceptance/feedback', methods=['POST'])
 def api_acc_feedback():
-    d = request.json or {}
+    d = request.get_json(silent=True) or {}
     records = d.get('records') or accs.DEMO_FEEDBACK
     return jsonify(accs.analyze_feedback(records, d.get('user', 'guest'), use_ai=bool(d.get('use_ai'))))
+
+
+@app.route('/api/acceptance/feedback-accuracy-test', methods=['POST'])
+def api_acc_feedback_accuracy():
+    """用標準測試集跑情緒分析，回傳準確率（對應驗收構面二 ≥ 85% 門檻）"""
+    from feedback_test_cases import run_accuracy_test
+    return jsonify(run_accuracy_test(accs.analyze_feedback))
 
 @app.route('/api/acceptance/proposal', methods=['POST'])
 def api_acc_proposal():
@@ -1500,9 +1529,14 @@ def api_acc_proposal():
 
 @app.route('/api/acceptance/content', methods=['POST'])
 def api_acc_content():
-    d = request.json or {}
-    return jsonify(accs.generate_content(d.get('topic', '智慧空氣'), d.get('channel', 'FB'),
-                                         d.get('user', 'guest'), use_ai=bool(d.get('use_ai'))))
+    d = request.get_json(silent=True) or {}
+    return jsonify(accs.generate_content(
+        d.get('topic', '智慧空氣'),
+        d.get('channel', 'FB'),
+        d.get('user', 'guest'),
+        use_ai=bool(d.get('use_ai')),
+        seo_keywords=d.get('seo_keywords'),
+    ))
 
 @app.route('/api/acceptance/csv-analysis', methods=['POST'])
 def api_acc_csv():
@@ -1806,6 +1840,198 @@ def api_procurement_serials():
 def api_procurement_audit():
     return jsonify(procurement_mgr.get_audit(int(request.args.get('limit', 50))))
 
+# ══════════════════════════════════════
+# Ollama 一鍵安裝 + 狀態查詢（給評審環境用）
+# ══════════════════════════════════════
+_OLLAMA_TASK = {'status': 'idle', 'message': '', 'progress': 0, 'started_at': None}
+_OLLAMA_TASK_LOCK = threading.Lock()
+
+
+def _find_ollama_exe() -> str | None:
+    """找 ollama.exe 的實際路徑。winget 裝完 PATH 不會自動刷新到已跑的 Python，
+    所以除了 shutil.which 之外也檢查常見安裝路徑。回傳 None 代表真的沒裝。"""
+    import shutil
+    p = shutil.which('ollama')
+    if p: return p
+    # Windows 常見安裝路徑
+    candidates = [
+        os.path.expandvars(r'%LOCALAPPDATA%\Programs\Ollama\ollama.exe'),
+        os.path.expandvars(r'%ProgramFiles%\Ollama\ollama.exe'),
+        os.path.expandvars(r'%USERPROFILE%\AppData\Local\Programs\Ollama\ollama.exe'),
+        r'C:\Program Files\Ollama\ollama.exe',
+    ]
+    for c in candidates:
+        if os.path.isfile(c):
+            return c
+    return None
+
+
+def _check_ollama_installed() -> bool:
+    """檢查本機是否裝了 Ollama CLI"""
+    return _find_ollama_exe() is not None
+
+
+def _check_ollama_running() -> bool:
+    """檢查 Ollama 服務是否回應"""
+    try:
+        r = requests.get(f'{OLLAMA_URL}/api/tags', timeout=2)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def _check_model_pulled(model: str) -> bool:
+    """檢查指定模型是否已下載"""
+    try:
+        r = requests.get(f'{OLLAMA_URL}/api/tags', timeout=2)
+        if r.status_code != 200:
+            return False
+        tags = r.json().get('models', [])
+        return any(model in m.get('name', '') for m in tags)
+    except Exception:
+        return False
+
+
+@app.route('/api/ollama/status')
+def api_ollama_status():
+    """回傳 Ollama 完整狀態：是否安裝 / 是否運行 / 模型是否下載"""
+    # 雲端模式（OLLAMA_MODEL=none）→ 直接回 "cloud"，前端會跳過 banner
+    if (OLLAMA_MODEL or '').lower() in ('none', 'disabled', ''):
+        return jsonify({
+            'cloud_mode': True,
+            'installed': False, 'running': False, 'model_pulled': False,
+            'model_name': OLLAMA_MODEL, 'next_action': 'cloud',
+            'message': '雲端 Demo 模式（不含 Ollama）— 所有 AI 精煉功能走內建模板',
+            'task': {'status': 'idle'},
+        })
+    installed = _check_ollama_installed()
+    running   = _check_ollama_running() if installed else False
+    model_ok  = _check_model_pulled(OLLAMA_MODEL) if running else False
+
+    # 判定下一步要做什麼
+    if not installed:
+        next_action = 'install'
+        message = '尚未偵測到 Ollama，可一鍵自動安裝（透過 winget）'
+    elif not running:
+        next_action = 'start'
+        message = 'Ollama 已安裝但未啟動，請於終端機執行 ollama serve'
+    elif not model_ok:
+        next_action = 'pull'
+        message = f'缺少模型 {OLLAMA_MODEL}，點擊下載（約 4.7 GB）'
+    else:
+        next_action = 'ready'
+        message = f'✓ 完全就緒：Ollama 運行中，{OLLAMA_MODEL} 已下載'
+
+    with _OLLAMA_TASK_LOCK:
+        task_state = dict(_OLLAMA_TASK)
+
+    return jsonify({
+        'installed':    installed,
+        'running':      running,
+        'model_pulled': model_ok,
+        'model_name':   OLLAMA_MODEL,
+        'next_action':  next_action,
+        'message':      message,
+        'task':         task_state,
+    })
+
+
+def _run_ollama_task(name: str, cmd: list, success_check):
+    """背景執行 ollama 相關指令，把進度寫入 _OLLAMA_TASK"""
+    import subprocess
+    with _OLLAMA_TASK_LOCK:
+        _OLLAMA_TASK['status'] = 'running'
+        _OLLAMA_TASK['message'] = f'執行中：{name}'
+        _OLLAMA_TASK['progress'] = 5
+        _OLLAMA_TASK['started_at'] = datetime.now().isoformat(timespec='seconds')
+
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True, encoding='utf-8', errors='replace')
+        # 簡單輪詢 stdout 更新進度
+        pct = 10
+        for line in proc.stdout or []:
+            line = line.strip()
+            if not line: continue
+            pct = min(pct + 3, 90)
+            with _OLLAMA_TASK_LOCK:
+                _OLLAMA_TASK['progress'] = pct
+                _OLLAMA_TASK['message'] = line[:120]
+        proc.wait(timeout=1800)  # 最長 30 分鐘
+
+        ok = (proc.returncode == 0) and success_check()
+        with _OLLAMA_TASK_LOCK:
+            _OLLAMA_TASK['status']   = 'done' if ok else 'failed'
+            _OLLAMA_TASK['progress'] = 100
+            _OLLAMA_TASK['message']  = f'{name} 完成' if ok else f'{name} 失敗（回傳碼 {proc.returncode}）'
+    except Exception as e:
+        with _OLLAMA_TASK_LOCK:
+            _OLLAMA_TASK['status']   = 'failed'
+            _OLLAMA_TASK['message']  = f'{name} 錯誤：{e}'
+
+
+@app.route('/api/ollama/install', methods=['POST'])
+def api_ollama_install():
+    """透過 winget 自動安裝 Ollama（需 Windows 10 1809+）"""
+    import shutil
+    if not shutil.which('winget'):
+        return jsonify({'ok': False, 'error': 'winget 不可用，請手動到 https://ollama.com 下載'}), 400
+    if _check_ollama_installed():
+        return jsonify({'ok': True, 'already': True, 'message': 'Ollama 已安裝'})
+
+    with _OLLAMA_TASK_LOCK:
+        if _OLLAMA_TASK['status'] == 'running':
+            return jsonify({'ok': False, 'error': '已有任務在執行中', 'task': dict(_OLLAMA_TASK)}), 409
+
+    threading.Thread(
+        target=_run_ollama_task,
+        args=('安裝 Ollama', ['winget', 'install', 'Ollama.Ollama',
+                              '--silent', '--accept-package-agreements',
+                              '--accept-source-agreements'],
+              _check_ollama_installed),
+        daemon=True).start()
+    return jsonify({'ok': True, 'message': '安裝已在背景執行，請輪詢 /api/ollama/status 查看進度'})
+
+
+@app.route('/api/ollama/pull-model', methods=['POST'])
+def api_ollama_pull():
+    """下載指定模型（預設 qwen2.5:7b，約 4.7 GB）"""
+    ollama_exe = _find_ollama_exe()
+    if not ollama_exe:
+        return jsonify({'ok': False, 'error': 'Ollama 尚未安裝'}), 400
+    if not _check_ollama_running():
+        # 嘗試自動啟動 Ollama 服務（Windows 下 ollama.exe 本身能當 server）
+        try:
+            import subprocess
+            subprocess.Popen([ollama_exe, 'serve'],
+                             creationflags=0x08000000 if os.name=='nt' else 0,  # CREATE_NO_WINDOW
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            # 等最多 8 秒讓服務起來
+            for _ in range(16):
+                time.sleep(0.5)
+                if _check_ollama_running():
+                    break
+        except Exception as _e:
+            pass
+        if not _check_ollama_running():
+            return jsonify({'ok': False, 'error': 'Ollama 服務無法啟動。請於「開始」功能表開啟 Ollama 應用程式後重試'}), 400
+
+    # silent=True → 即便 Content-Type 不是 json 也不會報 415
+    _data = request.get_json(silent=True) or {}
+    model = _data.get('model', OLLAMA_MODEL)
+
+    with _OLLAMA_TASK_LOCK:
+        if _OLLAMA_TASK['status'] == 'running':
+            return jsonify({'ok': False, 'error': '已有任務在執行中', 'task': dict(_OLLAMA_TASK)}), 409
+
+    threading.Thread(
+        target=_run_ollama_task,
+        args=(f'下載模型 {model}', [ollama_exe, 'pull', model],
+              lambda m=model: _check_model_pulled(m)),
+        daemon=True).start()
+    return jsonify({'ok': True, 'message': f'{model} 下載已在背景執行（4.7 GB，預計 10–20 分鐘）'})
+
+
 @app.route('/api/procurement/reset', methods=['POST'])
 def api_procurement_reset():
     """展示用：重置情境至初始狀態"""
@@ -2056,10 +2282,10 @@ if __name__ == '__main__':
     # 用 IPv6 dual-stack 監聽以避免 Windows 上 localhost 解析成 ::1 時每個請求等待 2 秒 IPv6 超時
     import socket
     try:
-        # Werkzeug 支援傳入已建立好的 socket
-        from werkzeug.serving import make_server
-        # 直接讓它監聽 '::'（IPv6 dual-stack）
-        app.run(host='::', port=5000, debug=True, use_reloader=False, threaded=True)
-    except OSError:
-        # 若系統不支援 IPv6 則退回 IPv4
-        app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False, threaded=True)
+        # 監聽 IPv4 (0.0.0.0) — 廣相容，支援 127.0.0.1 / localhost / 區網 IP
+        # 不用 '::' 因為 Windows 預設 IPV6_V6ONLY=1，會拒絕 IPv4 連線
+        # debug=False：關閉 debug 模式，避免 reloader 或額外 child process 干擾
+        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False, threaded=True)
+    except OSError as _e:
+        print(f'[Server] 啟動失敗: {_e}，嘗試降級...')
+        app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False, threaded=True)
