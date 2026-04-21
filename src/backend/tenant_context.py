@@ -136,3 +136,22 @@ def parse_tenant(request_args_or_json, default='lingce'):
         t = request_args_or_json.get('tenant')
         if t and t in TENANT_IDS: return t
     return default
+
+
+def resolve_tenant_by_member(member_id: str, fallback: str = 'microjet') -> str:
+    """自動推斷 member_id 屬於哪個 tenant（leave / overtime / chat 呼叫不用顯式傳 tenant）"""
+    if not member_id: return fallback
+    for tid in TENANT_IDS:
+        try:
+            bundle = TENANT_CTX.get(tid)
+            if member_id in bundle.attendance.members:
+                return tid
+        except Exception:
+            continue
+    return fallback
+
+
+def bundle_for_member(member_id: str):
+    """直接取得該 member 所屬 tenant 的 bundle（最方便）"""
+    tid = resolve_tenant_by_member(member_id)
+    return TENANT_CTX.get(tid)

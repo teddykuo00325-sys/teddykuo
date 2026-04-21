@@ -1,0 +1,18 @@
+{
+  "room_FIN-003_FIN-004": {
+    "id": "room_FIN-003_FIN-004",
+    "participants": [
+      "FIN-003",
+      "FIN-004"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "FIN-003",
+    "created_at": "2026-04-21T19:27:00.890810",
+    "last_activity": "2026-04-21T19:27:00.890810",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
+  }
+}

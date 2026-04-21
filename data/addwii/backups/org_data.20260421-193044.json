@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ADW-001",
+    "name": "呂OO",
+    "role": "經理",
+    "title": "行銷長（CMO）",
+    "dept": "addwii 加我科技",
+    "supervisor_id": null,
+    "avatar": "📣",
+    "is_hr": false
+  },
+  {
+    "id": "ADW-002",
+    "name": "方OO",
+    "role": "副理",
+    "title": "電商技術總監",
+    "dept": "addwii 加我科技",
+    "supervisor_id": "ADW-001",
+    "avatar": "🛒",
+    "is_hr": false
+  },
+  {
+    "id": "ADW-003",
+    "name": "楊OO",
+    "role": "副理",
+    "title": "商品經理",
+    "dept": "addwii 加我科技",
+    "supervisor_id": "ADW-001",
+    "avatar": "🛍️",
+    "is_hr": false
+  },
+  {
+    "id": "ADW-004",
+    "name": "俞OO",
+    "role": "課長",
+    "title": "資訊課長",
+    "dept": "addwii 加我科技",
+    "supervisor_id": "ADW-001",
+    "avatar": "🖥️",
+    "is_hr": false
+  },
+  {
+    "id": "ADW-005",
+    "name": "杜OO",
+    "role": "副理",
+    "title": "主辦會計暨行政主管",
+    "dept": "addwii 加我科技",
+    "supervisor_id": "ADW-001",
+    "avatar": "📒",
+    "is_hr": false
+  },
+  {
+    "id": "ADW-006",
+    "name": "吳OO",
+    "role": "工程師",
+    "title": "社群行銷專員",
+    "dept": "addwii 加我科技",
+    "supervisor_id": "ADW-001",
+    "avatar": "📱",
+    "is_hr": false
+  }
+]

@@ -1086,7 +1086,7 @@ function _crmRenderQuo(rows){
           <td class="px-3 py-2 text-xs">${r.有效期限||'-'}</td>
           <td class="px-3 py-2"><span class="text-xs px-2 py-0.5 rounded ${_statusColor(r.狀態)}">${escapeHtml(r.狀態)}</span></td>
           <td class="px-3 py-2">
-            <a href="${API_BASE}/api/crm/quote/${r.報價編號}/pdf" target="_blank" class="inline-block text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded mr-1">📄 下載 PDF</a>
+            <a href="${API_BASE}${withTenant('/api/crm/quote/' + r.報價編號 + '/pdf')}" target="_blank" class="inline-block text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded mr-1">📄 下載 PDF</a>
             ${r.狀態==='已送出'?`
               <button onclick="crmAcceptQuote('${r.報價編號}')" class="text-xs bg-green-600 hover:bg-green-500 px-2 py-1 rounded mr-1">✓ 客戶成交</button>
               <button onclick="crmRejectQuote('${r.報價編號}')" class="text-xs bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded">✗ 客戶婉拒</button>`:''}</td>
@@ -1260,7 +1260,7 @@ async function crmSubmitInq(){
     alert('公司、聯絡人、Email 為必填');
     return;
   }
-  const r = await fetch(API_BASE + '/api/crm/inquiry', {
+  const r = await fetch(API_BASE + withTenant('/api/crm/inquiry'), {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)
   }).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
@@ -1271,7 +1271,7 @@ async function crmSubmitInq(){
 
 async function crmToQuote(iid){
   if(!confirm('確定將此詢問單轉為正式報價嗎？')) return;
-  const r = await fetch(API_BASE + '/api/crm/inquiry/' + iid + '/to-quote', {method:'POST'}).then(r=>r.json());
+  const r = await fetch(API_BASE + withTenant('/api/crm/inquiry/' + iid + '/to-quote'), {method:'POST'}).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
   alert('✅ 已產生報價單 ' + r.報價編號);
   CRM_TAB = 'quotes';
@@ -1279,7 +1279,7 @@ async function crmToQuote(iid){
 }
 async function crmAcceptQuote(qid){
   if(!confirm('客戶接受此報價，轉為正式訂單？')) return;
-  const r = await fetch(API_BASE + '/api/crm/quote/' + qid + '/accept', {method:'POST'}).then(r=>r.json());
+  const r = await fetch(API_BASE + withTenant('/api/crm/quote/' + qid + '/accept'), {method:'POST'}).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
   alert('✅ 已產生訂單 ' + r.訂單編號);
   CRM_TAB = 'orders';
@@ -1287,12 +1287,12 @@ async function crmAcceptQuote(qid){
 }
 async function crmRejectQuote(qid){
   if(!confirm('確定拒絕此報價？')) return;
-  await fetch(API_BASE + '/api/crm/quote/' + qid + '/reject', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+  await fetch(API_BASE + withTenant('/api/crm/quote/' + qid + '/reject'), {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
   renderCRM();
 }
 async function crmStartInstall(oid){
   if(!confirm('啟動安裝流程？凌策 AI Deploy Agent 將自動部署所有模組')) return;
-  const r = await fetch(API_BASE + '/api/crm/order/' + oid + '/install', {method:'POST'}).then(r=>r.json());
+  const r = await fetch(API_BASE + withTenant('/api/crm/order/' + oid + '/install'), {method:'POST'}).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
   alert('✅ 已建立安裝記錄 ' + r.安裝編號);
   CRM_TAB = 'installations';
@@ -1300,7 +1300,7 @@ async function crmStartInstall(oid){
 }
 async function crmCompleteInstall(iid){
   if(!confirm('確認完成交付？所有模組已上線運作')) return;
-  await fetch(API_BASE + '/api/crm/installation/' + iid + '/complete', {method:'POST'});
+  await fetch(API_BASE + withTenant('/api/crm/installation/' + iid + '/complete'), {method:'POST'});
   renderCRM();
 }
 
@@ -3052,7 +3052,7 @@ async function renderOrgEditor() {
     document.getElementById('org-editor-content').innerHTML = '<div class="text-center text-slate-400 py-12">需後端連線<br><button onclick="renderOrgEditor()" class="mt-3 px-3 py-1 bg-blue-600 rounded text-sm">🔄 重試</button></div>';
     return;
   }
-  const r = await fetch(API_BASE + '/api/org/members-flat');
+  const r = await fetch(API_BASE + withTenant('/api/org/members-flat'));
   const members = await r.json();
 
   // 統計各部門人數 + 排序
@@ -3316,7 +3316,7 @@ async function renderLeavesTab() {
   try {
     const [chainR, membersR] = await Promise.all([
       fetch(API_BASE + '/api/leave/preview-chain/' + ORG_CURRENT_USER_PERSONA),
-      fetch(API_BASE + '/api/org/members-flat'),
+      fetch(API_BASE + withTenant('/api/org/members-flat')),
     ]);
     const chain = await chainR.json();
     const members = await membersR.json();
@@ -3803,7 +3803,7 @@ async function openImportMembersModal() {
   if (!HR_EDITOR_SELECTED_DEPT) { alert('請先選擇目標部門'); return; }
   IMPORT_SELECTED_IDS = new Set();
 
-  const r = await fetch(API_BASE + '/api/org/members-flat');
+  const r = await fetch(API_BASE + withTenant('/api/org/members-flat'));
   const members = await r.json();
 
   // 取得當前部門成員（供「改指派上級」下拉）
@@ -3993,7 +3993,7 @@ function showAddMemberForm() {
   if (existing) { existing.scrollIntoView({behavior:'smooth'}); return; }
 
   // Supervisor 採可搜尋 picker
-  fetch(API_BASE + '/api/org/members-flat').then(r=>r.json()).then(members => {
+  fetch(API_BASE + withTenant('/api/org/members-flat')).then(r=>r.json()).then(members => {
     ADD_MEMBER_ALL_CACHE = members.sort((a,b)=>a.role_level-b.role_level);
 
     const form = document.createElement('div');
@@ -4854,7 +4854,7 @@ let MD_ALL_MEMBERS_CACHE = null;
 async function loadRelatedCandidates() {
   if (!MD_ALL_MEMBERS_CACHE) {
     try {
-      const r = await fetch(API_BASE + '/api/org/members-flat');
+      const r = await fetch(API_BASE + withTenant('/api/org/members-flat'));
       MD_ALL_MEMBERS_CACHE = await r.json();
     } catch(e) { MD_ALL_MEMBERS_CACHE = []; }
   }
@@ -7699,7 +7699,7 @@ async function _accLoadMicrojetOrgWidget(){
       <div id="org-mini-widget" class="text-slate-400 text-sm">載入中...</div>
     </div>`;
   try {
-    const members = await fetch(API_BASE + '/api/org/members-flat').then(r => r.json());
+    const members = await fetch(API_BASE + withTenant('/api/org/members-flat')).then(r => r.json());
     // 只計 microjet 的
     const microjet = members.filter(m => (m.dept||'').includes('MICROJET'));
     // 依頂層部門分組
@@ -8744,6 +8744,7 @@ async function _attnRenderDaily(){
     const dept = document.getElementById('attn-dept')?.value || '';
     const q = new URLSearchParams({date: picker});
     if (dept) q.set('dept', dept);
+    q.set('tenant', CURRENT_TENANT);
     const d = await fetch(API_BASE + '/api/attendance-stats/daily?' + q.toString()).then(r => r.json());
     const cntBadge = Object.entries(d.counter || {}).map(([k,v]) => {
       const s = ATTN_STATUS_OPTIONS.find(x=>x.k===k);
@@ -8798,7 +8799,7 @@ async function _attnRenderMonthly(){
     </div>
     <div id="attn-monthly-result" class="text-slate-400 text-sm">載入中...</div>`;
   try {
-    const d = await fetch(`${API_BASE}/api/attendance-stats/monthly?year=${y}&month=${m}`).then(r => r.json());
+    const d = await fetch(`${API_BASE}/api/attendance-stats/monthly?year=${y}&month=${m}&tenant=${CURRENT_TENANT}`).then(r => r.json());
     const grand = Object.entries(d.grand_counter||{}).map(([k,v]) => {
       const s = ATTN_STATUS_OPTIONS.find(x=>x.k===k);
       if(!s) return '';
@@ -8863,7 +8864,7 @@ async function _attnRenderPersonal(){
   // 載入/快取成員清單
   if (!window.__ATTN_MEMBERS) {
     try {
-      const members = await fetch(API_BASE + '/api/org/members-flat').then(r => r.json());
+      const members = await fetch(API_BASE + withTenant('/api/org/members-flat')).then(r => r.json());
       window.__ATTN_MEMBERS = members;
       // 依部門分組（與組織頁用同邏輯：頂層 / 二層）
       const by = {};

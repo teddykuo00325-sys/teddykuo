@@ -993,43 +993,48 @@ def api_chat_analyze():
 
 @app.route('/api/chat/create', methods=['POST'])
 def api_chat_create():
-    """建立或取得聊天室"""
+    """建立或取得聊天室（tenant-aware via initiator_id）"""
+    from tenant_context import bundle_for_member
     data = request.json or {}
     initiator = data.get('initiator_id')
     target = data.get('target_id')
-    result = chat_mgr.create_or_get_room(initiator, target)
+    result = bundle_for_member(initiator).chat.create_or_get_room(initiator, target)
     return jsonify(result)
 
 @app.route('/api/chat/rooms/<member_id>')
 def api_chat_rooms(member_id):
     """列出該成員參與的所有聊天室"""
-    rooms = chat_mgr.list_rooms(member_id)
+    from tenant_context import bundle_for_member
+    cm = bundle_for_member(member_id).chat
+    rooms = cm.list_rooms(member_id)
     return jsonify({
         'member_id': member_id,
-        'unread_total': chat_mgr.get_unread_count(member_id),
+        'unread_total': cm.get_unread_count(member_id),
         'rooms': rooms,
     })
 
 @app.route('/api/chat/messages/<room_id>')
 def api_chat_messages(room_id):
     """取得聊天室訊息"""
+    from tenant_context import bundle_for_member
     member_id = request.args.get('member_id')
     since = request.args.get('since')
     if not member_id:
         return jsonify({'success': False, 'error': 'member_id is required'}), 400
-    result = chat_mgr.get_messages(room_id, member_id, since)
+    result = bundle_for_member(member_id).chat.get_messages(room_id, member_id, since)
     return jsonify(result)
 
 @app.route('/api/chat/send', methods=['POST'])
 def api_chat_send():
     """發送訊息"""
+    from tenant_context import bundle_for_member
     data = request.json or {}
     room_id = data.get('room_id')
     sender_id = data.get('sender_id')
     content = data.get('content', '').strip()
     if not content:
         return jsonify({'success': False, 'error': '訊息不可為空'}), 400
-    result = chat_mgr.send_message(room_id, sender_id, content)
+    result = bundle_for_member(sender_id).chat.send_message(room_id, sender_id, content)
     return jsonify(result)
 
 @app.route('/api/chat/stats')
@@ -1075,12 +1080,14 @@ def api_chat_toggle_ai():
 
 @app.route('/api/org/permissions/<actor_id>')
 def api_check_hr(actor_id):
-    """檢查某人的組織編輯/HR 權限"""
-    actor = attendance_mgr.members.get(actor_id)
-    is_hr = attendance_mgr.check_hr_permission(actor_id)
-    can_edit_org = attendance_mgr.check_org_edit_permission(actor_id)
+    """檢查某人的組織編輯/HR 權限（tenant-aware）"""
+    from tenant_context import bundle_for_member
+    mgr = bundle_for_member(actor_id).attendance
+    actor = mgr.members.get(actor_id)
+    is_hr = mgr.check_hr_permission(actor_id)
+    can_edit_org = mgr.check_org_edit_permission(actor_id)
     is_gm = bool(actor and actor.title and '總經理' in actor.title)
-    can_see_all = attendance_mgr.check_view_all_permission(actor_id)
+    can_see_all = mgr.check_view_all_permission(actor_id)
     return jsonify({
         'actor_id': actor_id,
         'is_hr': is_hr,
@@ -1193,14 +1200,16 @@ def api_task_pending(member_id):
 
 @app.route('/api/org/audit-log')
 def api_org_audit_log():
-    """取得組織編輯稽核日誌（僅 HR / 總經理 可檢視）"""
+    """取得組織編輯稽核日誌（僅 HR / 總經理 可檢視，tenant-aware）"""
+    from tenant_context import bundle_for_member
     actor_id = request.args.get('actor_id')
-    if not attendance_mgr.check_org_edit_permission(actor_id):
+    mgr = bundle_for_member(actor_id).attendance
+    if not mgr.check_org_edit_permission(actor_id):
         return jsonify({'error': '無權限：需 HR 或總經理'}), 403
     limit = int(request.args.get('limit', 200))
     action_filter = request.args.get('action')
     target_filter = request.args.get('target_id')
-    entries = attendance_mgr.get_audit_log(limit, action_filter, target_filter)
+    entries = mgr.get_audit_log(limit, action_filter, target_filter)
     return jsonify({'entries': entries, 'total': len(entries)})
 
 @app.route('/api/org/members-flat')
@@ -1244,9 +1253,11 @@ def api_leave_types():
 
 @app.route('/api/leave/apply', methods=['POST'])
 def api_leave_apply():
+    from tenant_context import bundle_for_member
     data = request.json or {}
-    return jsonify(leave_ot_mgr.apply_leave(
-        member_id=data.get('member_id'),
+    mid = data.get('member_id')
+    return jsonify(bundle_for_member(mid).leave_ot.apply_leave(
+        member_id=mid,
         leave_type=data.get('leave_type'),
         start_at=data.get('start_at'),
         end_at=data.get('end_at'),
@@ -1258,7 +1269,8 @@ def api_leave_apply():
 @app.route('/api/leave/preview-chain/<mid>')
 def api_leave_preview_chain(mid):
     """預覽審批鏈（申請前給使用者看誰會審）"""
-    return jsonify(leave_ot_mgr.build_approval_chain(mid))
+    from tenant_context import bundle_for_member
+    return jsonify(bundle_for_member(mid).leave_ot.build_approval_chain(mid))
 
 @app.route('/api/leave/proxy/active')
 def api_proxy_active():
@@ -1318,27 +1330,35 @@ def api_hr_attendance_report_csv():
 @app.route('/api/leave/approve', methods=['POST'])
 def api_leave_approve():
     data = request.json or {}
-    return jsonify(leave_ot_mgr.approve_leave(data.get('approver_id'), data.get('leave_id')))
+    from tenant_context import bundle_for_member
+    aid = data.get('approver_id')
+    return jsonify(bundle_for_member(aid).leave_ot.approve_leave(aid, data.get('leave_id')))
 
 @app.route('/api/leave/reject', methods=['POST'])
 def api_leave_reject():
     data = request.json or {}
-    return jsonify(leave_ot_mgr.reject_leave(data.get('approver_id'), data.get('leave_id'),
+    from tenant_context import bundle_for_member
+    aid = data.get('approver_id')
+    return jsonify(bundle_for_member(aid).leave_ot.reject_leave(aid, data.get('leave_id'),
                                              reason=data.get('reason','')))
 
 @app.route('/api/leave/member/<mid>')
 def api_leave_member(mid):
-    return jsonify(leave_ot_mgr.get_member_leaves(mid))
+    from tenant_context import bundle_for_member
+    return jsonify(bundle_for_member(mid).leave_ot.get_member_leaves(mid))
 
 @app.route('/api/leave/pending/<mid>')
 def api_leave_pending(mid):
-    return jsonify(leave_ot_mgr.get_pending_leaves_for(mid))
+    from tenant_context import bundle_for_member
+    return jsonify(bundle_for_member(mid).leave_ot.get_pending_leaves_for(mid))
 
 @app.route('/api/overtime/submit', methods=['POST'])
 def api_overtime_submit():
     data = request.json or {}
-    return jsonify(leave_ot_mgr.submit_overtime(
-        member_id=data.get('member_id'),
+    from tenant_context import bundle_for_member
+    mid = data.get('member_id')
+    return jsonify(bundle_for_member(mid).leave_ot.submit_overtime(
+        member_id=mid,
         work_date=data.get('work_date'),
         day_type=data.get('day_type', 'weekday'),
         start_hhmm=data.get('start_hhmm'),
@@ -1350,21 +1370,27 @@ def api_overtime_submit():
 @app.route('/api/overtime/approve', methods=['POST'])
 def api_overtime_approve():
     data = request.json or {}
-    return jsonify(leave_ot_mgr.approve_overtime(data.get('approver_id'), data.get('overtime_id')))
+    from tenant_context import bundle_for_member
+    aid = data.get('approver_id')
+    return jsonify(bundle_for_member(aid).leave_ot.approve_overtime(aid, data.get('overtime_id')))
 
 @app.route('/api/overtime/reject', methods=['POST'])
 def api_overtime_reject():
     data = request.json or {}
-    return jsonify(leave_ot_mgr.reject_overtime(data.get('approver_id'), data.get('overtime_id'),
+    from tenant_context import bundle_for_member
+    aid = data.get('approver_id')
+    return jsonify(bundle_for_member(aid).leave_ot.reject_overtime(aid, data.get('overtime_id'),
                                                  reason=data.get('reason','')))
 
 @app.route('/api/overtime/member/<mid>')
 def api_overtime_member(mid):
-    return jsonify(leave_ot_mgr.get_member_overtimes(mid))
+    from tenant_context import bundle_for_member
+    return jsonify(bundle_for_member(mid).leave_ot.get_member_overtimes(mid))
 
 @app.route('/api/overtime/pending/<mid>')
 def api_overtime_pending(mid):
-    return jsonify(leave_ot_mgr.get_pending_overtimes_for(mid))
+    from tenant_context import bundle_for_member
+    return jsonify(bundle_for_member(mid).leave_ot.get_pending_overtimes_for(mid))
 
 @app.route('/api/overtime/calc-off-time', methods=['POST'])
 def api_overtime_calc_off_time():
@@ -1791,22 +1817,28 @@ def api_crm_website():
 # ══════════════════════════════════════════════════════════
 @app.route('/api/attendance-stats/daily')
 def api_attn_daily():
+    tenant = parse_tenant(request.args, default='microjet')
+    ana = TENANT_CTX.get(tenant).analytics
     date_str = request.args.get('date') or datetime.now().strftime('%Y-%m-%d')
     dept = request.args.get('dept') or None
-    return jsonify(attn_analytics.daily_summary(date_str, dept=dept))
+    return jsonify(ana.daily_summary(date_str, dept=dept))
 
 @app.route('/api/attendance-stats/monthly')
 def api_attn_monthly():
+    tenant = parse_tenant(request.args, default='microjet')
+    ana = TENANT_CTX.get(tenant).analytics
     y = int(request.args.get('year') or datetime.now().year)
     m = int(request.args.get('month') or datetime.now().month)
     dept = request.args.get('dept') or None
-    return jsonify(attn_analytics.monthly_summary(y, m, dept=dept))
+    return jsonify(ana.monthly_summary(y, m, dept=dept))
 
 @app.route('/api/attendance-stats/member/<mid>')
 def api_attn_member(mid):
+    from tenant_context import bundle_for_member
+    ana = bundle_for_member(mid).analytics
     y = int(request.args.get('year') or datetime.now().year)
     m = int(request.args.get('month') or datetime.now().month)
-    return jsonify(attn_analytics.member_monthly(mid, y, m))
+    return jsonify(ana.member_monthly(mid, y, m))
 
 @app.route('/api/attendance-stats/edit', methods=['POST'])
 def api_attn_edit_request():

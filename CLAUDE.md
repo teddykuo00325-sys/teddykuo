@@ -42,16 +42,43 @@
 lingce-company/
 ├── dashboard.html                    # 主儀表板（老闆視角）
 ├── src/backend/
-│   ├── server.py                     # Flask API
+│   ├── server.py                     # Flask API（tenant-aware）
+│   ├── tenant_context.py             # 多租戶調度（lingce/microjet/addwii/weiming）
 │   ├── attendance_manager.py         # 客戶組織狀態機
-│   ├── chat_manager.py               # 客戶組織聊天
+│   ├── chat_manager.py               # 客戶組織聊天（per-tenant log dir）
 │   ├── task_manager.py               # 任務派工
 │   ├── leave_overtime_manager.py     # 請假/加班（多級審批 + 職務代理人）
 │   ├── members_data.py               # microjet + addwii 集團員工
+│   ├── crm_manager.py                # CRM（每 tenant 一個 sqlite）
+│   ├── pii_guard.py                  # PII 9 類偵測與遮蔽
 │   └── acceptance_scenarios.py       # 驗收中心 6 大 AI 能力場景
-├── chat_logs/                        # JSONL 持久化
+├── data/                             # 每 tenant 獨立資料
+│   ├── lingce/     (1 人 + 10 AI)
+│   ├── microjet/   (134 人)
+│   ├── addwii/     (6 人)
+│   └── weiming/    (0 人・評估中)
+│       └── 每個 tenant 包含：
+│           ├── org.json
+│           ├── crm.db
+│           ├── audit/
+│           ├── leave_overtime/
+│           ├── attendance_analytics/
+│           └── chat_rooms/
+├── chat_logs/                        # (legacy, 僅存 operator-level 稽核)
 └── ...
 ```
+
+---
+
+## 🔀 多租戶路由規則
+
+每個 API endpoint 的 tenant 解析順序：
+
+1. **明確指定**：`?tenant=microjet` (CRM / Org / Attendance-stats 列表類)
+2. **自動推斷**：`bundle_for_member(member_id)` — 依成員 ID 反查所屬 tenant（Chat / Leave / Overtime / Org-permissions）
+3. **預設**：microjet（最大組織，相容舊呼叫）
+
+前端用 `CURRENT_TENANT` 狀態變數 + `withTenant(url)` helper 注入 tenant param；側欄 5 分組（凌策 / microjet / addwii / 維明 / 外部客戶）切換時會同步更新 CURRENT_TENANT。
 
 ---
 
@@ -59,8 +86,9 @@ lingce-company/
 - 啟動後端：`python src/backend/server.py`
   - 自動預熱 Ollama gemma4:e2b
   - 自動預熱 CSV 快取
-  - IPv6 dual-stack（`::`）避免 Windows localhost 解析延遲
+  - 綁定 `0.0.0.0:5000`（Windows IPv6-only 相容性修正）
 - 瀏覽器開啟：`http://localhost:5000/dashboard.html`
+- 首次使用多租戶：`python scripts/migrate_to_multitenant.py` 切分既有 org_data.json → 4 個 tenant
 
 ## 🛡️ 技術選型
 - 前端：HTML + Tailwind CSS (CDN)
