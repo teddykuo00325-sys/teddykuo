@@ -5265,7 +5265,8 @@ async function openChatRoom(roomId) {
   document.getElementById('chat-panel').classList.remove('hidden');
   await refreshChatRoom();
   if (CHAT_POLL_TIMER) clearInterval(CHAT_POLL_TIMER);
-  CHAT_POLL_TIMER = setInterval(refreshChatRoom, 3000);
+  // 輪詢間隔 3 秒 → 5 秒，配合 diff 更新降低資料競爭機率
+  CHAT_POLL_TIMER = setInterval(refreshChatRoom, 5000);
 }
 
 // 從 room_id 'room_A_B' 解出對方 ID
@@ -5354,9 +5355,6 @@ async function refreshChatRoom() {
     if (CHAT_RENDERED_ROOM !== CHAT_ACTIVE_ROOM) {
       renderChatPanel(data);
       CHAT_RENDERED_ROOM = CHAT_ACTIVE_ROOM;
-      // 重置指紋（確保下次輪詢時能正確計算 delta）
-      CHAT_MESSAGES_FP = _fpMessages(data);
-      CHAT_TYPING_FP = _fpTyping(data);
       CHAT_HEADER_FP = '';
     } else {
       updateChatPanelDynamic(data);
@@ -5367,29 +5365,76 @@ async function refreshChatRoom() {
   }
 }
 
-// 部分更新：只改 header/observers/messages/typing，輸入框保留不動
-// ★ 反閃爍：用內容指紋比對，完全相同時跳過 DOM 更新
-let CHAT_MESSAGES_FP = '';   // 上次訊息區塊的指紋
-let CHAT_TYPING_FP   = '';   // 上次 typing 指示的指紋
-let CHAT_HEADER_FP   = '';   // 上次 header 狀態的指紋
+// ─────────────────────────────────────────────────────
+// 聊天室：真正的 DIFF-BASED 增量更新（零閃爍）
+// 每個訊息氣泡用 data-msg-id 標記；輪詢時只 APPEND 新的、只 UPDATE 變化的
+// 不再用 innerHTML 替換整個訊息區
+// ─────────────────────────────────────────────────────
+let CHAT_HEADER_FP = '';
 
-function _fpMessages(data) {
-  // 訊息指紋：id + read_by 狀態（已讀標記也算變化）
-  return data.messages.map(m => {
-    const rbCount = Object.keys(m.read_by || {}).length;
-    return `${m.id || m.timestamp}:${rbCount}`;
-  }).join('|');
-}
-function _fpTyping(data) {
-  const typing = (data.room?.typing_now || []).filter(t => t.id !== ORG_CURRENT_USER_PERSONA);
-  return typing.map(t => t.id).join(',');
+function _msgKey(m) { return m.id || `${m.sender_id}-${m.timestamp}`; }
+
+function _renderSingleMessageHtml(msg, data) {
+  const room = data.room;
+  const myPersona = ORG_CURRENT_USER_PERSONA;
+  const totalReaders = room.participants.length + room.observers.length;
+
+  if (msg.type === 'system') {
+    return `<div data-msg-id="${escapeHtml(_msgKey(msg))}" class="text-center my-2">
+      <span class="inline-block bg-slate-700/50 text-slate-400 text-xs px-3 py-1 rounded-full">${escapeHtml(msg.content)}</span>
+    </div>`;
+  }
+  if (msg.type === 'alert') {
+    return `<div data-msg-id="${escapeHtml(_msgKey(msg))}" class="text-center my-2">
+      <span class="inline-block bg-amber-900/40 text-amber-300 text-xs px-3 py-1 rounded-full border border-amber-500/30">${escapeHtml(msg.content)}</span>
+    </div>`;
+  }
+  const isMe = msg.sender_id === myPersona;
+  const isObserverMsg = msg.type === 'observer_text';
+  const senderMember = ORG_DATA ? findNodeById(ORG_DATA, msg.sender_id) : null;
+  const avatar = senderMember?.avatar || '👤';
+  const senderRole = senderMember?.role || '';
+
+  let readReceipt = '';
+  if (isMe) {
+    const readByOthers = Object.keys(msg.read_by || {}).filter(mid => mid !== msg.sender_id);
+    if (readByOthers.length === 0) readReceipt = '<span class="text-slate-500" title="已送達">✓</span>';
+    else if (readByOthers.length >= totalReaders - 1) readReceipt = '<span class="text-blue-400" title="全員已讀">✓✓</span>';
+    else readReceipt = `<span class="text-slate-400" title="${readByOthers.length} 人已讀">✓✓</span>`;
+  }
+  const aiBadge = msg.ai_generated ? '<span class="ml-1 text-xs bg-purple-700/50 text-purple-200 px-1 rounded">AI</span>' : '';
+  const observerBadge = isObserverMsg ? `<span class="ml-1 text-xs bg-amber-700/50 text-amber-200 px-1 rounded">👁️ 中間主管</span>` : '';
+  const bubbleClass = isObserverMsg
+    ? (isMe ? 'bg-amber-600 text-white rounded-tr-none border border-amber-400'
+            : 'bg-amber-900/60 text-amber-100 rounded-tl-none border border-amber-500/40')
+    : (isMe ? 'bg-purple-600 text-white rounded-tr-none'
+            : 'bg-slate-700 text-slate-100 rounded-tl-none');
+  // 資料屬性記錄 read_by count 用於精準 diff
+  const readByCount = Object.keys(msg.read_by || {}).length;
+  return `
+    <div data-msg-id="${escapeHtml(_msgKey(msg))}" data-rb="${readByCount}" class="flex gap-2 mb-3 ${isMe?'justify-end':''}">
+      ${!isMe ? `<div class="text-xl flex-shrink-0">${avatar}</div>` : ''}
+      <div class="max-w-[75%]">
+        <div class="text-xs text-slate-400 mb-0.5 ${isMe?'text-right':''}">
+          ${!isMe ? escapeHtml(msg.sender_name) : ''}
+          ${!isMe && senderRole ? `<span class="text-slate-500">（${escapeHtml(senderRole)}）</span>` : ''}
+          ${aiBadge}${observerBadge}
+        </div>
+        <div class="${bubbleClass} rounded-xl px-3 py-2 text-sm whitespace-pre-wrap">${escapeHtml(msg.content)}</div>
+        <div class="text-xs text-slate-500 mt-0.5 flex items-center gap-1 ${isMe?'justify-end':''}">
+          <span>${msg.time_display}</span>
+          ${readReceipt}
+        </div>
+      </div>
+      ${isMe ? `<div class="text-xl flex-shrink-0">${avatar}</div>` : ''}
+    </div>`;
 }
 
 function updateChatPanelDynamic(data) {
   const room = data.room;
   const myPersona = ORG_CURRENT_USER_PERSONA;
 
-  // ── Header 狀態（有變才更新）
+  // ── 1. Header 狀態（指紋比對）
   const otherParticipant = room.participants.find(p => p.id !== myPersona);
   if (otherParticipant) {
     const node = ORG_DATA ? findNodeById(ORG_DATA, otherParticipant.id) : null;
@@ -5404,105 +5449,78 @@ function updateChatPanelDynamic(data) {
     }
   }
 
-  // ── 訊息區：先比對指紋
+  // ── 2. 訊息區：逐條 diff（append new / update changed / skip unchanged）
   const msgsEl = document.getElementById('cp-messages');
   if (!msgsEl) return;
 
-  const newMsgFp = _fpMessages(data);
-  const newTypingFp = _fpTyping(data);
-  const messagesChanged = newMsgFp !== CHAT_MESSAGES_FP;
-  const typingChanged = newTypingFp !== CHAT_TYPING_FP;
-
-  // 完全沒變 → 不做任何 DOM 動作（避免閃爍）
-  if (!messagesChanged && !typingChanged) return;
-
-  const wasNearBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 60;
+  const wasNearBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 80;
   const scrollPos = msgsEl.scrollTop;
 
-  if (messagesChanged) {
-    // 只有訊息變：重建訊息 + typing
-    msgsEl.innerHTML = buildMessagesHtml(data) + buildTypingHtml(data);
-    CHAT_MESSAGES_FP = newMsgFp;
-    CHAT_TYPING_FP = newTypingFp;
-  } else if (typingChanged) {
-    // 只有 typing 變 → 只動 typing 區塊，不碰訊息氣泡（避免閃爍）
-    let typingEl = msgsEl.querySelector('#cp-typing-slot');
-    if (!typingEl) {
-      // 第一次：在末尾加一個 slot
-      const slot = document.createElement('div');
-      slot.id = 'cp-typing-slot';
-      msgsEl.appendChild(slot);
-      typingEl = slot;
-    }
-    typingEl.innerHTML = buildTypingHtml(data);
-    CHAT_TYPING_FP = newTypingFp;
+  // 找到 typing slot（放在訊息之後）
+  let typingSlot = msgsEl.querySelector('#cp-typing-slot');
+  if (!typingSlot) {
+    typingSlot = document.createElement('div');
+    typingSlot.id = 'cp-typing-slot';
+    msgsEl.appendChild(typingSlot);
   }
 
-  // 捲動處理
-  if (messagesChanged && data.messages.length > CHAT_LAST_MSG_COUNT) {
-    // 有新訊息 → 若原本在底部就捲到新訊息，否則維持原位
+  // 現有訊息節點索引：id → DOM 節點
+  const existingNodes = new Map();
+  msgsEl.querySelectorAll('[data-msg-id]').forEach(el => {
+    existingNodes.set(el.getAttribute('data-msg-id'), el);
+  });
+
+  let hadNewMessage = false;
+  data.messages.forEach(msg => {
+    const key = _msgKey(msg);
+    const existing = existingNodes.get(key);
+    if (!existing) {
+      // 新訊息 → append 到 typing slot 之前
+      const tmp = document.createElement('div');
+      tmp.innerHTML = _renderSingleMessageHtml(msg, data).trim();
+      const node = tmp.firstElementChild;
+      if (node) {
+        msgsEl.insertBefore(node, typingSlot);
+        hadNewMessage = true;
+      }
+    } else {
+      // 已存在 → 比對 read_by 狀態是否變化
+      const newRb = Object.keys(msg.read_by || {}).length;
+      const oldRb = parseInt(existing.getAttribute('data-rb') || '0', 10);
+      if (newRb !== oldRb) {
+        // 只更新此 bubble
+        const tmp = document.createElement('div');
+        tmp.innerHTML = _renderSingleMessageHtml(msg, data).trim();
+        const newNode = tmp.firstElementChild;
+        if (newNode) existing.replaceWith(newNode);
+      }
+      existingNodes.delete(key);
+    }
+  });
+
+  // ★ 刻意不移除殘留節點
+  //   訊息是 append-only，若 poll 回傳暫時不完整資料（race condition / 快取），
+  //   移除會造成使用者看到「訊息消失」。寧可讓 UI 多顯示，也不要反向閃動。
+
+  // ── 3. Typing 指示（獨立 slot）
+  const newTypingHtml = buildTypingHtml(data);
+  if (typingSlot.innerHTML !== newTypingHtml) {
+    typingSlot.innerHTML = newTypingHtml;
+  }
+
+  // ── 4. 捲動：只有新訊息時做自動捲底；其他變化不動位置
+  if (hadNewMessage) {
     if (wasNearBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
-    else msgsEl.scrollTop = scrollPos;
-  } else if (messagesChanged) {
-    // 訊息更新但不是新增（如已讀狀態變）→ 維持位置
-    msgsEl.scrollTop = scrollPos;
+    // 否則保持使用者原本的閱讀位置
+  } else {
+    // read receipt 等細變動 → 強制不捲動（避免閃動）
+    if (msgsEl.scrollTop !== scrollPos) msgsEl.scrollTop = scrollPos;
   }
 }
 
-// 建構訊息清單 HTML（可重複呼叫於全量 + 部分更新）
+// 建構訊息清單 HTML（初次全量渲染用；diff 更新走 _renderSingleMessageHtml）
 function buildMessagesHtml(data) {
-  const room = data.room;
-  const myPersona = ORG_CURRENT_USER_PERSONA;
-  const totalReaders = room.participants.length + room.observers.length;
-
-  return data.messages.map(msg => {
-    if (msg.type === 'system') {
-      return `<div class="text-center my-2"><span class="inline-block bg-slate-700/50 text-slate-400 text-xs px-3 py-1 rounded-full">${escapeHtml(msg.content)}</span></div>`;
-    }
-    if (msg.type === 'alert') {
-      return `<div class="text-center my-2"><span class="inline-block bg-amber-900/40 text-amber-300 text-xs px-3 py-1 rounded-full border border-amber-500/30">${escapeHtml(msg.content)}</span></div>`;
-    }
-    const isMe = msg.sender_id === myPersona;
-    const isObserverMsg = msg.type === 'observer_text';
-    const senderMember = ORG_DATA ? findNodeById(ORG_DATA, msg.sender_id) : null;
-    const avatar = senderMember?.avatar || '👤';
-    const senderRole = senderMember?.role || '';
-
-    let readReceipt = '';
-    if (isMe) {
-      const readByOthers = Object.keys(msg.read_by || {}).filter(mid => mid !== msg.sender_id);
-      if (readByOthers.length === 0) readReceipt = '<span class="text-slate-500" title="已送達">✓</span>';
-      else if (readByOthers.length >= totalReaders - 1) readReceipt = '<span class="text-blue-400" title="全員已讀">✓✓</span>';
-      else readReceipt = `<span class="text-slate-400" title="${readByOthers.length} 人已讀">✓✓</span>`;
-    }
-
-    const aiBadge = msg.ai_generated ? '<span class="ml-1 text-xs bg-purple-700/50 text-purple-200 px-1 rounded">AI</span>' : '';
-    const observerBadge = isObserverMsg ? `<span class="ml-1 text-xs bg-amber-700/50 text-amber-200 px-1 rounded" title="跨階級中間主管發言">👁️ 中間主管</span>` : '';
-
-    const bubbleClass = isObserverMsg
-      ? (isMe ? 'bg-amber-600 text-white rounded-tr-none border border-amber-400'
-              : 'bg-amber-900/60 text-amber-100 rounded-tl-none border border-amber-500/40')
-      : (isMe ? 'bg-purple-600 text-white rounded-tr-none'
-              : 'bg-slate-700 text-slate-100 rounded-tl-none');
-
-    return `
-      <div class="flex gap-2 mb-3 ${isMe?'justify-end':''}">
-        ${!isMe ? `<div class="text-xl flex-shrink-0">${avatar}</div>` : ''}
-        <div class="max-w-[75%]">
-          <div class="text-xs text-slate-400 mb-0.5 ${isMe?'text-right':''}">
-            ${!isMe ? escapeHtml(msg.sender_name) : ''}
-            ${!isMe && senderRole ? `<span class="text-slate-500">（${escapeHtml(senderRole)}）</span>` : ''}
-            ${aiBadge}${observerBadge}
-          </div>
-          <div class="${bubbleClass} rounded-xl px-3 py-2 text-sm whitespace-pre-wrap">${escapeHtml(msg.content)}</div>
-          <div class="text-xs text-slate-500 mt-0.5 flex items-center gap-1 ${isMe?'justify-end':''}">
-            <span>${msg.time_display}</span>
-            ${readReceipt}
-          </div>
-        </div>
-        ${isMe ? `<div class="text-xl flex-shrink-0">${avatar}</div>` : ''}
-      </div>`;
-  }).join('');
+  return data.messages.map(msg => _renderSingleMessageHtml(msg, data)).join('');
 }
 
 function buildTypingHtml(data) {
