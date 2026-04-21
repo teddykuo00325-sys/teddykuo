@@ -77,7 +77,8 @@ class ProcurementManager:
 
     def __init__(self, json_path: str):
         self.json_path = json_path
-        self._lock = threading.Lock()
+        # ★ 用 RLock 而非 Lock：reset() 內呼叫 get_scenario()，Lock 會死鎖
+        self._lock = threading.RLock()
         self.state: dict[str, Any] = {}
         self._load()
 
