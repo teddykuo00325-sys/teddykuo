@@ -5,7 +5,7 @@
     "role": "經理",
     "title": "行銷長（CMO）",
     "dept": "addwii 加我科技",
-    "supervisor_id": "BOARD-001",
+    "supervisor_id": null,
     "avatar": "📣",
     "is_hr": false
   },
