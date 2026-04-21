@@ -2331,30 +2331,48 @@ function _orgPopulateDeptOptions() {
     const colors = ['amber', 'blue', 'emerald', 'purple', 'rose', 'cyan', 'indigo', 'fuchsia'];
     qb.innerHTML = depts.map((d, i) => {
       const c = colors[i % colors.length];
-      return `<button onclick="selectDeptQuick('${escapeHtml(d).replace(/'/g,"\\'")}')"
-                      class="text-[11px] px-2 py-1 rounded-full bg-${c}-900/30 border border-${c}-500/30 text-${c}-200 hover:bg-${c}-700/50">
+      const safeDept = d.replace(/'/g, "\\'").replace(/"/g, '\\"');
+      return `<button onclick="selectDeptQuick('${safeDept}')" data-dept="${escapeHtml(d)}"
+                      class="text-[11px] px-2 py-1 rounded-full bg-${c}-900/30 border border-${c}-500/30 text-${c}-200 hover:bg-${c}-700/50 transition">
                 ${escapeHtml(d)} <span class="text-${c}-400 font-mono">${deptCounts[d]}</span>
               </button>`;
-    }).join('') + `<button onclick="selectDeptQuick('')"
-                           class="text-[11px] px-2 py-1 rounded-full bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600">
-                     全部 <span class="font-mono">${flat.length}</span>
+    }).join('') + `<button onclick="selectDeptQuick('')" data-dept=""
+                           class="text-[11px] px-2 py-1 rounded-full bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600 transition">
+                     🌐 全部 <span class="font-mono">${flat.length}</span>
                    </button>`;
     qb.dataset.filled = '1';
   }
 }
 
 function selectDeptQuick(d) {
+  // 清除其他過濾條件（搜尋框 / 職階 / HR），單獨以部門為過濾依據
+  const q = document.getElementById('org-search-input'); if (q) q.value = '';
+  const r = document.getElementById('org-filter-role'); if (r) r.value = '';
+  const h = document.getElementById('org-filter-hr'); if (h) h.checked = false;
   const sel = document.getElementById('org-filter-dept');
   if (sel) sel.value = d;
-  applyOrgSearch();
-  // 視覺反饋：按鈕高亮（簡化：scroll to first matching node）
-  if (d) {
-    const first = document.querySelector(`[data-dept="${d}"]`);
-    if (first) first.scrollIntoView({behavior: 'smooth', block: 'center'});
+
+  const firstHit = applyOrgSearch();
+
+  // 自動捲動到該部門第一位成員 + 閃光
+  if (d && firstHit) {
+    // 延遲 50ms 讓 display 變更生效後再 scroll
+    setTimeout(() => {
+      firstHit.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'center' });
+      // 3 秒金色光暈
+      const origShadow = firstHit.style.boxShadow;
+      firstHit.style.transition = 'box-shadow .5s';
+      firstHit.style.boxShadow = '0 0 0 4px #60a5fa, 0 0 40px rgba(96,165,250,0.8)';
+      setTimeout(() => { firstHit.style.boxShadow = origShadow; }, 2500);
+    }, 80);
+  } else if (!d) {
+    // 「全部」按鈕：捲回組織樹頂端
+    const tree = document.getElementById('org-tree-scroll');
+    if (tree) tree.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
-// 搜尋 + 過濾：高亮匹配成員 + 淡化不符者 + 更新計數
+// 搜尋 + 過濾：有過濾條件時「完全隱藏」不符者；沒過濾時全部顯示
 function applyOrgSearch(_override) {
   _orgPopulateDeptOptions();
   const qEl = document.getElementById('org-search-input');
@@ -2363,8 +2381,10 @@ function applyOrgSearch(_override) {
   const role = document.getElementById('org-filter-role')?.value || '';
   const hrOnly = document.getElementById('org-filter-hr')?.checked || false;
 
+  const hasFilter = !!(q || dept || role || hrOnly);
   const nodes = document.querySelectorAll('[data-member-id]');
   let matchCount = 0;
+  let firstHit = null;
   nodes.forEach(el => {
     const id = el.getAttribute('data-member-id') || '';
     const name = (el.getAttribute('data-name') || '').toLowerCase();
@@ -2381,16 +2401,38 @@ function applyOrgSearch(_override) {
     const ok = matchQ && matchDept && matchRole && matchHr;
 
     el.style.transition = 'opacity .2s';
-    el.style.opacity = ok ? '1' : '0.15';
-    if (ok) {
-      matchCount++;
+    if (!hasFilter) {
+      // 無過濾 → 全部顯示
+      el.style.display = '';
+      el.style.opacity = '1';
+      el.classList.remove('search-hit');
+    } else if (ok) {
+      // 符合 → 顯示 + 高亮
+      el.style.display = '';
+      el.style.opacity = '1';
       el.classList.add('search-hit');
+      matchCount++;
+      if (!firstHit) firstHit = el;
     } else {
+      // 不符 → 完全隱藏（不再半透明，視覺乾淨）
+      el.style.display = 'none';
       el.classList.remove('search-hit');
     }
   });
   const cnt = document.getElementById('org-search-count');
-  if (cnt) cnt.textContent = (q || dept || role || hrOnly) ? `符合 ${matchCount} 人` : '';
+  if (cnt) cnt.textContent = hasFilter ? `符合 ${matchCount} 人` : '';
+
+  // 部門按鈕高亮
+  const qb = document.getElementById('org-dept-quickbar');
+  if (qb) {
+    qb.querySelectorAll('button').forEach(btn => {
+      const deptVal = btn.getAttribute('data-dept') || '';
+      if (deptVal === dept) btn.classList.add('ring-2', 'ring-white');
+      else btn.classList.remove('ring-2', 'ring-white');
+    });
+  }
+
+  return firstHit;
 }
 
 function clearOrgFilters() {
