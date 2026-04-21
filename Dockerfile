@@ -12,7 +12,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # 只裝精簡依賴（~30 MB，無 chromadb/sentence-transformers）
-COPY requirements-minimal.txt ./
+# 註：2026-04-22 後 requirements-minimal.txt 已搬至 deploy/ 子目錄
+COPY deploy/requirements-minimal.txt ./requirements-minimal.txt
 RUN pip install --upgrade pip && pip install -r requirements-minimal.txt && \
     pip install gunicorn
 
