@@ -375,3 +375,9 @@
 {"ts": "2026-04-21T22:03:42", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "聯繫方式", "retrieval": "bigram", "use_ai": false}}
 {"ts": "2026-04-21T22:12:40", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "夜間運轉會吵到嬰兒嗎？", "retrieval": "bigram", "use_ai": false}}
 {"ts": "2026-04-21T22:33:59", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T22:39:47", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T22:42:14", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T00:06:47", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T00:19:08", "action": "product_qa", "user": "guest", "detail": {"customer": "microjet", "q": "我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T00:19:08", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-D5B97AE7", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 4}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T00:19:08", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-2C34166D", "client": "奇景光電", "elapsed_sec": 0.0}}

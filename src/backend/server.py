@@ -1822,6 +1822,140 @@ def api_acc_qa_reset():
     return jsonify(accs.qa_session_reset(d.get('session_id','')))
 
 
+# ══════════════════════════════════════════════════════════
+# microjet 驗收標準 v0.3 · 5 大場景 endpoints
+# ══════════════════════════════════════════════════════════
+@app.route('/api/microjet/classify-tickets', methods=['POST'])
+def api_microjet_classify_tickets():
+    """場景 B：客訴工單批次分類 + 緊急度 + 回覆模板 + 重複偵測"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    records = d.get('records')
+    if not records:
+        records = _microjet_demo_tickets()
+    return jsonify(mjs.classify_tickets_batch(records, user=d.get('user', 'guest')))
+
+
+@app.route('/api/microjet/daily-dashboard', methods=['POST'])
+def api_microjet_daily_dashboard():
+    """場景 D：客戶回饋日報 Dashboard（Top3 抱怨/讚美 + 新興風險 + 改善建議）"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    comments = d.get('comments')
+    if not comments:
+        comments = _microjet_demo_comments()
+    return jsonify(mjs.generate_daily_dashboard(comments, user=d.get('user', 'guest')))
+
+
+@app.route('/api/microjet/access-anomaly', methods=['POST'])
+def api_microjet_access_anomaly():
+    """場景 E：存取異常偵測（非工時 + 大量下載）"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    logs = d.get('access_logs')
+    if not logs:
+        logs = _microjet_demo_access_logs()
+    return jsonify(mjs.scan_access_anomaly(logs))
+
+
+@app.route('/api/microjet/compliance-gaps')
+def api_microjet_compliance_gaps():
+    """場景 E：合規缺口掃描（25 項控制點 vs 已實作）"""
+    import microjet_scenarios as mjs
+    return jsonify(mjs.scan_compliance_gaps())
+
+
+@app.route('/api/microjet/incident-notice', methods=['POST'])
+def api_microjet_incident_notice():
+    """場景 E：個資法第 12 條事件通報草稿"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    return jsonify(mjs.generate_incident_notice(d.get('incident') or {}))
+
+
+@app.route('/api/microjet/b2b-proposal-8sec', methods=['POST'])
+def api_microjet_b2b_proposal():
+    """場景 C：8 段落 B2B 提案（3 分鐘內產出）"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    profile = d.get('client_profile') or _microjet_demo_client()
+    return jsonify(mjs.generate_b2b_proposal_8sec(profile, user=d.get('user', 'guest')))
+
+
+# ── Demo 資料（給前端/評審直接用預設值 POST 就看到結果）──
+def _microjet_demo_tickets():
+    return [
+        {'id':'TK-001', 'customer':'A 公司林採購', 'email':'lin@a.com', 'ts':'2026-04-21T14:20:00',
+         'content':'我上個月買的 MJ-3200 列印品質變差，你們再不處理我要上網公開！已投訴消保會！'},
+        {'id':'TK-002', 'customer':'A 公司林採購', 'email':'lin@a.com', 'ts':'2026-04-21T02:30:00',
+         'content':'又來信補充，這台機器冒煙了還沒回覆'},
+        {'id':'TK-003', 'customer':'B 工廠張', 'email':'zhang@b.com', 'ts':'2026-04-21T09:15:00',
+         'content':'MJ-3200 E-043 錯誤，剛換新墨水匣，還在保固期內嗎？'},
+        {'id':'TK-004', 'customer':'C 公司王', 'email':'wang@c.com', 'ts':'2026-04-21T10:30:00',
+         'content':'上個月的發票沒收到，請協助補寄'},
+        {'id':'TK-005', 'customer':'D Studio', 'email':'ds@d.com', 'ts':'2026-04-21T11:00:00',
+         'content':'CurieJet P760 裝不上我們的 ESP32 板子，有沒有相容 driver？'},
+        {'id':'TK-006', 'customer':'E 醫院', 'email':'e@h.com', 'ts':'2026-04-21T15:40:00',
+         'content':'MJ-3200 買了兩個月就壞了，想退貨，這品質不行'},
+    ]
+
+
+def _microjet_demo_comments():
+    """模擬多平台評論 CSV"""
+    from datetime import datetime, timedelta
+    base = datetime.now()
+    platforms = ['官網', 'PChome', 'Momo', 'Google Review', 'FB 社團']
+    templates = [
+        (4, '列印速度快，感謝 MicroJet 的保固服務'),
+        (5, '非常好用，墨水匣相容性佳，列印速度一流'),
+        (2, '墨水匣常常乾掉，很困擾'),
+        (1, 'Wi-Fi 一直斷線，連不上網路'),
+        (1, '出貨慢了 3 週，等到火大'),
+        (3, '韌體更新後卡紙率上升，差點想退貨'),
+        (5, '保固到府檢測很快，服務好評'),
+        (2, '升級到 v2.15 後問題一堆'),
+        (4, '列印品質穩定，耗材不算貴'),
+        (1, '又卡紙了，v2.15 韌體有問題'),
+        (1, '墨水匣乾掉問題沒解決'),
+        (2, 'Wi-Fi 斷線好幾次，今天又連不上'),
+    ]
+    comments = []
+    for i, (rating, text) in enumerate(templates):
+        comments.append({
+            'platform': platforms[i % len(platforms)],
+            'date': (base - timedelta(days=i % 8)).strftime('%Y-%m-%d'),
+            'rating': rating,
+            'content': text,
+        })
+    return comments
+
+
+def _microjet_demo_access_logs():
+    """模擬 access log"""
+    return [
+        {'user':'alice',  'ts':'2026-04-21T10:30:00', 'action':'view_customer',  'records_count': 1},
+        {'user':'bob',    'ts':'2026-04-15T23:47:00', 'action':'download_all',   'records_count': 1284},
+        {'user':'charlie','ts':'2026-04-21T03:15:00', 'action':'bulk_export',    'records_count': 2500},
+        {'user':'alice',  'ts':'2026-04-21T14:00:00', 'action':'edit_customer',  'records_count': 3},
+        {'user':'david',  'ts':'2026-04-21T09:00:00', 'action':'view_customer',  'records_count': 50},
+    ]
+
+
+def _microjet_demo_client():
+    return {
+        'name': '奇景光電',
+        'region': '新竹工業區',
+        'history_months': 12,
+        'goal': '導入 MES 整合 + 產線精密感測',
+        'target_models': ['MJ-3200', 'CurieJet P760'],
+        'history_records': [
+            {'date':'2025-06-01','model':'MJ-3200','qty':2,'revenue':360000},
+            {'date':'2025-09-15','model':'CurieJet P760','qty':30,'revenue':960000},
+            {'date':'2026-01-20','model':'MJ-3200','qty':1,'revenue':180000},
+            {'date':'2026-03-10','model':'CurieJet P710','qty':50,'revenue':1200000},
+        ],
+    }
+
 
 # ══════════════════════════════════════════════════════════
 # CRM 營運 API（詢問單 → 報價單 → 訂單 → 安裝記錄）

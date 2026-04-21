@@ -29,8 +29,8 @@
     "date": "2026-04-16",
     "amount": 168000,
     "deposit": 84000,
-    "status": "安裝中",
-    "current_milestone": "install"
+    "status": "運送中",
+    "current_milestone": "shipping"
   },
   "milestones": [
     {
@@ -138,45 +138,54 @@
     "total": 8800,
     "expected_delivery": "2026-04-22",
     "status": "已出貨",
-    "shipped_at": "2026-04-21T22:35:57"
+    "shipped_at": "2026-04-21T22:44:46"
   },
   "sensor_serials": [
     {
       "serial": "CJ-P760-20260421-0001",
       "sku": "CJ-P760",
-      "shipped_at": "2026-04-21T22:35:57",
+      "shipped_at": "2026-04-21T22:44:46",
       "bound_to_order": "ORD-2026-0028",
       "bound_to_customer": "陳先生",
       "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
-      "bound_at": "2026-04-21T22:35:57"
+      "bound_at": "2026-04-21T22:44:46"
     },
     {
       "serial": "CJ-P760-20260421-0002",
       "sku": "CJ-P760",
-      "shipped_at": "2026-04-21T22:35:57",
+      "shipped_at": "2026-04-21T22:44:46",
       "bound_to_order": "ORD-2026-0028",
       "bound_to_customer": "陳先生",
       "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
-      "bound_at": "2026-04-21T22:35:57"
+      "bound_at": "2026-04-21T22:44:46"
     },
     {
       "serial": "CJ-P710-20260421-0003",
       "sku": "CJ-P710",
-      "shipped_at": "2026-04-21T22:35:57",
+      "shipped_at": "2026-04-21T22:44:46",
       "bound_to_order": "ORD-2026-0028",
       "bound_to_customer": "陳先生",
       "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
-      "bound_at": "2026-04-21T22:35:57"
+      "bound_at": "2026-04-21T22:44:46"
     }
   ],
   "audit": [
     {
-      "ts": "2026-04-21T22:35:51",
+      "ts": "2026-04-21T22:44:30",
       "action": "reset",
       "detail": {}
     },
     {
-      "ts": "2026-04-21T22:35:57",
+      "ts": "2026-04-21T22:44:40",
+      "action": "advance_order",
+      "detail": {
+        "order_id": "ORD-2026-0028",
+        "from": "manufacture",
+        "to": "shipping"
+      }
+    },
+    {
+      "ts": "2026-04-21T22:44:46",
       "action": "ship_po",
       "detail": {
         "po_id": "PO-ADW-2026-0117",
@@ -186,15 +195,6 @@
           "CJ-P710-20260421-0003"
         ],
         "bound_order": "ORD-2026-0028"
-      }
-    },
-    {
-      "ts": "2026-04-21T22:36:00",
-      "action": "advance_order",
-      "detail": {
-        "order_id": "ORD-2026-0028",
-        "from": "shipping",
-        "to": "install"
       }
     }
   ]
