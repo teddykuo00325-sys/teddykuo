@@ -1,0 +1,1430 @@
+{
+  "2026-03-23": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:42",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:16",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:48",
+      "clock_out": "17:49",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:46",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:54",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:38",
+      "clock_out": "17:37",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:15",
+      "clock_out": "17:33",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:16",
+      "clock_out": "17:44",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:53",
+      "clock_out": "17:45",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:23",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:55",
+      "note": ""
+    }
+  },
+  "2026-03-24": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:42",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:31",
+      "clock_out": "17:32",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:28",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:51",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:29",
+      "clock_out": "17:30",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:33",
+      "clock_out": "17:41",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:15",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "late",
+      "clock_in": "09:40",
+      "clock_out": "17:45",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "late",
+      "clock_in": "09:32",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:48",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:43",
+      "clock_out": "17:38",
+      "note": ""
+    }
+  },
+  "2026-03-25": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:46",
+      "clock_out": "17:59",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "absent",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:11",
+      "clock_out": "17:48",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:18",
+      "clock_out": "17:56",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:55",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "late",
+      "clock_in": "09:11",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:40",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:24",
+      "clock_out": "17:57",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "late",
+      "clock_in": "09:45",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:40",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    }
+  },
+  "2026-03-26": {
+    "LC-BOSS": {
+      "status": "absent",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:29",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:42",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:35",
+      "clock_out": "17:43",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:30",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:51",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:39",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:41",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:44",
+      "note": ""
+    }
+  },
+  "2026-03-27": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:52",
+      "clock_out": "17:59",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:28",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:16",
+      "clock_out": "17:44",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:42",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:21",
+      "clock_out": "17:43",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:40",
+      "clock_out": "17:32",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:41",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:36",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:10",
+      "clock_out": "17:32",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:47",
+      "note": ""
+    }
+  },
+  "2026-03-30": {
+    "LC-BOSS": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:22",
+      "clock_out": "17:37",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:12",
+      "clock_out": "17:54",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:52",
+      "clock_out": "17:48",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:18",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "overtime",
+      "clock_in": "08:38",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:15",
+      "clock_out": "17:43",
+      "note": ""
+    }
+  },
+  "2026-03-31": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:18",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:34",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:22",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:16",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "late",
+      "clock_in": "09:08",
+      "clock_out": "17:56",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:59",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:11",
+      "clock_out": "17:30",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:59",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:39",
+      "clock_out": "17:48",
+      "note": ""
+    }
+  },
+  "2026-04-01": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:20",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:23",
+      "clock_out": "17:43",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:39",
+      "clock_out": "17:49",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:55",
+      "clock_out": "17:32",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:12",
+      "clock_out": "17:36",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:21",
+      "clock_out": "17:31",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:13",
+      "clock_out": "17:44",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "late",
+      "clock_in": "09:17",
+      "clock_out": "17:45",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:11",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:23",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "late",
+      "clock_in": "09:13",
+      "clock_out": "17:35",
+      "note": ""
+    }
+  },
+  "2026-04-02": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:21",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:44",
+      "clock_out": "17:43",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "late",
+      "clock_in": "09:29",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:21",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:36",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:17",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:56",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:23",
+      "clock_out": "17:37",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:15",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:31",
+      "clock_out": "17:43",
+      "note": ""
+    }
+  },
+  "2026-04-03": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:52",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "overtime",
+      "clock_in": "08:21",
+      "clock_out": "17:57",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:44",
+      "clock_out": "17:36",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:55",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:46",
+      "clock_out": "17:53",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:28",
+      "clock_out": "17:48",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:26",
+      "clock_out": "17:33",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "overtime",
+      "clock_in": "08:15",
+      "clock_out": "17:33",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:53",
+      "note": ""
+    }
+  },
+  "2026-04-06": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:51",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:14",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:26",
+      "clock_out": "17:32",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:26",
+      "clock_out": "17:43",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "overtime",
+      "clock_in": "08:11",
+      "clock_out": "17:33",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:29",
+      "clock_out": "17:33",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:48",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "absent",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "late",
+      "clock_in": "09:25",
+      "clock_out": "17:54",
+      "note": ""
+    }
+  },
+  "2026-04-07": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:50",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:12",
+      "clock_out": "17:59",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:48",
+      "clock_out": "17:36",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:37",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "late",
+      "clock_in": "09:28",
+      "clock_out": "17:57",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:26",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:31",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:37",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:54",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:17",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:48",
+      "note": ""
+    }
+  },
+  "2026-04-08": {
+    "LC-BOSS": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:31",
+      "clock_out": "17:36",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:17",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:17",
+      "clock_out": "17:31",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:49",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:51",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:34",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:36",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:18",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:52",
+      "clock_out": "17:52",
+      "note": ""
+    }
+  },
+  "2026-04-09": {
+    "LC-BOSS": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:35",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:19",
+      "clock_out": "17:37",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:26",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:50",
+      "clock_out": "17:48",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:21",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:42",
+      "clock_out": "17:56",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:50",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:31",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:10",
+      "clock_out": "17:50",
+      "note": ""
+    }
+  },
+  "2026-04-10": {
+    "LC-BOSS": {
+      "status": "overtime",
+      "clock_in": "08:25",
+      "clock_out": "17:31",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "overtime",
+      "clock_in": "08:31",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "late",
+      "clock_in": "09:30",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "overtime",
+      "clock_in": "08:40",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "late",
+      "clock_in": "09:28",
+      "clock_out": "17:41",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:39",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:53",
+      "clock_out": "17:48",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:20",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:56",
+      "note": ""
+    }
+  },
+  "2026-04-13": {
+    "LC-BOSS": {
+      "status": "overtime",
+      "clock_in": "08:26",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:12",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:29",
+      "clock_out": "17:41",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:26",
+      "clock_out": "17:34",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:16",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:23",
+      "clock_out": "17:57",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:35",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:43",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:20",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:19",
+      "clock_out": "17:53",
+      "note": ""
+    }
+  },
+  "2026-04-14": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:20",
+      "clock_out": "17:58",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:44",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:34",
+      "clock_out": "17:36",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "overtime",
+      "clock_in": "08:30",
+      "clock_out": "17:30",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:51",
+      "clock_out": "17:45",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "leave",
+      "clock_in": null,
+      "clock_out": null,
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:44",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:11",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:19",
+      "clock_out": "17:35",
+      "note": ""
+    }
+  },
+  "2026-04-15": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:17",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:55",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:33",
+      "clock_out": "17:32",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:23",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:49",
+      "clock_out": "17:37",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:45",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:14",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:29",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:40",
+      "clock_out": "17:59",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:51",
+      "note": ""
+    }
+  },
+  "2026-04-16": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:47",
+      "clock_out": "17:41",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:15",
+      "clock_out": "17:55",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:29",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:24",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:42",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:52",
+      "clock_out": "17:57",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:30",
+      "clock_out": "17:35",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:39",
+      "clock_out": "17:37",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "late",
+      "clock_in": "09:27",
+      "clock_out": "17:54",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:36",
+      "clock_out": "17:56",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:34",
+      "clock_out": "17:36",
+      "note": ""
+    }
+  },
+  "2026-04-17": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:46",
+      "clock_out": "17:51",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:37",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:17",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:38",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:50",
+      "clock_out": "17:38",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:19",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:39",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:50",
+      "clock_out": "17:42",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "online",
+      "clock_in": "08:45",
+      "clock_out": "17:52",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:36",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:41",
+      "clock_out": "17:59",
+      "note": ""
+    }
+  },
+  "2026-04-20": {
+    "LC-BOSS": {
+      "status": "online",
+      "clock_in": "08:50",
+      "clock_out": "17:56",
+      "note": ""
+    },
+    "AI-ORCH": {
+      "status": "online",
+      "clock_in": "08:44",
+      "clock_out": "17:46",
+      "note": ""
+    },
+    "AI-BD": {
+      "status": "online",
+      "clock_in": "08:32",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-CS": {
+      "status": "online",
+      "clock_in": "08:35",
+      "clock_out": "17:53",
+      "note": ""
+    },
+    "AI-PROP": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:47",
+      "note": ""
+    },
+    "AI-FE": {
+      "status": "online",
+      "clock_in": "08:18",
+      "clock_out": "17:40",
+      "note": ""
+    },
+    "AI-BE": {
+      "status": "online",
+      "clock_in": "08:49",
+      "clock_out": "17:43",
+      "note": ""
+    },
+    "AI-QA": {
+      "status": "online",
+      "clock_in": "08:40",
+      "clock_out": "17:57",
+      "note": ""
+    },
+    "AI-FIN": {
+      "status": "late",
+      "clock_in": "09:26",
+      "clock_out": "17:30",
+      "note": ""
+    },
+    "AI-LEGAL": {
+      "status": "online",
+      "clock_in": "08:24",
+      "clock_out": "17:50",
+      "note": ""
+    },
+    "AI-DOC": {
+      "status": "online",
+      "clock_in": "08:27",
+      "clock_out": "17:40",
+      "note": ""
+    }
+  }
+}

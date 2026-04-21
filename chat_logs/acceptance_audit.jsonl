@@ -366,3 +366,12 @@
 {"ts": "2026-04-21T21:29:29", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-3EE5AA65", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
 {"ts": "2026-04-21T21:49:06", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
 {"ts": "2026-04-21T21:51:13", "action": "content", "user": "", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-21T21:53:59", "action": "content", "user": "", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": true, "seo_coverage": 100}}
+{"ts": "2026-04-21T21:55:20", "action": "content", "user": "", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": true, "seo_coverage": 100}}
+{"ts": "2026-04-21T22:01:01", "action": "product_qa", "user": "chen", "detail": {"customer": "addwii", "q": "HEPA 濾網多久更換一次？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-21T22:03:05", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "HEPA 濾網多久更換一次？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-21T22:03:20", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "產品有保固嗎？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-21T22:03:29", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "有真人客服嗎", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-21T22:03:42", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "聯繫方式", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-21T22:12:40", "action": "product_qa", "user": "customer_portal", "detail": {"customer": "addwii", "q": "夜間運轉會吵到嬰兒嗎？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-21T22:33:59", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
