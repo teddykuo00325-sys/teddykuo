@@ -364,3 +364,5 @@
 {"ts": "2026-04-21T21:06:30", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
 {"ts": "2026-04-21T21:28:00", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
 {"ts": "2026-04-21T21:29:29", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-3EE5AA65", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-21T21:49:06", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-21T21:51:13", "action": "content", "user": "", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false, "seo_coverage": 100}}

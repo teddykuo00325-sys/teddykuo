@@ -1835,6 +1835,42 @@ def _tenant_crm():
 def api_crm_summary():
     return jsonify(_tenant_crm().summary())
 
+@app.route('/api/crm/products')
+def api_crm_products():
+    """P2-C1：取得該 tenant 可售產品目錄（前端建詢問單時用）"""
+    from crm_manager import get_catalog, PRODUCT_CATALOGS
+    t = parse_tenant(request.args, default='lingce')
+    catalog = get_catalog(t)
+    grouped = {}
+    for pid, item in catalog.items():
+        cat = item.get('category', '未分類')
+        grouped.setdefault(cat, []).append({
+            'id': pid, 'name': item['name'], 'price': item['price'],
+            'unit': item.get('unit', ''), 'category': cat,
+        })
+    return jsonify({
+        'tenant': t,
+        'catalog': catalog,
+        'grouped': grouped,
+        'industry_options': ['製造業','買賣業','貿易業','B2C 品牌','AI 服務','企業顧問','個人消費者','其他'],
+        'source_options': ['官網','Email','LINE','電話','手動','實體門市','展會'],
+    })
+
+@app.route('/api/crm/seed-demo', methods=['POST'])
+def api_crm_seed_demo():
+    """P0-A3：一鍵重建 3 tenant 的完整 demo pipeline（詢問→報價→訂單→安裝）"""
+    data = request.get_json(silent=True) or {}
+    actor = data.get('actor', 'system')
+    force = bool(data.get('force'))
+    from scripts_seed_crm_demo import seed_all
+    try:
+        result = seed_all(force=force)
+        return jsonify({'ok': True, 'actor': actor, **result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
 @app.route('/api/crm/inquiries')
 def api_crm_list_inq():
     return jsonify(_tenant_crm().list_inquiries(status=request.args.get('status')))

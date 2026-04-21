@@ -1170,7 +1170,8 @@ function _crmEmpty(msg){
 }
 
 // ── 動作函式 ──
-function crmOpenNewInquiry(){
+let _CRM_CATALOG = null;   // 暫存目前 tenant 的產品目錄
+async function crmOpenNewInquiry(){
   let m = document.getElementById('crm-new-inq-modal');
   if(!m){
     m = document.createElement('div');
@@ -1178,21 +1179,31 @@ function crmOpenNewInquiry(){
     m.className = 'fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6';
     document.body.appendChild(m);
   }
-  const cats = [
-    ['通用模組', [['doc','AI 文件助理',3000],['meeting','AI 會議記錄',3500],['kb','AI 知識庫',5000],['cs','AI 客服',8000]]],
-    ['製造業模組', [['mat','AI 缺料預警',6000],['po','AI 採購建議',5500],['sched','AI 生產排程',8000],['qa','AI 品質分析',7000]]],
-    ['買賣業模組', [['mkt','AI 行銷文案',4500],['cust','AI 客戶分析',5500],['quote','AI 報價助理',4000],['sales','AI 銷售預測',6500]]],
-    ['訂單模組', [['order','AI 訂單管理',5000],['eta','AI 交期預估',4000]]],
-  ];
+  m.innerHTML = `<div class="bg-slate-800 rounded-xl w-full max-w-3xl border border-blue-500/40 p-8 text-center text-slate-400">載入 ${CURRENT_TENANT} 產品目錄中...</div>`;
+
+  // 動態從後端抓該 tenant 的產品
+  const cat = await fetch(API_BASE + withTenant('/api/crm/products')).then(r=>r.json());
+  _CRM_CATALOG = cat;
+  const grouped = cat.grouped || {};
+  const isSubscription = (CURRENT_TENANT === 'lingce');  // 月訂閱 vs 硬體銷售
+
+  const industryOpts = (cat.industry_options||['其他']).map(x=>`<option>${x}</option>`).join('');
+  const sourceOpts   = (cat.source_options||['手動']).map(x=>`<option>${x}</option>`).join('');
+
+  const tenantLabel = {lingce:'🏛️ 凌策 · AI 模組月訂閱', microjet:'🏭 microjet · B2B 硬體銷售', addwii:'🏠 addwii · B2C 清淨機', weiming:'📋 維明'}[CURRENT_TENANT] || CURRENT_TENANT;
+
   m.innerHTML = `
-    <div class="bg-slate-800 rounded-xl w-full max-w-3xl border border-blue-500/40 max-h-[90vh] flex flex-col">
+    <div class="bg-slate-800 rounded-xl w-full max-w-4xl border border-blue-500/40 max-h-[90vh] flex flex-col">
       <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center">
-        <h3 class="font-bold text-lg">➕ 新詢問單</h3>
+        <div>
+          <h3 class="font-bold text-lg">➕ 新詢問單</h3>
+          <div class="text-[11px] text-cyan-300 mt-0.5">${tenantLabel}</div>
+        </div>
         <button onclick="document.getElementById('crm-new-inq-modal').remove()" class="text-slate-400 hover:text-white text-2xl">×</button>
       </div>
       <div class="p-5 overflow-auto space-y-3">
         <div class="grid grid-cols-2 gap-3">
-          <label class="block text-sm"><span class="text-slate-400">公司名稱 *</span>
+          <label class="block text-sm"><span class="text-slate-400">公司 / 客戶名稱 *</span>
             <input id="ci-company" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2"></label>
           <label class="block text-sm"><span class="text-slate-400">聯絡人 *</span>
             <input id="ci-contact" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2"></label>
@@ -1200,34 +1211,33 @@ function crmOpenNewInquiry(){
             <input id="ci-phone" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2"></label>
           <label class="block text-sm"><span class="text-slate-400">Email *</span>
             <input id="ci-email" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2"></label>
-          <label class="block text-sm"><span class="text-slate-400">產業別</span>
-            <select id="ci-industry" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2">
-              <option>製造業</option><option>買賣業</option><option>貿易業</option><option>其他</option>
-            </select></label>
+          <label class="block text-sm"><span class="text-slate-400">產業別 / 客戶類型</span>
+            <select id="ci-industry" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2">${industryOpts}</select></label>
           <label class="block text-sm"><span class="text-slate-400">來源</span>
-            <select id="ci-source" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2">
-              <option>手動</option><option>官網</option><option>Email</option><option>LINE</option><option>電話</option>
-            </select></label>
+            <select id="ci-source" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2">${sourceOpts}</select></label>
         </div>
         <label class="block text-sm"><span class="text-slate-400">需求說明</span>
           <textarea id="ci-need" rows="2" class="w-full mt-1 bg-slate-900 border border-slate-600 rounded px-3 py-2"></textarea></label>
         <div>
-          <div class="text-sm text-slate-400 mb-2">選擇模組（自動計算報價）</div>
-          ${cats.map(([cat, items]) => `
+          <div class="text-sm text-slate-400 mb-2">
+            ${isSubscription ? '選擇模組（月費訂閱，4 項 9 折、7 項 85 折）' : '選擇產品 + 數量（3 件 95 折、5 件 92 折）'}
+          </div>
+          ${Object.keys(grouped).length ? Object.entries(grouped).map(([cat, items]) => `
             <div class="mb-3">
               <div class="text-xs text-slate-500 mb-1">${cat}</div>
-              <div class="grid grid-cols-4 gap-2">
-                ${items.map(([id,n,p]) => `
+              <div class="grid ${isSubscription ? 'grid-cols-4' : 'grid-cols-2'} gap-2">
+                ${items.map(it => `
                   <label class="flex items-center gap-2 bg-slate-900 hover:bg-slate-700 rounded px-2 py-2 text-xs cursor-pointer">
-                    <input type="checkbox" value="${id}" class="ci-mod accent-blue-500" onchange="_crmUpdateQuote()">
-                    <span class="flex-1">${n}</span>
-                    <span class="text-amber-300">${p}</span>
+                    <input type="checkbox" value="${it.id}" class="ci-mod accent-blue-500" onchange="_crmUpdateQuote()">
+                    <span class="flex-1">${escapeHtml(it.name)}</span>
+                    ${!isSubscription ? `<input type="number" min="1" value="1" class="ci-qty w-14 bg-slate-800 border border-slate-600 rounded px-1.5 py-0.5 text-[11px]" data-id="${it.id}" onchange="_crmUpdateQuote()">` : ''}
+                    <span class="text-amber-300">NT$${it.price.toLocaleString()}${it.unit?'/'+it.unit:''}</span>
                   </label>`).join('')}
               </div>
-            </div>`).join('')}
+            </div>`).join('') : '<div class="text-slate-500 text-sm italic py-4 text-center">此 tenant 尚無產品目錄（仍評估中）</div>'}
         </div>
         <div id="ci-quote-preview" class="bg-slate-900 border border-amber-500/30 rounded p-3 text-sm">
-          <span class="text-slate-400">選擇 0 個模組</span>
+          <span class="text-slate-400">選擇 0 項</span>
         </div>
       </div>
       <div class="px-5 py-4 border-t border-slate-700 flex justify-end gap-2">
@@ -1237,25 +1247,42 @@ function crmOpenNewInquiry(){
     </div>`;
 }
 
+function _crmGetQuantities(){
+  const map = {};
+  document.querySelectorAll('.ci-qty').forEach(el => { map[el.dataset.id] = parseInt(el.value) || 1; });
+  return map;
+}
 function _crmUpdateQuote(){
   const mods = [...document.querySelectorAll('.ci-mod:checked')].map(c=>c.value);
-  const prices = {doc:3000,meeting:3500,kb:5000,cs:8000,mat:6000,po:5500,sched:8000,qa:7000,mkt:4500,cust:5500,quote:4000,sales:6500,order:5000,eta:4000};
-  const list = mods.reduce((s,m)=>s+(prices[m]||0),0);
+  const qty = _crmGetQuantities();
+  const cat = (_CRM_CATALOG && _CRM_CATALOG.catalog) || {};
+  const isSubscription = (CURRENT_TENANT === 'lingce');
+
+  let list = 0;
+  mods.forEach(m => { list += (cat[m]?.price || 0) * (qty[m] || 1); });
   let disc = 0;
-  if(mods.length >= 7) disc = 0.15;
-  else if(mods.length >= 4) disc = 0.10;
+  if (isSubscription) {
+    if (mods.length >= 7) disc = 0.15;
+    else if (mods.length >= 4) disc = 0.10;
+  } else {
+    const totalQty = mods.reduce((s,m)=>s+(qty[m]||1), 0);
+    if (totalQty >= 5) disc = 0.08;
+    else if (totalQty >= 3) disc = 0.05;
+  }
   const net = Math.round(list * (1-disc));
   const el = document.getElementById('ci-quote-preview');
   if(el){
+    const unitLabel = isSubscription ? '月費' : '總價';
     el.innerHTML = mods.length
-      ? `<div class="flex justify-between"><span>選 ${mods.length} 個模組</span><span>列表 NT$ ${list.toLocaleString()}</span></div>
-         <div class="flex justify-between text-xs text-green-400"><span>折扣 ${Math.round(disc*100)}%</span><span>月費 <b>NT$ ${net.toLocaleString()}</b></span></div>`
-      : '<span class="text-slate-400">選擇 0 個模組</span>';
+      ? `<div class="flex justify-between"><span>選 ${mods.length} 項</span><span>列表 NT$ ${list.toLocaleString()}</span></div>
+         <div class="flex justify-between text-xs text-green-400 mt-1"><span>折扣 ${Math.round(disc*100)}%</span><span>${unitLabel} <b>NT$ ${net.toLocaleString()}</b></span></div>`
+      : `<span class="text-slate-400">選擇 0 項</span>`;
   }
 }
 
 async function crmSubmitInq(){
   const mods = [...document.querySelectorAll('.ci-mod:checked')].map(c=>c.value);
+  const qty = _crmGetQuantities();
   const data = {
     '公司名稱': document.getElementById('ci-company').value.trim(),
     '聯絡人':   document.getElementById('ci-contact').value.trim(),
@@ -1265,6 +1292,7 @@ async function crmSubmitInq(){
     '來源':     document.getElementById('ci-source').value,
     '需求說明': document.getElementById('ci-need').value.trim(),
     '選擇模組': mods,
+    '數量':     qty,
   };
   if(!data['公司名稱'] || !data['聯絡人'] || !data['Email']){
     alert('公司、聯絡人、Email 為必填');

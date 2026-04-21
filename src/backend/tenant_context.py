@@ -76,7 +76,7 @@ class TenantBundle:
     def crm(self):
         if self._crm is None:
             from crm_manager import CRMManager
-            self._crm = CRMManager(db_path=self.paths.crm_db)
+            self._crm = CRMManager(db_path=self.paths.crm_db, tenant=self.tid)
         return self._crm
 
     @property
