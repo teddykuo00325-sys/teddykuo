@@ -71,7 +71,24 @@ def _ollama_generate(prompt: str, system: str = '', temperature: float = 0.3,
 # ============================================================
 # PII 去識別化
 # ============================================================
-CSV_DIR = r'C:\Users\B00325\Desktop\10CSVfile'
+# addwii 驗收構面 5 的 10 個 Field Trial CSV 實測檔
+# 優先順序：環境變數 > 專案 data/addwii/field_trial_csv/ > 桌面子資料夾 > 舊路徑
+def _resolve_csv_dir():
+    candidates = [
+        os.environ.get('ADDWII_CSV_DIR'),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'addwii', 'field_trial_csv'),
+        r'C:\Users\B00325\Desktop\公司AI比賽\10CSVfile',
+        r'C:\Users\B00325\Desktop\10CSVfile',
+    ]
+    for p in candidates:
+        if p and os.path.isdir(p):
+            import glob as _glob
+            if _glob.glob(os.path.join(p, '*.csv')):
+                return p
+    # 最後 fallback：回傳第一個非空路徑（給 error 訊息用）
+    return candidates[2]
+
+CSV_DIR = _resolve_csv_dir()
 AUDIT_LOG = os.path.join(os.path.dirname(__file__), '..', '..', 'chat_logs', 'acceptance_audit.jsonl')
 
 def _unicode_escape_to_name(s: str) -> str:
