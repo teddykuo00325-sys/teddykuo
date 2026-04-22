@@ -5699,6 +5699,9 @@ function updateChatPanelDynamic(data) {
     msgsEl.appendChild(typingSlot);
   }
 
+  // ★ 先移除所有 optimistic（送出中）訊息 — 因為 data.messages 會包含真正的訊息
+  msgsEl.querySelectorAll('.chat-optimistic').forEach(el => el.remove());
+
   // 現有訊息節點索引：id → DOM 節點
   const existingNodes = new Map();
   msgsEl.querySelectorAll('[data-msg-id]').forEach(el => {
@@ -5959,6 +5962,41 @@ function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Optimistic UI helper：送出訊息前先在畫面顯示（解決 A 自己訊息要等 B 回才顯示的 bug）
+function _insertOptimisticChatMessage(content) {
+  const msgsEl = document.getElementById('cp-messages');
+  if (!msgsEl) return null;
+  const myPersona = ORG_CURRENT_USER_PERSONA;
+  const senderMember = ORG_DATA ? findNodeById(ORG_DATA, myPersona) : null;
+  const avatar = senderMember?.avatar || '👤';
+  const now = new Date();
+  const timeStr = now.toTimeString().slice(0,5);
+  let typingSlot = msgsEl.querySelector('#cp-typing-slot');
+  const node = document.createElement('div');
+  node.className = 'chat-optimistic flex gap-2 mb-3 justify-end';
+  node.setAttribute('data-optimistic-ts', String(Date.now()));
+  node.innerHTML = `
+    <div class="max-w-[75%]">
+      <div class="text-xs text-slate-400 mb-0.5 text-right">
+        <span class="text-[10px] bg-amber-700/50 text-amber-200 px-1 rounded">送出中…</span>
+      </div>
+      <div class="bg-purple-600/80 text-white rounded-xl rounded-tr-none px-3 py-2 text-sm whitespace-pre-wrap opacity-80">${escapeHtml(content)}</div>
+      <div class="text-xs text-slate-500 mt-0.5 flex items-center gap-1 justify-end">
+        <span>${timeStr}</span>
+        <span class="inline-block w-3 h-3 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></span>
+      </div>
+    </div>
+    <div class="text-xl flex-shrink-0">${avatar}</div>`;
+  if (typingSlot) msgsEl.insertBefore(node, typingSlot);
+  else msgsEl.appendChild(node);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+  return node;
+}
+
+function _removeOptimisticChatMessages() {
+  document.querySelectorAll('#cp-messages .chat-optimistic').forEach(el => el.remove());
+}
+
 async function sendChatMessage() {
   const inp = document.getElementById('chat-input-field');
   if (!inp) return;
@@ -5967,21 +6005,36 @@ async function sendChatMessage() {
   inp.value = '';
   inp.focus();  // 保持焦點
 
-  const r = await fetch(API_BASE + '/api/chat/send', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({room_id: CHAT_ACTIVE_ROOM, sender_id: ORG_CURRENT_USER_PERSONA, content})
-  });
-  const data = await r.json();
+  // ★ Optimistic UI：先把訊息放上 UI（避免 A 等 B 回才看到自己輸出的 bug）
+  const optimisticNode = _insertOptimisticChatMessage(content);
+
+  let data = null;
+  try {
+    const r = await fetch(API_BASE + '/api/chat/send', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({room_id: CHAT_ACTIVE_ROOM, sender_id: ORG_CURRENT_USER_PERSONA, content})
+    });
+    data = await r.json();
+  } catch(e) {
+    console.error('send chat network error', e);
+    if (optimisticNode) optimisticNode.remove();
+    inp.value = content;
+    toast('❌ 網路錯誤，請重試', 'error');
+    return;
+  }
+
   if (!data.success) {
+    // 失敗：移除 optimistic 訊息 + 還原輸入
+    if (optimisticNode) optimisticNode.remove();
     if (data.blocked_keyword) {
-      alert('🚫 訊息被系統屏蔽\n\n' + data.error + '\n\n偵測到關鍵字：「' + data.blocked_keyword + '」');
+      toast(`🚫 訊息被系統屏蔽：偵測到關鍵字「${data.blocked_keyword}」`, 'error', 5000);
     } else {
-      alert('❌ ' + data.error);
+      toast('❌ ' + (data.error || '發送失敗'), 'error');
     }
     inp.value = content;
     return;
   }
-  // 部分刷新：只重繪訊息區，輸入框不動（焦點保持）
+  // 成功：刷新訊息區（optimistic 會被 updateChatPanelDynamic 先移除）
   try {
     const url = `${API_BASE}/api/chat/messages/${CHAT_ACTIVE_ROOM}?member_id=${ORG_CURRENT_USER_PERSONA}`;
     const mr = await fetch(url);
