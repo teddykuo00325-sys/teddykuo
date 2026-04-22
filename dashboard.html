@@ -182,7 +182,7 @@ function setTenantAndPage(tenant, page) {
     }
     // 其他 group 保持使用者的展開/收合狀態
   });
-  showPage(page);
+  showPage(page, tenant);
 }
 
 function toggleTenantGroup(tenant) {
@@ -493,12 +493,19 @@ function renderTokenMini(){
 }
 
 // ── Page Rendering ──
-function showPage(page){
+function showPage(page, tenant){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     b.classList.remove('active');
     b.classList.add('text-slate-300');
   });
-  const btn=document.querySelector(`[data-page="${page}"]`);
+  // 多個 tenant group 共用相同 data-page（crm / org / attn）時，依 tenant 限定範圍
+  const activeTenant = tenant || CURRENT_TENANT;
+  let btn = null;
+  if (activeTenant) {
+    const grp = document.querySelector(`.tenant-group[data-tenant="${activeTenant}"]`);
+    if (grp) btn = grp.querySelector(`[data-page="${page}"]`);
+  }
+  if (!btn) btn = document.querySelector(`[data-page="${page}"]`);
   if(btn){btn.classList.add('active');btn.classList.remove('text-slate-300');}
   const renders={
     dashboard:renderDashboard,agents:renderAgents,modules:renderModules,crm:renderCRM,
