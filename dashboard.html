@@ -11461,17 +11461,23 @@ function _triggerOldAccTabRender(tenant, tabKey) {
       if (el) el.innerHTML = `<div class="text-red-400 p-4">舊版 render 失敗：${escapeHtml(e.message||String(e))}</div>`;
     }
   }
-  // 針對 qa/printer-qa，切換 KB 的 customer 選擇
+  // 針對 qa/printer-qa/proposal，把 customer 下拉鎖定為當前 tenant（只顯示自己）
   setTimeout(() => {
-    const custSel = document.getElementById('qa-customer');
-    if (custSel && (tenant === 'addwii' || tenant === 'microjet')) {
-      custSel.value = tenant;
-      if (typeof accUpdateChips === 'function') accUpdateChips();
-    }
-    const propSel = document.getElementById('pp-customer');
-    if (propSel && (tenant === 'addwii' || tenant === 'microjet')) {
-      propSel.value = tenant;
-    }
+    const _lockCustomerSelect = (selId) => {
+      const sel = document.getElementById(selId);
+      if (!sel || (tenant !== 'addwii' && tenant !== 'microjet')) return;
+      // 移除非當前 tenant 的 option
+      Array.from(sel.options).forEach(opt => {
+        if (opt.value !== tenant) opt.remove();
+      });
+      sel.value = tenant;
+      sel.disabled = true;
+      sel.classList.add('opacity-60', 'cursor-not-allowed');
+      sel.title = `本驗收中心僅限 ${tenant}（如需切換請至另一 tenant 驗收中心）`;
+    };
+    _lockCustomerSelect('qa-customer');
+    _lockCustomerSelect('pp-customer');
+    if (typeof accUpdateChips === 'function') accUpdateChips();
   }, 80);
 }
 
