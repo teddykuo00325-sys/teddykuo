@@ -318,22 +318,32 @@ def serve_dashboard():
 # ══════════════════════════════════════
 @app.route('/api/health')
 def health():
-    # Test Ollama connectivity（包含 ngrok tunnel 場景）
+    # Test Ollama connectivity（包含 cloudflared / ngrok tunnel 場景）
+    ollama_err = None
     try:
+        # timeout 拉長到 15s：Render 雲端 → Cloudflare 節點可能較慢
         r = requests.get(f'{OLLAMA_URL}/api/tags',
-                         headers={'ngrok-skip-browser-warning': 'true'},
-                         timeout=5)
+                         headers={'ngrok-skip-browser-warning': 'true',
+                                  'User-Agent': 'lingce-backend/1.0'},
+                         timeout=15)
         ollama_ok = r.status_code == 200
-        models = [m['name'] for m in r.json().get('models', [])]
-    except:
+        models = [m['name'] for m in r.json().get('models', [])] if ollama_ok else []
+        if not ollama_ok:
+            ollama_err = f'HTTP {r.status_code}: {r.text[:200]}'
+    except Exception as e:
         ollama_ok = False
         models = []
+        ollama_err = f'{type(e).__name__}: {str(e)[:200]}'
 
     return jsonify({
         'status': 'healthy',
         'company': '凌策公司',
         'version': '2.0.0-live',
-        'ollama': {'connected': ollama_ok, 'url': OLLAMA_URL, 'model': OLLAMA_MODEL, 'available_models': models},
+        'ollama': {
+            'connected': ollama_ok, 'url': OLLAMA_URL, 'model': OLLAMA_MODEL,
+            'available_models': models,
+            'error': ollama_err,   # 顯示具體錯誤方便除錯
+        },
         'agents': len(AGENTS),
         'uptime': time.time(),
     })
@@ -2367,7 +2377,7 @@ def api_ollama_status():
             r = requests.get(f'{url}/api/tags',
                              headers={'ngrok-skip-browser-warning': 'true',
                                       'User-Agent': 'lingce-backend/1.0'},
-                             timeout=5)
+                             timeout=15)
             if r.status_code == 200:
                 models = [m['name'] for m in r.json().get('models', [])]
                 model_ok = any(OLLAMA_MODEL in m or m in OLLAMA_MODEL for m in models)
