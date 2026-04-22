@@ -320,16 +320,33 @@ def serve_dashboard():
 def health():
     # Test Ollama connectivity（包含 cloudflared / ngrok tunnel 場景）
     ollama_err = None
+    ollama_body_preview = None
     try:
-        # timeout 拉長到 15s：Render 雲端 → Cloudflare 節點可能較慢
+        # 偽裝為瀏覽器 User-Agent，繞過 Cloudflare bot 挑戰（重點）
+        # Accept: application/json 明確告知只收 JSON
         r = requests.get(f'{OLLAMA_URL}/api/tags',
-                         headers={'ngrok-skip-browser-warning': 'true',
-                                  'User-Agent': 'lingce-backend/1.0'},
+                         headers={
+                             'ngrok-skip-browser-warning': 'true',
+                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                             'Accept': 'application/json',
+                             'Cache-Control': 'no-cache',
+                         },
                          timeout=15)
-        ollama_ok = r.status_code == 200
-        models = [m['name'] for m in r.json().get('models', [])] if ollama_ok else []
-        if not ollama_ok:
-            ollama_err = f'HTTP {r.status_code}: {r.text[:200]}'
+        if r.status_code == 200:
+            try:
+                data = r.json()
+                models = [m['name'] for m in data.get('models', [])]
+                ollama_ok = True
+            except Exception as je:
+                ollama_ok = False
+                models = []
+                ollama_err = f'JSONDecodeError: {str(je)[:100]}'
+                ollama_body_preview = r.text[:300]   # 回傳前 300 字幫助診斷（常見是 Cloudflare 挑戰 HTML）
+        else:
+            ollama_ok = False
+            models = []
+            ollama_err = f'HTTP {r.status_code}'
+            ollama_body_preview = r.text[:300]
     except Exception as e:
         ollama_ok = False
         models = []
@@ -343,6 +360,7 @@ def health():
             'connected': ollama_ok, 'url': OLLAMA_URL, 'model': OLLAMA_MODEL,
             'available_models': models,
             'error': ollama_err,   # 顯示具體錯誤方便除錯
+            'body_preview': ollama_body_preview,   # 非 JSON 時顯示回應前 300 字（診斷 Cloudflare 挑戰頁）
         },
         'agents': len(AGENTS),
         'uptime': time.time(),
