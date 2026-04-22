@@ -1371,6 +1371,66 @@ def api_weiming_reset():
     return jsonify(wms.reset_demo())
 
 
+# ══════════════════════════════════════════════════════════
+# 維明 · 冷熱錢包管理（Treasury）
+# ══════════════════════════════════════════════════════════
+@app.route('/api/weiming/wallets')
+def api_weiming_wallets():
+    return jsonify(wms.list_wallets())
+
+@app.route('/api/weiming/wallet/txs')
+def api_weiming_wallet_txs():
+    return jsonify(wms.list_wallet_txs(limit=int(request.args.get('limit', 100))))
+
+@app.route('/api/weiming/wallet/rebalance')
+def api_weiming_wallet_rebalance():
+    return jsonify(wms.wallet_rebalance())
+
+@app.route('/api/weiming/wallet/recommend')
+def api_weiming_wallet_recommend():
+    try:
+        amt = float(request.args.get('amount_usd', 0))
+    except Exception:
+        return jsonify({'ok': False, 'error': 'amount_usd 必須為數字'}), 400
+    return jsonify(wms.recommend_wallet_for_amount(amt))
+
+@app.route('/api/weiming/wallet/tx/propose', methods=['POST'])
+def api_weiming_wallet_propose():
+    data = request.json or {}
+    try:
+        return jsonify(wms.propose_wallet_tx(
+            from_wallet_id=data.get('from_wallet_id'),
+            to_address=data.get('to_address', ''),
+            amount_usd=float(data.get('amount_usd', 0)),
+            purpose=data.get('purpose', '供應商付款'),
+            po_no=data.get('po_no'),
+            proposer=data.get('proposer', 'treasurer-01'),
+        ))
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/weiming/wallet/tx/<tx_id>/approve', methods=['POST'])
+def api_weiming_wallet_approve(tx_id):
+    data = request.json or {}
+    return jsonify(wms.approve_wallet_tx(tx_id,
+        approver=data.get('approver', 'treasurer-01'),
+        role=data.get('role', 'treasurer')))
+
+@app.route('/api/weiming/wallet/tx/<tx_id>/reject', methods=['POST'])
+def api_weiming_wallet_reject(tx_id):
+    data = request.json or {}
+    return jsonify(wms.reject_wallet_tx(tx_id,
+        approver=data.get('approver', 'cfo-01'),
+        reason=data.get('reason', '')))
+
+@app.route('/api/weiming/wallet/tx/<tx_id>/execute', methods=['POST'])
+def api_weiming_wallet_execute(tx_id):
+    data = request.json or {}
+    return jsonify(wms.execute_wallet_tx(tx_id,
+        executor=data.get('executor', 'system'),
+        skip_timelock=bool(data.get('skip_timelock', False))))
+
+
 @app.route('/api/tenants')
 def api_list_tenants():
     """回傳所有租戶的 metadata 給前端（side bar / context switcher 用）"""

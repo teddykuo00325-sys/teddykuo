@@ -197,7 +197,12 @@ def _init():
         try:
             with open(fp, 'r', encoding='utf-8') as f:
                 _STATE = json.load(f)
-                return
+            # Schema migration：舊 state.json 沒有錢包欄位時補上
+            if 'wallets' not in _STATE:
+                _STATE['wallets'] = list(_DEMO_WALLETS)
+            if 'wallet_txs' not in _STATE:
+                _STATE['wallet_txs'] = []
+            return
         except Exception:
             pass
     _STATE = {
@@ -212,8 +217,50 @@ def _init():
         'chain_blocks': [],     # 區塊鏈（hash chain）模擬
         'audit_log': [],        # 所有關鍵動作
         'rule_hits': [],        # 規則觸發紀錄
+        # ── 冷熱錢包管理（Treasury / Cold-Hot Wallet）──
+        'wallets':      list(_DEMO_WALLETS),
+        'wallet_txs':   [],     # 錢包交易（草案 → 多簽 → 執行 → 上鏈）
     }
     _save()
+
+
+# ══════════════════════════════════════════════════════════════
+# 冷熱錢包示範資料（4 個錢包 · 2 熱 2 冷）
+# ══════════════════════════════════════════════════════════════
+_DEMO_WALLETS = [
+    {
+        'wallet_id': 'W-HOT-01', 'name': '運營熱錢包', 'type': 'hot',
+        'chain': 'TRON', 'asset': 'USDT', 'address_masked': 'TX...k9Qn',
+        'balance_usd': 80000,
+        'policy': {'per_tx_cap_usd': 10000, 'required_signers': 1,
+                   'signer_roles': ['treasurer'], 'timelock_hr': 0},
+        'note': '日常小額供應商付款（< $10K / tx）',
+    },
+    {
+        'wallet_id': 'W-HOT-02', 'name': '供應商支付熱錢包', 'type': 'hot',
+        'chain': 'ETH', 'asset': 'USDT', 'address_masked': '0x8a...b17F',
+        'balance_usd': 250000,
+        'policy': {'per_tx_cap_usd': 50000, 'required_signers': 2,
+                   'signer_roles': ['treasurer', 'cfo'], 'timelock_hr': 0},
+        'note': '中額供應商付款（$10K ~ $50K / tx · 2/3 多簽）',
+    },
+    {
+        'wallet_id': 'W-COLD-01', 'name': '公司儲備冷錢包', 'type': 'cold',
+        'chain': 'BTC', 'asset': 'BTC', 'address_masked': 'bc1q...x8sc',
+        'balance_usd': 4800000,
+        'policy': {'per_tx_cap_usd': 999999999, 'required_signers': 3,
+                   'signer_roles': ['cfo', 'ceo', 'chairman'], 'timelock_hr': 24},
+        'note': '大額撥款（3/5 多簽 + 24h timelock）',
+    },
+    {
+        'wallet_id': 'W-COLD-02', 'name': '多簽金庫 (Gnosis Safe)', 'type': 'cold',
+        'chain': 'ETH', 'asset': 'ETH', 'address_masked': '0xSafe...42f0',
+        'balance_usd': 1500000,
+        'policy': {'per_tx_cap_usd': 999999999, 'required_signers': 3,
+                   'signer_roles': ['cfo', 'ceo', 'auditor'], 'timelock_hr': 24},
+        'note': '戰略投資 / 供應商保證金 Escrow（3/5 + 24h timelock）',
+    },
+]
 
 
 def _save():
@@ -716,6 +763,182 @@ def get_acceptance_metrics() -> Dict[str, Any]:
         'chain_blocks_total': len(_STATE['chain_blocks']),
         'audit_entries_total': len(_STATE['audit_log']),
     }
+
+
+# ══════════════════════════════════════════════════════════════
+# 核心 5：冷熱錢包管理（Treasury）
+#   - 策略引擎：依金額/目的自動推薦錢包
+#   - 多簽核准：per-wallet 要求達到即可執行
+#   - Timelock：冷錢包需等 24h（模擬）
+#   - 所有動作上 hash chain + 稽核
+# ══════════════════════════════════════════════════════════════
+def _wallet(wid: str):
+    return next((w for w in _STATE['wallets'] if w['wallet_id'] == wid), None)
+
+
+def _rebalance_snapshot():
+    """計算熱/冷比例，熱錢包 > 10% 總資產即建議 rebalance"""
+    hot = sum(w['balance_usd'] for w in _STATE['wallets'] if w['type'] == 'hot')
+    cold = sum(w['balance_usd'] for w in _STATE['wallets'] if w['type'] == 'cold')
+    total = hot + cold
+    hot_ratio = (hot / total * 100) if total else 0
+    healthy = hot_ratio <= 10.0
+    return {
+        'total_usd': total, 'hot_usd': hot, 'cold_usd': cold,
+        'hot_ratio_pct': round(hot_ratio, 2),
+        'threshold_pct': 10.0, 'healthy': healthy,
+        'advice': '熱錢包比例正常（≤ 10%）' if healthy
+                  else f'⚠️ 熱錢包比例 {hot_ratio:.1f}% 過高，建議移轉至冷錢包',
+    }
+
+
+def _recommend_wallet(amount_usd: float):
+    """依金額推薦錢包（策略引擎）"""
+    # 找最小滿足的熱錢包
+    hot_candidates = [w for w in _STATE['wallets']
+                      if w['type'] == 'hot'
+                      and amount_usd <= w['policy']['per_tx_cap_usd']
+                      and amount_usd <= w['balance_usd']]
+    if hot_candidates:
+        pick = min(hot_candidates, key=lambda w: w['policy']['per_tx_cap_usd'])
+        return {'wallet_id': pick['wallet_id'], 'reason':
+                f'金額 ${amount_usd:,.0f} ≤ 熱錢包單筆上限 ${pick["policy"]["per_tx_cap_usd"]:,} → 走熱錢包 {pick["name"]}'}
+    # 否則走冷錢包（選餘額夠的）
+    cold_candidates = [w for w in _STATE['wallets']
+                       if w['type'] == 'cold' and amount_usd <= w['balance_usd']]
+    if cold_candidates:
+        pick = max(cold_candidates, key=lambda w: w['balance_usd'])
+        return {'wallet_id': pick['wallet_id'], 'reason':
+                f'金額 ${amount_usd:,.0f} 超過所有熱錢包上限 → 走冷錢包 {pick["name"]}（3/5 多簽 + 24h timelock）'}
+    return {'wallet_id': None, 'reason': '⚠️ 所有錢包餘額都不足支付此筆金額'}
+
+
+@_locked
+def propose_wallet_tx(from_wallet_id: str, to_address: str, amount_usd: float,
+                      purpose: str = '供應商付款', po_no: str = None,
+                      proposer: str = 'treasurer-01') -> Dict[str, Any]:
+    _init()
+    w = _wallet(from_wallet_id)
+    if not w: return {'ok': False, 'error': f'錢包 {from_wallet_id} 不存在'}
+    if amount_usd <= 0: return {'ok': False, 'error': '金額必須 > 0'}
+    if amount_usd > w['balance_usd']:
+        return {'ok': False, 'error': f'餘額不足（餘額 ${w["balance_usd"]:,} < 需要 ${amount_usd:,.0f}）'}
+    if amount_usd > w['policy']['per_tx_cap_usd']:
+        return {'ok': False, 'error':
+                f'單筆超過此錢包上限 ${w["policy"]["per_tx_cap_usd"]:,}，請改從冷錢包發起'}
+
+    tx_id = f'TX-{datetime.now().strftime("%Y%m%d")}-{len(_STATE["wallet_txs"])+1:03d}'
+    now = datetime.now()
+    unlock_at = (now + timedelta(hours=w['policy']['timelock_hr'])).isoformat(timespec='seconds')
+    tx = {
+        'tx_id': tx_id,
+        'from_wallet_id': from_wallet_id,
+        'from_wallet_name': w['name'],
+        'wallet_type': w['type'],
+        'chain': w['chain'], 'asset': w['asset'],
+        'to_address': to_address,
+        'amount_usd': round(amount_usd, 2),
+        'purpose': purpose, 'po_no': po_no,
+        'status': 'PROPOSED',
+        'proposer': proposer, 'proposed_at': now.isoformat(timespec='seconds'),
+        'required_signers': w['policy']['required_signers'],
+        'signer_roles_needed': list(w['policy']['signer_roles']),
+        'approvals': [], 'rejections': [],
+        'timelock_hr': w['policy']['timelock_hr'],
+        'unlock_at': unlock_at,
+        'executed_at': None, 'tx_hash': None, 'chain_block_id': None,
+    }
+    _STATE['wallet_txs'].append(tx)
+    rec = _recommend_wallet(amount_usd)
+    _audit('human', proposer, 'wallet_tx_propose', 'wallet_tx', tx_id,
+           {'from': from_wallet_id, 'amount_usd': amount_usd, 'ai_recommendation': rec})
+    _save()
+    return {'ok': True, 'tx': tx, 'ai_recommendation': rec}
+
+
+@_locked
+def approve_wallet_tx(tx_id: str, approver: str, role: str = 'treasurer') -> Dict[str, Any]:
+    _init()
+    tx = next((t for t in _STATE['wallet_txs'] if t['tx_id'] == tx_id), None)
+    if not tx: return {'ok': False, 'error': f'交易 {tx_id} 不存在'}
+    if tx['status'] not in ('PROPOSED', 'PARTIALLY_APPROVED'):
+        return {'ok': False, 'error': f'交易狀態 {tx["status"]} 不可再核准'}
+    if any(a['approver'] == approver for a in tx['approvals']):
+        return {'ok': False, 'error': f'{approver} 已簽核過此交易'}
+    tx['approvals'].append({'approver': approver, 'role': role,
+                            'at': datetime.now().isoformat(timespec='seconds')})
+    # 更新狀態
+    if len(tx['approvals']) >= tx['required_signers']:
+        tx['status'] = 'APPROVED'   # 等待執行（若有 timelock 還要等）
+    else:
+        tx['status'] = 'PARTIALLY_APPROVED'
+    _audit('human', approver, 'wallet_tx_approve', 'wallet_tx', tx_id,
+           {'role': role, 'approvals_count': len(tx['approvals']),
+            'required': tx['required_signers']})
+    _save()
+    return {'ok': True, 'tx': tx}
+
+
+@_locked
+def reject_wallet_tx(tx_id: str, approver: str, reason: str = '') -> Dict[str, Any]:
+    _init()
+    tx = next((t for t in _STATE['wallet_txs'] if t['tx_id'] == tx_id), None)
+    if not tx: return {'ok': False, 'error': f'交易 {tx_id} 不存在'}
+    if tx['status'] in ('EXECUTED', 'REJECTED'):
+        return {'ok': False, 'error': f'交易已 {tx["status"]}，不可拒絕'}
+    tx['status'] = 'REJECTED'
+    tx['rejections'].append({'approver': approver, 'reason': reason,
+                             'at': datetime.now().isoformat(timespec='seconds')})
+    _audit('human', approver, 'wallet_tx_reject', 'wallet_tx', tx_id,
+           {'reason': reason})
+    _save()
+    return {'ok': True, 'tx': tx}
+
+
+@_locked
+def execute_wallet_tx(tx_id: str, executor: str = 'system', skip_timelock: bool = False) -> Dict[str, Any]:
+    _init()
+    tx = next((t for t in _STATE['wallet_txs'] if t['tx_id'] == tx_id), None)
+    if not tx: return {'ok': False, 'error': f'交易 {tx_id} 不存在'}
+    if tx['status'] != 'APPROVED':
+        return {'ok': False, 'error': f'尚未完成多簽核准（{len(tx["approvals"])}/{tx["required_signers"]}）'}
+    # Timelock 檢查（冷錢包 24h）
+    if not skip_timelock and tx['timelock_hr'] > 0:
+        unlock_at = datetime.fromisoformat(tx['unlock_at'])
+        if datetime.now() < unlock_at:
+            remaining = (unlock_at - datetime.now()).total_seconds() / 3600
+            return {'ok': False, 'error':
+                    f'冷錢包 timelock 未解鎖，還需等 {remaining:.1f} 小時（可傳 skip_timelock=true 演示用）'}
+
+    # 扣款 + 生成假 tx_hash + 上鏈
+    w = _wallet(tx['from_wallet_id'])
+    w['balance_usd'] = round(w['balance_usd'] - tx['amount_usd'], 2)
+    tx_hash = '0x' + hashlib.sha256(
+        f'{tx_id}{executor}{time.time()}'.encode()).hexdigest()[:40]
+    tx['tx_hash'] = tx_hash
+    tx['executed_at'] = datetime.now().isoformat(timespec='seconds')
+    tx['status'] = 'EXECUTED'
+    block = _chain_append_block('WALLET_TX', {
+        'tx_id': tx_id, 'from': tx['from_wallet_id'], 'to': tx['to_address'],
+        'amount_usd': tx['amount_usd'], 'chain': tx['chain'],
+        'on_chain_hash': tx_hash, 'wallet_type': tx['wallet_type'],
+        'approvals': [a['approver'] for a in tx['approvals']],
+    })
+    tx['chain_block_id'] = block['block_no']
+    _audit('system', executor, 'wallet_tx_execute', 'wallet_tx', tx_id,
+           {'amount_usd': tx['amount_usd'], 'on_chain_hash': tx_hash,
+            'skip_timelock': skip_timelock})
+    _save()
+    return {'ok': True, 'tx': tx, 'chain_block': block,
+            'new_balance_usd': w['balance_usd']}
+
+
+def list_wallets():         _init(); return _STATE['wallets']
+def list_wallet_txs(limit=100):  _init(); return list(reversed(_STATE['wallet_txs']))[:limit]
+def get_wallet_tx(tx_id):   _init(); return next((t for t in _STATE['wallet_txs'] if t['tx_id'] == tx_id), None)
+def wallet_rebalance():     _init(); return _rebalance_snapshot()
+def recommend_wallet_for_amount(amount_usd: float):
+    _init(); return _recommend_wallet(amount_usd)
 
 
 # ══════════════════════════════════════════════════════════════

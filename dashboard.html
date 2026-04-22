@@ -12163,13 +12163,17 @@ async function renderWeimingProcurement() {
   }
 
   async function reload() {
-    const [prs, suppliers, chSets, pos, invoices, chain, audit, metrics] = await Promise.all([
+    const [prs, suppliers, chSets, pos, invoices, chain, audit, metrics,
+           wallets, walletTxs, rebalance] = await Promise.all([
       j('/api/weiming/prs'), j('/api/weiming/suppliers'),
       j('/api/weiming/change-sets'), j('/api/weiming/pos'),
       j('/api/weiming/invoices'), j('/api/weiming/chain?limit=30'),
       j('/api/weiming/audit?limit=40'), j('/api/weiming/metrics'),
+      j('/api/weiming/wallets'), j('/api/weiming/wallet/txs?limit=40'),
+      j('/api/weiming/wallet/rebalance'),
     ]);
-    render({ prs, suppliers, chSets, pos, invoices, chain, audit, metrics });
+    render({ prs, suppliers, chSets, pos, invoices, chain, audit, metrics,
+             wallets, walletTxs, rebalance });
   }
 
   function metricBadge(m) {
@@ -12242,6 +12246,7 @@ async function renderWeimingProcurement() {
               ['po','📄 採購單 PO', (pos||[]).length],
               ['inv','💵 發票 / 3-way', (invoices||[]).length],
               ['sup','🏭 供應商', suppliers.length],
+              ['wallet','💰 冷熱錢包', (d.wallets||[]).length],
               ['chain','🔗 區塊鏈', (chain||[]).length],
               ['audit','📜 稽核日誌', (audit||[]).length],
             ].map(([k,l,c],i) => `
@@ -12271,6 +12276,7 @@ async function renderWeimingProcurement() {
       else if (k === 'po') c.innerHTML = wmPOView(D.pos);
       else if (k === 'inv') c.innerHTML = wmInvView(D.invoices);
       else if (k === 'sup') c.innerHTML = wmSupView(D.suppliers);
+      else if (k === 'wallet') c.innerHTML = wmWalletView(D.wallets, D.walletTxs, D.rebalance);
       else if (k === 'chain') c.innerHTML = wmChainView(D.chain);
       else if (k === 'audit') c.innerHTML = wmAuditView(D.audit);
     };
@@ -12447,9 +12453,9 @@ async function renderWeimingProcurement() {
     if (!chain || !chain.length) return '<div class="text-slate-500">尚無區塊（執行全流程即會上鏈）</div>';
     return `<div class="space-y-1 font-mono text-[11px]">${chain.map(b => `
       <div class="bg-slate-950/80 border border-indigo-500/30 rounded p-2">
-        <span class="text-indigo-300">#${b.index}</span>
+        <span class="text-indigo-300">#${b.block_no}</span>
         <span class="text-slate-400">${escapeHtml(b.timestamp)}</span>
-        <span class="text-emerald-300">[${escapeHtml(b.block_type)}]</span>
+        <span class="text-emerald-300">[${escapeHtml(b.type || b.block_type)}]</span>
         <span class="text-slate-200">${escapeHtml(JSON.stringify(b.payload).slice(0,120))}</span>
         <div class="text-[10px] text-slate-500">hash: ${escapeHtml((b.hash||'').slice(0,32))}... · prev: ${escapeHtml((b.prev_hash||'').slice(0,16))}...</div>
       </div>`).join('')}</div>`;
@@ -12459,13 +12465,178 @@ async function renderWeimingProcurement() {
     if (!audit || !audit.length) return '<div class="text-slate-500">無稽核記錄</div>';
     return `<div class="space-y-1 font-mono text-[11px]">${audit.map(a => `
       <div class="bg-slate-950/60 rounded p-2">
-        <span class="text-slate-500">${escapeHtml(a.timestamp)}</span>
+        <span class="text-slate-500">${escapeHtml(a.created_at || a.timestamp || '')}</span>
         <span class="${a.actor_type==='ai'?'text-purple-300':a.actor_type==='human'?'text-emerald-300':'text-slate-400'}">[${escapeHtml(a.actor_type)}]</span>
         <span class="text-slate-300">${escapeHtml(a.actor_id)}</span>
         <span class="text-amber-300">${escapeHtml(a.action_type)}</span>
-        <span class="text-slate-400">→ ${escapeHtml(a.target_type)}:${escapeHtml(a.target_id)}</span>
+        <span class="text-slate-400">→ ${escapeHtml(a.object_type || a.target_type || '')}:${escapeHtml(a.object_id || a.target_id || '')}</span>
       </div>`).join('')}</div>`;
   }
+
+  // ───── 冷熱錢包（Treasury）view ─────
+  function wmWalletView(wallets, txs, rb) {
+    wallets = wallets || []; txs = txs || []; rb = rb || {};
+    const fmtUsd = n => '$' + Number(n||0).toLocaleString();
+    const ratioCls = rb.healthy ? 'text-emerald-300' : 'text-amber-300';
+    const hotColdCard = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div class="bg-slate-900/60 border border-slate-700 rounded-xl p-3">
+          <div class="text-[11px] text-slate-500">總資產 (USD)</div>
+          <div class="text-2xl font-bold text-white">${fmtUsd(rb.total_usd)}</div>
+        </div>
+        <div class="bg-gradient-to-br from-orange-900/40 to-amber-900/40 border border-amber-500/40 rounded-xl p-3">
+          <div class="text-[11px] text-amber-300">🔥 熱錢包合計</div>
+          <div class="text-xl font-bold text-white">${fmtUsd(rb.hot_usd)}</div>
+          <div class="text-[11px] ${ratioCls} mt-1">比例 ${rb.hot_ratio_pct}% / 門檻 ${rb.threshold_pct}%</div>
+        </div>
+        <div class="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 border border-cyan-500/40 rounded-xl p-3">
+          <div class="text-[11px] text-cyan-300">🧊 冷錢包合計</div>
+          <div class="text-xl font-bold text-white">${fmtUsd(rb.cold_usd)}</div>
+          <div class="text-[11px] text-slate-400 mt-1">${escapeHtml(rb.advice || '')}</div>
+        </div>
+      </div>`;
+
+    const walletsHtml = wallets.map(w => {
+      const typeCls = w.type === 'hot'
+        ? 'border-amber-500/40 from-orange-900/30 to-amber-900/20'
+        : 'border-cyan-500/40 from-cyan-900/30 to-blue-900/20';
+      const icon = w.type === 'hot' ? '🔥' : '🧊';
+      return `
+      <div class="bg-gradient-to-br ${typeCls} border rounded-xl p-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">${icon}</span>
+          <div class="flex-1">
+            <div class="text-sm font-bold text-white">${escapeHtml(w.name)}</div>
+            <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(w.wallet_id)} · ${escapeHtml(w.chain)} · ${escapeHtml(w.asset)} · ${escapeHtml(w.address_masked)}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-slate-400">餘額 (USD)</div>
+            <div class="text-lg font-bold text-white">${fmtUsd(w.balance_usd)}</div>
+          </div>
+        </div>
+        <div class="text-[11px] text-slate-300 mt-2 bg-slate-950/50 rounded p-2">
+          <div>🛡️ 單筆上限：${fmtUsd(w.policy.per_tx_cap_usd)} · 需 <b class="text-white">${w.policy.required_signers}</b> 位多簽（${(w.policy.signer_roles||[]).join(' / ')}）${w.policy.timelock_hr>0 ? ` · 🕐 ${w.policy.timelock_hr}h timelock` : ''}</div>
+          <div class="text-slate-400 mt-1">${escapeHtml(w.note || '')}</div>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button onclick="wmWalletPropose('${w.wallet_id}')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 rounded px-2 py-1 text-white">💸 發起提款</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const txsHtml = txs.length ? txs.map(t => {
+      const statusCls = {
+        'PROPOSED':           'bg-amber-700 text-white',
+        'PARTIALLY_APPROVED': 'bg-sky-700 text-white',
+        'APPROVED':           'bg-emerald-700 text-white',
+        'EXECUTED':           'bg-green-700 text-white',
+        'REJECTED':           'bg-rose-700 text-white',
+      }[t.status] || 'bg-slate-700 text-white';
+      const canApprove = t.status === 'PROPOSED' || t.status === 'PARTIALLY_APPROVED';
+      const canExecute = t.status === 'APPROVED';
+      const canReject  = canApprove;
+      return `
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-xs text-indigo-300">${escapeHtml(t.tx_id)}</span>
+          <span class="text-[10px] ${statusCls} rounded px-1.5">${escapeHtml(t.status)}</span>
+          <span class="text-[10px] text-slate-400">${escapeHtml(t.from_wallet_name)} → ${escapeHtml(t.to_address.slice(0,14))}…</span>
+          <span class="ml-auto text-sm font-bold text-emerald-300">${fmtUsd(t.amount_usd)}</span>
+        </div>
+        <div class="text-[11px] text-slate-400 mt-1">${escapeHtml(t.purpose || '')}${t.po_no ? ` · PO ${escapeHtml(t.po_no)}` : ''} · ${escapeHtml(t.chain)} ${escapeHtml(t.asset)}</div>
+        <div class="text-[11px] text-slate-500 mt-1">
+          簽核進度：${t.approvals.length} / ${t.required_signers}
+          ${t.approvals.length ? '· ' + t.approvals.map(a => `<span class="text-emerald-300">${escapeHtml(a.role)}:${escapeHtml(a.approver)}</span>`).join(' ') : ''}
+          ${t.timelock_hr>0 ? ` · 🕐 timelock ${t.timelock_hr}h (解鎖於 ${escapeHtml(t.unlock_at)})` : ''}
+        </div>
+        ${t.tx_hash ? `<div class="text-[10px] text-slate-500 mt-1 font-mono break-all">on-chain hash: ${escapeHtml(t.tx_hash)}</div>` : ''}
+        ${(canApprove||canExecute||canReject) ? `<div class="flex gap-1 mt-2 flex-wrap">
+          ${canApprove ? `
+            <button onclick="wmWalletApprove('${t.tx_id}','treasurer-01','treasurer')" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 rounded px-2 py-0.5 text-white">✅ 財務簽</button>
+            <button onclick="wmWalletApprove('${t.tx_id}','cfo-01','cfo')" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 rounded px-2 py-0.5 text-white">✅ CFO 簽</button>
+            ${t.required_signers>=3 ? `
+              <button onclick="wmWalletApprove('${t.tx_id}','ceo-01','ceo')" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 rounded px-2 py-0.5 text-white">✅ CEO 簽</button>
+              <button onclick="wmWalletApprove('${t.tx_id}','chairman-01','chairman')" class="text-[10px] bg-emerald-700 hover:bg-emerald-600 rounded px-2 py-0.5 text-white">✅ 董事長簽</button>
+            ` : ''}
+          ` : ''}
+          ${canReject ? `<button onclick="wmWalletReject('${t.tx_id}')" class="text-[10px] bg-rose-700 hover:bg-rose-600 rounded px-2 py-0.5 text-white">❌ 拒絕</button>` : ''}
+          ${canExecute ? `<button onclick="wmWalletExecute('${t.tx_id}', false)" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 rounded px-2 py-0.5 text-white">🚀 執行上鏈</button>` : ''}
+          ${canExecute && t.timelock_hr>0 ? `<button onclick="wmWalletExecute('${t.tx_id}', true)" class="text-[10px] bg-amber-600 hover:bg-amber-500 rounded px-2 py-0.5 text-white">⏩ 演示用：跳過 timelock</button>` : ''}
+        </div>` : ''}
+      </div>`;
+    }).join('') : '<div class="text-slate-500 text-xs">尚無交易 · 點上方錢包卡的「💸 發起提款」試試</div>';
+
+    return `
+      <div>
+        ${hotColdCard}
+        <div class="text-sm font-bold text-indigo-300 mb-2">🏦 錢包清單</div>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-5">${walletsHtml}</div>
+        <div class="flex items-center gap-2 mb-2">
+          <div class="text-sm font-bold text-indigo-300">📋 交易簽核佇列</div>
+          <div class="text-[11px] text-slate-400">PROPOSED → 多簽 → APPROVED → (timelock) → EXECUTED</div>
+        </div>
+        <div class="space-y-2">${txsHtml}</div>
+      </div>`;
+  }
+
+  // Wallet action handlers
+  window.wmWalletPropose = async (walletId) => {
+    const wallet = (window._wm_data.wallets || []).find(w => w.wallet_id === walletId);
+    if (!wallet) return;
+    const amtStr = prompt(`從「${wallet.name}」提款\n單筆上限：$${wallet.policy.per_tx_cap_usd.toLocaleString()}\n餘額：$${wallet.balance_usd.toLocaleString()}\n\n請輸入金額 (USD)：`);
+    if (!amtStr) return;
+    const amt = parseFloat(amtStr);
+    if (!(amt > 0)) { toast('金額必須 > 0', 'warn'); return; }
+    const toAddr = prompt('對手方地址（可留空示範）：') || '0xDEMO...' + Math.random().toString(16).slice(2, 6);
+    const purpose = prompt('付款用途：', '供應商付款') || '供應商付款';
+    const body = JSON.stringify({
+      from_wallet_id: walletId, to_address: toAddr, amount_usd: amt,
+      purpose, proposer: 'treasurer-01',
+    });
+    const r = await fetch(API_BASE + '/api/weiming/wallet/tx/propose',
+      { method:'POST', headers:{'Content-Type':'application/json'}, body }).then(x => x.json());
+    if (r.ok) {
+      toast(`✅ ${r.tx.tx_id} 已發起，需 ${r.tx.required_signers} 位簽核`, 'success');
+    } else {
+      toast('❌ ' + (r.error || '失敗'), 'error');
+    }
+    window.wmReload();
+  };
+
+  window.wmWalletApprove = async (txId, approver, role) => {
+    const r = await fetch(API_BASE + `/api/weiming/wallet/tx/${txId}/approve`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ approver, role }) }).then(x => x.json());
+    if (r.ok) toast(`✅ ${role} 已簽核（${r.tx.status}）`, 'success');
+    else      toast('❌ ' + (r.error || '失敗'), 'error');
+    window.wmReload();
+  };
+
+  window.wmWalletReject = async (txId) => {
+    const reason = prompt('拒絕理由：', '對手方未驗證');
+    if (reason === null) return;
+    const r = await fetch(API_BASE + `/api/weiming/wallet/tx/${txId}/reject`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ approver: 'cfo-01', reason }) }).then(x => x.json());
+    if (r.ok) toast('已拒絕', 'warn');
+    else      toast('❌ ' + (r.error || '失敗'), 'error');
+    window.wmReload();
+  };
+
+  window.wmWalletExecute = async (txId, skipTimelock) => {
+    if (skipTimelock) {
+      if (!(await confirmModal('將跳過 24h timelock 直接執行上鏈。\n此選項僅供演示，正式環境會走完整鎖定。', { title:'演示用', okText:'跳過並執行', danger:true }))) return;
+    }
+    const r = await fetch(API_BASE + `/api/weiming/wallet/tx/${txId}/execute`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ executor: 'system', skip_timelock: !!skipTimelock }) }).then(x => x.json());
+    if (r.ok) {
+      toast(`✅ 已上鏈 hash ${r.tx.tx_hash.slice(0,14)}...`, 'success');
+    } else {
+      toast('❌ ' + (r.error || '失敗'), 'error');
+    }
+    window.wmReload();
+  };
 
   reload();
 }
