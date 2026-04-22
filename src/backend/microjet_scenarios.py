@@ -28,39 +28,72 @@ except Exception:
 # 場景 B：客訴工單分類
 # ══════════════════════════════════════════════════════════════
 TICKET_CATEGORIES = {
-    '退貨':     ['退貨', '退款', '退費', '取消訂單', '不要了', 'refund', 'return'],
-    '維修':     ['維修', '修理', '故障', '壞了', '無法開機', '無法使用', '報修', '送修'],
-    '品質申訴': ['品質', '瑕疵', '冒煙', '異味', '掉色', '色差', '印不出', '糊掉', '模糊', '公開', '消保會', '消保官'],
-    '相容性':   ['相容', '不相容', '不支援', '裝不上', '配對失敗', '無法連線', '無法安裝', 'driver', '驅動'],
-    '帳務':     ['發票', '帳單', '金額', '收費', '誤刷', '重複扣款', '信用卡', '發不出'],
+    '退貨':     ['退貨', '退款', '退費', '取消訂單', '不要了', '拒絕付', 'refund', 'return'],
+    '維修':     ['維修', '修理', '故障', '壞了', '壞掉', '無法開機', '無法使用', '報修', '送修',
+                 '連不上', '連線不', '連不上網', '網路設定', 'app 無法', 'APP 無法', 'app無法',
+                 '不能用', '用不了', '沒反應', '打不開', '無法連線'],
+    '品質申訴': ['瑕疵', '冒煙', '異味', '掉色', '色差', '印不出', '糊掉', '模糊', '消保會', '消保官',
+                 '廣告不實', '規格不符', '實測不如', '實際不到', '品質變差', '品質不穩', '品質不一', '不如宣稱'],
+    '相容性':   ['不相容', '不支援', '裝不上', '配對失敗', '無法安裝', 'driver', '驅動', 'mac', 'windows',
+                 'linux', 'ios', 'android', '版本不符', '作業系統'],
+    '帳務':     ['發票', '帳單', '金額', '收費', '誤刷', '重複扣款', '信用卡', '發不出', '帳務', '補寄發票'],
     '其他':     [],
 }
+
+# 正面情緒關鍵字（命中則強制歸「其他」低緊急度）
+POSITIVE_KW = ['滿意', '很棒', '很好', '讚', '推薦', '感謝', '好評', '不錯', '喜歡', '穩定', '順手']
 
 # 緊急度判定：高風險關鍵字
 HIGH_URGENCY_KW = [
     '冒煙', '起火', '漏電', '爆炸', '受傷', '危險',
     '消保會', '消保官', '法院', '訴訟', '律師',
     '公開', '媒體', '上網爆料', '網路公開', '告你', '舉報',
+    'dcard', 'Dcard', 'DCARD', 'ptt', 'PTT', '爆料', '公審',
     '緊急', '立刻', '馬上', '今天一定要',
 ]
-MED_URGENCY_KW = ['投訴', '不滿', '生氣', '傻眼', '再不', '給我一個交代', '三次', '多次']
+MED_URGENCY_KW = [
+    '投訴', '不滿', '生氣', '傻眼', '再不', '給我一個交代',
+    '三次', '多次', '重複', '反覆',
+    '已經', '超過', '已', '還沒', '至今仍', '拖了', '等了',
+    '盡快', '請盡', '加急', '催促', '專人',
+    '瑕疵', '冒煙', '連不上', '無法連線', '沒反應',  # 產品類硬體症狀就是中等級
+    '三天', '三週', '一週', '兩週', '個月', '半月',  # 時間拖延
+    '退換', '退貨', '退款', '換機',  # 退貨類自動中
+    '重複扣款', '誤刷', '錯誤扣款',  # 財務類
+    '列印品質變差', '印不出',
+]
 
 
 def classify_ticket(text: str) -> dict:
     """單筆工單分類 + 緊急度 + 回覆模板 + 路由"""
     text_l = (text or '').lower()
 
-    # 分類
+    # 0. 正面情緒先檢查 — 正面評價直接歸「其他」低
+    is_positive = any(k in text for k in POSITIVE_KW)
+    has_negative_signal = any(neg in text for neg in ['壞', '爛', '退', '修', '錯', '慢', '不', '故障', '瑕疵'])
+    if is_positive and not has_negative_signal:
+        return {
+            'category': '其他',
+            'category_scores': {},
+            'urgency': '低',
+            'urgency_reasons': ['正面回饋'],
+            'routing': ['客服主管'],
+            'reply_template': '感謝您的肯定！我們將把您的反饋納入產品行銷素材，期待您再次選購。',
+        }
+
+    # 1. 分類 - 加入優先權重（品質申訴 優於 退貨、退貨 優於 維修）
+    cat_priority = {'品質申訴': 3.0, '退貨': 2.5, '相容性': 2.0, '帳務': 2.0, '維修': 1.5, '其他': 0.1}
     scores = {}
     for cat, kws in TICKET_CATEGORIES.items():
         if cat == '其他':
             continue
-        scores[cat] = sum(1 for kw in kws if kw.lower() in text_l)
+        hit_count = sum(1 for kw in kws if kw.lower() in text_l)
+        scores[cat] = hit_count * cat_priority.get(cat, 1.0)
     best = max(scores, key=scores.get) if max(scores.values(), default=0) > 0 else '其他'
 
-    # 緊急度
-    high_hits = [k for k in HIGH_URGENCY_KW if k in text]
-    med_hits  = [k for k in MED_URGENCY_KW  if k in text]
+    # 2. 緊急度（不分大小寫）
+    high_hits = [k for k in HIGH_URGENCY_KW if k.lower() in text_l]
+    med_hits  = [k for k in MED_URGENCY_KW  if k.lower() in text_l]
     if high_hits:
         urgency = '高'
         urgency_reasons = high_hits[:3]

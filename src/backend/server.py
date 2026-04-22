@@ -1603,6 +1603,37 @@ def api_acc_feedback_accuracy():
     from feedback_test_cases import run_accuracy_test
     return jsonify(run_accuracy_test(accs.analyze_feedback))
 
+
+# ═══════════════════════════════════════════════════════════
+# 🧪 實測基準（Benchmark）· 提供客觀評分證據
+# ═══════════════════════════════════════════════════════════
+@app.route('/api/benchmark/sentiment')
+def api_benchmark_sentiment():
+    """情緒分類實測（addwii 構面 2 · ≥ 85%）"""
+    from benchmark_runner import run_sentiment_accuracy
+    return jsonify(run_sentiment_accuracy())
+
+
+@app.route('/api/benchmark/pii')
+def api_benchmark_pii():
+    """PII 偵測 recall 實測（addwii 構面 5 / microjet 場景 E · ≥ 95%）"""
+    from benchmark_runner import run_pii_recall
+    return jsonify(run_pii_recall())
+
+
+@app.route('/api/benchmark/tickets')
+def api_benchmark_tickets():
+    """工單分類 F1 實測（microjet 場景 B · ≥ 0.85）"""
+    from benchmark_runner import run_ticket_f1
+    return jsonify(run_ticket_f1())
+
+
+@app.route('/api/benchmark/all')
+def api_benchmark_all():
+    """一次跑全部 3 項 benchmark，回傳 pass/fail summary"""
+    from benchmark_runner import run_all
+    return jsonify(run_all())
+
 @app.route('/api/acceptance/proposal', methods=['POST'])
 def api_acc_proposal():
     d = request.json or {}

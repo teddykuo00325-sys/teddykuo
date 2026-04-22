@@ -34,7 +34,8 @@ PATTERNS: list[tuple[str, re.Pattern, str]] = [
     # type, compiled regex, token prefix
     ('TW_ID',      re.compile(r'\b[A-Z][12]\d{8}\b'),                                            'ID'),
     ('TW_PHONE',   re.compile(r'\b09\d{2}[-\s]?\d{3}[-\s]?\d{3}\b'),                             'PHONE'),
-    ('LANDLINE',   re.compile(r'\b0[2-8][-\s]?\d{3,4}[-\s]?\d{4}\b'),                            'PHONE'),
+    # 支援 02-xxxx-xxxx / 02 xxxx xxxx / (02) xxx-xxxx / 02xxxxxxxx 各種寫法
+    ('LANDLINE',   re.compile(r'\(?0[2-8]\)?[-\s]?\d{3,4}[-\s]?\d{4}\b'),                         'PHONE'),
     ('EMAIL',      re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'),            'EMAIL'),
     ('CREDIT',     re.compile(r'\b(?:\d{4}[-\s]?){3}\d{4}\b'),                                   'CARD'),
     # addwii CSV 專屬（roomId_x / houseId_y）

@@ -11538,6 +11538,70 @@ function _goToSimulatorWithPreset(tenantId, presetIdx) {
   }, 250);
 }
 
+// ═══ 實測通過徽章：呼叫 /api/benchmark/* 顯示客觀評分數據 ═══
+function _buildBenchmarkBadge(tenant, tabKey) {
+  // 哪些 tab 有對應 benchmark
+  const benchmarkMap = {
+    'feedback':    { api:'/api/benchmark/sentiment', metric:'accuracy_pct', threshold:85, unit:'%', label:'情緒分類準確率' },
+    'csv':         { api:'/api/benchmark/pii',       metric:'recall_pct',   threshold:95, unit:'%', label:'PII 偵測 recall' },
+    'sec':         { api:'/api/benchmark/pii',       metric:'recall_pct',   threshold:95, unit:'%', label:'PII 偵測 recall' },
+    'tickets':     { api:'/api/benchmark/tickets',   metric:'urgency_macro_f1', threshold:0.85, unit:'', label:'緊急度 macro F1' },
+  };
+  const bm = benchmarkMap[tabKey];
+  if (!bm) return '';
+  const uid = `bench-${tenant}-${tabKey}`;
+  return `
+    <div class="bg-slate-900/60 border border-emerald-500/40 rounded-lg p-3 mb-3" id="${uid}-box">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-emerald-300">🧪 客觀評分實測</span>
+        <span class="text-[11px] text-slate-400 flex-1">${escapeHtml(bm.label)}（門檻 ≥ ${bm.threshold}${bm.unit}）</span>
+        <button onclick="_runBenchmark('${tenant}','${tabKey}')" class="text-[11px] bg-emerald-600 hover:bg-emerald-500 rounded px-3 py-1 font-bold">▶️ 執行實測</button>
+      </div>
+      <div id="${uid}-result" class="mt-2 text-[11px] text-slate-500 italic">點「執行實測」以客觀數據驗證本題是否通過驗收門檻</div>
+    </div>`;
+}
+
+async function _runBenchmark(tenant, tabKey) {
+  const benchmarkMap = {
+    'feedback':    { api:'/api/benchmark/sentiment', metric:'accuracy_pct', threshold:85, unit:'%', label:'情緒分類準確率' },
+    'csv':         { api:'/api/benchmark/pii',       metric:'recall_pct',   threshold:95, unit:'%', label:'PII 偵測 recall' },
+    'sec':         { api:'/api/benchmark/pii',       metric:'recall_pct',   threshold:95, unit:'%', label:'PII 偵測 recall' },
+    'tickets':     { api:'/api/benchmark/tickets',   metric:'urgency_macro_f1', threshold:0.85, unit:'', label:'緊急度 macro F1' },
+  };
+  const bm = benchmarkMap[tabKey];
+  if (!bm) return;
+  const uid = `bench-${tenant}-${tabKey}`;
+  const resultEl = document.getElementById(`${uid}-result`);
+  if (!resultEl) return;
+  resultEl.innerHTML = `<div class="text-emerald-300 text-xs flex items-center gap-2"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>跑測試中...</div>`;
+  try {
+    const r = await fetch(API_BASE + bm.api);
+    const d = await r.json();
+    const val = d.value ?? d[bm.metric] ?? '—';
+    const pass = d.pass;
+    const color = pass ? 'emerald' : 'rose';
+    const emoji = pass ? '✅' : '❌';
+    const statusText = pass ? '通過' : '未通過';
+    // 附加細節（每個測試集的 hit/miss）
+    const detailRow = (d.hit !== undefined)
+      ? `<span class="text-slate-400">· ${d.hit}/${d.total} 通過 · ${d.elapsed_ms}ms</span>`
+      : '';
+    resultEl.innerHTML = `
+      <div class="bg-${color}-900/20 border border-${color}-600/40 rounded p-2">
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-lg">${emoji}</span>
+          <span class="font-bold text-${color}-300">${bm.label}：${val}${bm.unit}</span>
+          <span class="text-${color}-400 text-xs">· 門檻 ${bm.threshold}${bm.unit}</span>
+          <span class="ml-auto text-${color}-300 text-xs font-bold">${statusText}</span>
+        </div>
+        <div class="mt-1 text-[10px] text-slate-400">${escapeHtml(d.note || '')}${detailRow}</div>
+      </div>`;
+    toast(`🧪 ${bm.label}：${val}${bm.unit} ${statusText}`, pass ? 'success' : 'warn', 3500);
+  } catch(e) {
+    resultEl.innerHTML = `<div class="text-red-400 text-xs">❌ 執行失敗：${escapeHtml(e.message)}</div>`;
+  }
+}
+
 // ═══ 真實互動測試區 · 委派給舊版 renderAcceptance 的 accRenderXXX（完整功能版）═══
 // 規則：每 tab 把老版 accRenderXXX 的 UI 內嵌入 #acc-body，保留全部原有功能
 //      （自由輸入 + KB 秒回 / AI 深化切換 + RAG badge + workflow 軌跡 + 引用來源）
@@ -11759,6 +11823,9 @@ function _renderAcceptanceTabContent(tenant, sc) {
         <div class="flex flex-wrap gap-1 items-center">${agentChain}</div>
         <div class="text-[10px] text-slate-500 mt-2">⚡ 由 Orchestrator 自動 dispatch · 完成後自動存入凌策自評中心</div>
       </div>` : ''}
+
+      <!-- 🧪 客觀評分實測（有對應 benchmark 的 tab 才顯示）-->
+      ${_buildBenchmarkBadge(tenant, sc.k)}
 
       <!-- 🎮 真實互動測試區（KB 規則秒回 / AI 思考後回答）-->
       ${_buildInteractiveZone(tenant, sc)}

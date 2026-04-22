@@ -438,3 +438,6 @@
 {"ts": "2026-04-22T17:12:44", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
 {"ts": "2026-04-22T17:19:11", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
 {"ts": "2026-04-22T17:29:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T18:21:19", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-80E579F9", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T18:23:44", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-C90983E4", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T18:26:27", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-92EEFC6B", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}

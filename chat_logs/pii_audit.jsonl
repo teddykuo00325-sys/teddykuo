@@ -14,3 +14,7 @@
 {"ts": "2026-04-22T16:39:40", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}
 {"ts": "2026-04-22T16:39:42", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}
 {"ts": "2026-04-22T16:54:42", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}
+{"ts": "2026-04-22T18:21:19", "context": "benchmark_pii_recall", "detections_count": 108, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1871}
+{"ts": "2026-04-22T18:22:09", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-22T18:23:44", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-22T18:26:27", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
