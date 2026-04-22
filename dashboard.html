@@ -11129,25 +11129,271 @@ async function renderLingceAcceptance() {
 }
 
 // 共用：驗收分頁內容框架（載入 iframe-style 讓現有 acceptance/microjet 功能不重寫）
+// 完整評分標準對應（依 docx 驗收標準逐項）
+const ACCEPTANCE_RUBRICS = {
+  addwii: {
+    qa: {
+      preset_idx: 0,
+      criteria: [
+        '產品推薦正確性（HCR-100/200/300 對應坪數）',
+        'CADR 值與規格數據無誤',
+        '回答完整度 ≥ 90%',
+      ],
+      deduction: '規格錯誤每處扣 2 分',
+      thresholds: [
+        {label:'首答準確率', value:'≥ 92%'},
+        {label:'產品涵蓋率', value:'≥ 95%'},
+        {label:'回覆時間',   value:'≤ 3 秒'},
+      ],
+    },
+    feedback: {
+      preset_idx: 1,
+      criteria: [
+        '3 筆客服紀錄情緒分類（正/中/負）',
+        '問題類型標記（硬體/軟體/服務/準確度）',
+        '產品改善優先度排序清單',
+        '當日摘要報告',
+      ],
+      deduction: '準確率 < 85% 則答案分數折半',
+      thresholds: [
+        {label:'情緒分類準確率', value:'≥ 85%（對比人工標記）'},
+        {label:'產出時間',       value:'≤ 10 分鐘'},
+        {label:'報告格式完整度', value:'100%'},
+      ],
+    },
+    proposal: {
+      preset_idx: 2,
+      criteria: [
+        '產品選型（HCR-300 × 2 台，20 坪超出單機上限）',
+        'CADR 規格對照（1,100 m³/h × 2）',
+        '含稅報價框架',
+        '業務主管可直接使用',
+      ],
+      deduction: '超過 5 分鐘生成則扣 30%',
+      thresholds: [
+        {label:'生成時間',     value:'≤ 5 分鐘'},
+        {label:'8 大段落完整度', value:'100%'},
+        {label:'數字計算正確性', value:'100%（硬性條款）'},
+      ],
+    },
+    content: {
+      preset_idx: 3,
+      criteria: [
+        '3 個 SEO 關鍵字全數植入（嬰兒房空氣清淨、PM2.5 過濾、CADR 認證）',
+        '文案長度 ≤ 300 字',
+        '品牌調性（專業、溫暖、可信賴）',
+      ],
+      deduction: 'SEO 關鍵字每缺一個扣 3 分',
+      thresholds: [
+        {label:'關鍵字命中率',   value:'100%（3/3）'},
+        {label:'文案長度',       value:'≤ 300 字'},
+        {label:'品牌調性評分',   value:'≥ 75%'},
+      ],
+    },
+    csv: {
+      preset_idx: 4,
+      criteria: [
+        '個資零外洩（本地 LLM 推論）',
+        '稽核日誌完整性 100%',
+        '人工審核閘成功攔截',
+        '符合台灣個資法',
+      ],
+      deduction: '⚠️ 任一項未達標本題零分，且全場取消資格',
+      thresholds: [
+        {label:'PII 偵測 recall', value:'≥ 95%'},
+        {label:'稽核完整性',     value:'100%'},
+        {label:'合規狀態',       value:'PDPA Pass'},
+      ],
+    },
+  },
+  microjet: {
+    'printer-qa': {
+      preset_idx: 0,
+      criteria: [
+        '型號辨識正確（MJ-3200）',
+        '錯誤碼解釋正確（E-043 = 墨水匣晶片辨識失敗）',
+        '保固資訊正確（2 年）',
+        '主動提供排除步驟',
+      ],
+      deduction: '規格錯誤每處扣 2 分',
+      thresholds: [
+        {label:'印表機型號涵蓋率', value:'≥ 95%'},
+        {label:'首答準確率',       value:'≥ 92%'},
+        {label:'誤答率',           value:'≤ 1%'},
+        {label:'平均回覆時間',     value:'≤ 3 秒'},
+      ],
+    },
+    tickets: {
+      preset_idx: 1,
+      criteria: [
+        '6 類分類（退貨/維修/品質申訴/相容性/帳務/其他）',
+        '緊急度標記（高/中/低）',
+        '回覆模板產出',
+        '重複工單偵測（24h 內）',
+      ],
+      deduction: '準確率 < 88% 則答案分數折半',
+      thresholds: [
+        {label:'分類準確率',       value:'≥ 88%'},
+        {label:'緊急度 F1 score',  value:'≥ 0.85'},
+        {label:'單件處理時間',     value:'≤ 2 秒'},
+        {label:'批次 100 件',     value:'< 5 分鐘'},
+        {label:'重複偵測 recall',  value:'≥ 90%'},
+      ],
+    },
+    proposal: {
+      preset_idx: 2,
+      criteria: [
+        '8 大段落完整（摘要/合作回顧/市場分析/新品推薦/採購方案/通路活動/雙方承諾/附件）',
+        '歷史採購量化（NT$ 總額 / 型號分布）',
+        '客製化命中客戶痛點',
+      ],
+      deduction: '超過 3 分鐘生成則扣 30%',
+      thresholds: [
+        {label:'單份產出時間',     value:'≤ 3 分鐘'},
+        {label:'8 大段落完整度',   value:'100%'},
+        {label:'數字計算正確性',   value:'100%（硬性）'},
+        {label:'人員修改幅度',     value:'≤ 20%'},
+        {label:'客製化命中率',     value:'≥ 85%'},
+      ],
+    },
+    dashboard: {
+      preset_idx: 3,
+      criteria: [
+        'Top 3 抱怨主題',
+        'Top 3 讚美主題',
+        '新興風險偵測（近 7 天異常上升）',
+        '具體改善建議',
+      ],
+      deduction: '—',
+      thresholds: [
+        {label:'情感分析準確率',   value:'≥ 85%'},
+        {label:'主題歸類準確率',   value:'≥ 80%'},
+        {label:'趨勢預警提前',     value:'≥ 7 天 vs 人工'},
+        {label:'Dashboard 產出',   value:'≤ 5 分鐘/日'},
+      ],
+    },
+    sec: {
+      preset_idx: 4,
+      criteria: [
+        'PII 偵測 recall ≥ 95%',
+        '存取異常偵測（非工時 + 大量下載）',
+        '合規缺口 ≥ 20 控制點',
+        '個資法第 12 條通報草稿',
+      ],
+      deduction: '個資外洩即取消全場資格',
+      thresholds: [
+        {label:'PII recall',       value:'≥ 95%'},
+        {label:'PII 誤報率',       value:'≤ 20%'},
+        {label:'合規缺口覆蓋',     value:'≥ 20 控制點'},
+        {label:'通報稿產出時間',   value:'≤ 60 分鐘'},
+      ],
+    },
+  },
+};
+
+// 跳去模擬器並自動執行指定 preset
+function _goToSimulatorWithPreset(tenantId, presetIdx) {
+  // 切 tenant + 頁
+  CURRENT_TENANT = tenantId;
+  showPage('simulator');
+  // 延遲觸發，等 render 完成
+  setTimeout(() => {
+    const scenario = SIM_SCENARIOS.find(s => s.id === tenantId);
+    if (!scenario) { toast('找不到客戶情境', 'error'); return; }
+    const preset = scenario.presets[presetIdx];
+    if (!preset) { toast('找不到題目', 'error'); return; }
+    startSimulation(tenantId, preset);
+  }, 250);
+}
+
 function _renderAcceptanceTabContent(tenant, sc) {
   if (!sc) return '<div class="text-slate-500 italic p-6">請選上方分頁</div>';
+  const rubric = (ACCEPTANCE_RUBRICS[tenant] || {})[sc.k] || {};
+  const scenario = SIM_SCENARIOS.find(s => s.id === tenant);
+  const presetIdx = rubric.preset_idx ?? 0;
+  const presetQuestion = scenario?.presets?.[presetIdx] || '';
+  const route = scenario?.preset_routes?.[presetIdx] || {};
+  const agents = route.agents || [];
+  const agentChain = agents.map(k => {
+    const m = AGENT_META[k] || {};
+    return `<span class="inline-flex items-center gap-1 text-[11px] bg-${m.color}-900/40 border border-${m.color}-600/40 text-${m.color}-200 rounded-full px-2 py-0.5">${m.icon||'🤖'} ${escapeHtml(m.name||k)}</span>`;
+  }).join(' <span class="text-slate-600">→</span> ');
+
+  // 最近一次執行（從 localStorage 拿）
+  const lastRun = _simHistoryGetByKey(tenant, sc.k);
+  const lastRunHtml = lastRun ? `
+    <div class="bg-emerald-900/20 border border-emerald-600/40 rounded-lg p-3 mt-3">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-emerald-300 text-sm font-bold">✅ 最近一次執行結果</span>
+        <span class="text-[10px] text-slate-500 font-mono">${new Date(lastRun.timestamp).toLocaleString('zh-TW',{hour12:false})}</span>
+        <span class="ml-auto text-[10px] text-emerald-300">耗時 ${lastRun.elapsed_ms}ms</span>
+      </div>
+      <div class="text-[11px] text-slate-400 mb-1">🔗 Agent 軌跡：${(lastRun.agents||[]).map(a=>{const m=AGENT_META[a]||{};return `<span class="text-${m.color||'slate'}-300">${m.icon||'🤖'} ${escapeHtml(m.name||a)}</span>`}).join(' → ')}</div>
+      <div class="text-[11px] text-slate-400 mb-2"><b>Task ID：</b><span class="font-mono text-slate-300">${escapeHtml(String(lastRun.task_id).slice(0,32))}</span></div>
+      <div class="text-xs text-slate-200 bg-slate-900/70 rounded p-2 whitespace-pre-wrap max-h-32 overflow-y-auto">${escapeHtml(lastRun.summary_snippet||'—')}</div>
+      <div class="mt-2 flex gap-2">
+        <button onclick="setTenantAndPage('lingce','lingce-acceptance')" class="text-[11px] bg-slate-700 hover:bg-slate-600 rounded px-2 py-1">📝 查看完整報告（自評中心）</button>
+        <button onclick="_goToSimulatorWithPreset('${tenant}', ${presetIdx})" class="text-[11px] bg-green-700 hover:bg-green-600 rounded px-2 py-1">🔄 重新執行</button>
+      </div>
+    </div>` : `
+    <div class="bg-slate-900/50 border border-slate-700 border-dashed rounded-lg p-4 mt-3 text-center">
+      <div class="text-slate-400 text-sm mb-2">尚未執行此題</div>
+      <button onclick="_goToSimulatorWithPreset('${tenant}', ${presetIdx})" class="bg-green-600 hover:bg-green-500 rounded px-4 py-2 text-sm font-bold text-white">🎯 在模擬器執行此題</button>
+    </div>`;
+
+  const color = tenant === 'addwii' ? 'sky' : tenant === 'microjet' ? 'amber' : 'yellow';
+
   return `
     <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
-      <div class="flex items-start justify-between mb-4">
+      <div class="flex items-start justify-between mb-4 pb-3 border-b border-slate-700">
         <div>
-          <div class="text-lg font-bold">${sc.t}</div>
+          <div class="text-lg font-bold text-${color}-200">${sc.t}</div>
           <div class="text-xs text-slate-400 mt-0.5">${sc.d}</div>
           <div class="text-[10px] text-slate-500 mt-1 font-mono">${sc.api}</div>
         </div>
         <div class="text-right">
-          <div class="text-3xl font-black text-yellow-300">${sc.w}</div>
+          <div class="text-3xl font-black text-${color}-300">${sc.w}</div>
           <div class="text-[10px] text-slate-500">分</div>
         </div>
       </div>
-      <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-        <div class="text-xs text-slate-400 mb-2">💡 此場景的完整功能頁在「客戶驗收中心」舊介面，此處將繼續整合。</div>
-        <button onclick="ACC_TAB='${sc.k === 'printer-qa' ? 'qa' : sc.k}'; renderAcceptance()" class="bg-slate-700 hover:bg-slate-600 rounded px-4 py-2 text-sm">前往完整功能 →</button>
+
+      <!-- 評分標準 -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-slate-900/50 rounded-lg p-3">
+          <div class="text-xs font-bold text-${color}-300 mb-2">📋 評分要點</div>
+          <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+            ${(rubric.criteria || ['—']).map(c => `<li>${escapeHtml(c)}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="bg-slate-900/50 rounded-lg p-3">
+          <div class="text-xs font-bold text-${color}-300 mb-2">🎯 量化門檻</div>
+          <div class="space-y-1 text-[11px]">
+            ${(rubric.thresholds || []).map(t => `
+              <div class="flex items-center gap-2">
+                <span class="text-slate-400 flex-1">${escapeHtml(t.label)}</span>
+                <span class="text-${color}-300 font-mono font-bold">${escapeHtml(t.value)}</span>
+              </div>`).join('')}
+          </div>
+          ${rubric.deduction ? `<div class="mt-2 pt-2 border-t border-slate-700 text-[10px] text-rose-300">⚠️ ${escapeHtml(rubric.deduction)}</div>` : ''}
+        </div>
       </div>
+
+      <!-- 標準測試題 -->
+      <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-3 mb-3">
+        <div class="text-xs font-bold text-${color}-300 mb-2">📝 標準測試題（原始 docx 第 ${presetIdx+1} 題）</div>
+        <pre class="text-[11px] text-slate-200 whitespace-pre-wrap leading-relaxed">${escapeHtml(presetQuestion)}</pre>
+      </div>
+
+      <!-- 將派發的 Agent -->
+      ${agents.length ? `
+      <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-3 mb-3">
+        <div class="text-xs font-bold text-${color}-300 mb-2">🤖 執行時將派發的 AI Agent</div>
+        <div class="flex flex-wrap gap-1 items-center">${agentChain}</div>
+        <div class="text-[10px] text-slate-500 mt-2">⚡ 由 Orchestrator 自動 dispatch · 完成後自動存入凌策自評中心</div>
+      </div>` : ''}
+
+      <!-- 最近一次執行 / 執行按鈕 -->
+      ${lastRunHtml}
     </div>`;
 }
 
