@@ -5500,8 +5500,9 @@ async function openChatRoom(roomId) {
   document.getElementById('chat-panel').classList.remove('hidden');
   await refreshChatRoom();
   if (CHAT_POLL_TIMER) clearInterval(CHAT_POLL_TIMER);
-  // 輪詢間隔 3 秒 → 5 秒，配合 diff 更新降低資料競爭機率
-  CHAT_POLL_TIMER = setInterval(refreshChatRoom, 5000);
+  // 輪詢間隔 2 秒：B 平均等 1 秒即可看到 A 的訊息（之前 5 秒平均 2.5 秒）
+  // diff 更新已經零閃爍 + optimistic 配對移除，加快 polling 不會重複顯示
+  CHAT_POLL_TIMER = setInterval(refreshChatRoom, 2000);
 }
 
 // 從 room_id 'room_A_B' 解出對方 ID
@@ -5699,9 +5700,26 @@ function updateChatPanelDynamic(data) {
     msgsEl.appendChild(typingSlot);
   }
 
-  // ★ Optimistic 訊息（送出中）不在此處移除 —
-  //   只有 sendChatMessage 自己在收到 POST 成功 + GET 確認後才精準移除對應的 tempId
-  //   若在此移除，polling 若在 POST 未完成時跑到，會導致使用者訊息短暫消失（race condition）
+  // ★ Optimistic 訊息配對移除：data.messages 裡如有自己的訊息，
+  //   找到內容/sender 對得上的 optimistic 就移除（避免重複顯示）
+  //   不符合配對的 optimistic 保留（polling 不該擅自動）
+  const myPersonaForOpt = ORG_CURRENT_USER_PERSONA;
+  const optimisticNodes = Array.from(msgsEl.querySelectorAll('.chat-optimistic'));
+  if (optimisticNodes.length > 0) {
+    data.messages.forEach(msg => {
+      if (msg.sender_id === myPersonaForOpt && (msg.type === 'text' || msg.type === 'observer_text')) {
+        // 找 optimistic 中 content 相符者
+        const matchIdx = optimisticNodes.findIndex(el => {
+          const bubble = el.querySelector('.whitespace-pre-wrap');
+          return bubble && bubble.textContent === msg.content;
+        });
+        if (matchIdx >= 0) {
+          optimisticNodes[matchIdx].remove();
+          optimisticNodes.splice(matchIdx, 1);
+        }
+      }
+    });
+  }
 
   // 現有訊息節點索引：id → DOM 節點
   const existingNodes = new Map();
