@@ -2357,6 +2357,46 @@ def api_ollama_status():
             'message': '雲端 Demo 模式（不含 Ollama）— 所有 AI 精煉功能走內建模板',
             'task': {'status': 'idle'},
         })
+
+    # ★ 遠端 tunnel 模式（OLLAMA_URL 非 localhost）→ 直接 ping /api/tags
+    #   不檢查本地 CLI（雲端容器沒有 ollama 指令，更沒有 winget）
+    url = OLLAMA_URL or ''
+    is_remote = url and not any(x in url for x in ['localhost', '127.0.0.1', '0.0.0.0', 'disabled'])
+    if is_remote:
+        try:
+            r = requests.get(f'{url}/api/tags',
+                             headers={'ngrok-skip-browser-warning': 'true',
+                                      'User-Agent': 'lingce-backend/1.0'},
+                             timeout=5)
+            if r.status_code == 200:
+                models = [m['name'] for m in r.json().get('models', [])]
+                model_ok = any(OLLAMA_MODEL in m or m in OLLAMA_MODEL for m in models)
+                return jsonify({
+                    'remote_mode': True,
+                    'installed':    True,
+                    'running':      True,
+                    'model_pulled': model_ok,
+                    'model_name':   OLLAMA_MODEL,
+                    'tunnel_url':   url,
+                    'next_action':  'ready' if model_ok else 'pull_remote',
+                    'message': (f'✓ 遠端 Ollama 已連線（透過 Cloudflare Tunnel → 凌策老闆電腦）'
+                                if model_ok else
+                                f'遠端 Ollama 已連線但缺模型 {OLLAMA_MODEL}，請於老闆端執行 ollama pull {OLLAMA_MODEL}'),
+                    'task': {'status': 'idle'},
+                    'available_models': models,
+                })
+        except Exception as e:
+            return jsonify({
+                'remote_mode': True,
+                'installed':    False, 'running': False, 'model_pulled': False,
+                'model_name':   OLLAMA_MODEL,
+                'tunnel_url':   url,
+                'next_action':  'tunnel_down',
+                'message': f'⚠️ 遠端 Ollama 連線失敗（tunnel 中斷？）：{str(e)[:100]}',
+                'task': {'status': 'idle'},
+            })
+
+    # 本地模式（localhost / 127.0.0.1）→ 原有本地檢查邏輯
     installed = _check_ollama_installed()
     running   = _check_ollama_running() if installed else False
     model_ok  = _check_model_pulled(OLLAMA_MODEL) if running else False
