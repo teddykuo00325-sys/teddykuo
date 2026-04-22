@@ -31,7 +31,7 @@ except Exception:
     assert_local_only = lambda: True
 
 def _ollama_generate(prompt: str, system: str = '', temperature: float = 0.3,
-                     num_predict: int = 400, timeout: int = 180,
+                     num_predict: int = 400, timeout: int = 60,
                      context: str = 'scenario') -> dict:
     """呼叫本地 Qwen 2.5 7B。所有輸入先過 PII Guard 遮蔽後再送 LLM。
     回傳 {ok, text, elapsed_s, pii_redactions}"""
@@ -124,8 +124,10 @@ def _audit_worker():
         try:
             with open(AUDIT_LOG, 'a', encoding='utf-8') as f:
                 f.write(line)
-        except Exception:
-            pass
+        except Exception as e:
+            # 稽核寫入失敗是嚴重合規事件，至少要 stderr 留痕
+            import sys as _sys
+            print(f'[AUDIT WRITE FAILED] {e} · line={line[:120]}', file=_sys.stderr)
 
 threading.Thread(target=_audit_worker, daemon=True).start()
 

@@ -13,10 +13,24 @@
 核心物件：
   Supplier / PR / PO / GRN / Invoice / Contract / Document / KPI Settlement / AuditLog
 """
-import os, json, hashlib, time, uuid
+import os, json, hashlib, time, uuid, threading
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Dict, List, Any, Optional
+
+# RLock：同一個 request 可能同時呼叫多個 _init() / _save() / 互相嵌套
+# 避免評審連點觸發 race condition（PO/GRN 編號衝突、audit_log 半寫入）
+_STATE_LOCK = threading.RLock()
+
+
+def _locked(fn):
+    """裝飾所有會讀/寫 _STATE 的公開函式"""
+    def wrapper(*args, **kwargs):
+        with _STATE_LOCK:
+            return fn(*args, **kwargs)
+    wrapper.__name__ = fn.__name__
+    wrapper.__doc__ = fn.__doc__
+    return wrapper
 
 
 # ══════════════════════════════════════════════════════════════
@@ -268,6 +282,7 @@ RULES = [
 # 核心 1：AI 產出 Change Set（基於歷史 PO + 供應商評分）
 # 驗收指標 1：生成時間 < 3 分鐘（我們目標 < 3 秒）
 # ══════════════════════════════════════════════════════════════
+@_locked
 def generate_change_set(pr_no: str, user: str = 'system') -> Dict[str, Any]:
     _init()
     t0 = time.time()
@@ -396,6 +411,7 @@ def generate_change_set(pr_no: str, user: str = 'system') -> Dict[str, Any]:
     return {'ok': True, 'change_set': change_set}
 
 
+@_locked
 def apply_change_set(cs_id: str, accepted_fields: List[str], reviewer: str,
                      override_price: Optional[dict] = None) -> Dict[str, Any]:
     _init()
@@ -476,6 +492,7 @@ def apply_change_set(cs_id: str, accepted_fields: List[str], reviewer: str,
 # ══════════════════════════════════════════════════════════════
 # 核心 2：3-way match（PO / GRN / Invoice）
 # ══════════════════════════════════════════════════════════════
+@_locked
 def create_grn(po_no: str, receiver: str = 'warehouse-01') -> Dict[str, Any]:
     _init()
     po = next((p for p in _STATE['pos'] if p['po_no'] == po_no), None)
@@ -507,6 +524,7 @@ def create_grn(po_no: str, receiver: str = 'warehouse-01') -> Dict[str, Any]:
     return {'ok': True, 'grn': grn, 'chain_block': block}
 
 
+@_locked
 def create_invoice(po_no: str, grn_no: str, invoice_no: str = None,
                    accountant: str = 'acct-01') -> Dict[str, Any]:
     _init()
@@ -554,6 +572,7 @@ def create_invoice(po_no: str, grn_no: str, invoice_no: str = None,
 # ══════════════════════════════════════════════════════════════
 # 核心 3：月度供應商 KPI 結算 + 上鏈（驗收指標 5）
 # ══════════════════════════════════════════════════════════════
+@_locked
 def settle_supplier_kpi(period: str = None) -> Dict[str, Any]:
     _init()
     period = period or datetime.now().strftime('%Y-%m')
@@ -614,6 +633,7 @@ def settle_supplier_kpi(period: str = None) -> Dict[str, Any]:
 # ══════════════════════════════════════════════════════════════
 # 核心 4：6 項驗收指標即時計算
 # ══════════════════════════════════════════════════════════════
+@_locked
 def get_acceptance_metrics() -> Dict[str, Any]:
     _init()
     # 指標 1：PR → Change Set 平均生成時間
@@ -710,6 +730,7 @@ def list_chain_blocks(limit=50):  _init(); return list(reversed(_STATE['chain_bl
 def list_audit_log(limit=100):    _init(); return list(reversed(_STATE['audit_log']))[:limit]
 def get_pr(pr_no):      _init(); return next((p for p in _STATE['prs'] if p['pr_no'] == pr_no), None)
 def get_change_set(cs_id): _init(); return next((c for c in _STATE['change_sets'] if c['change_set_id'] == cs_id), None)
+@_locked
 def reset_demo():
     global _STATE
     try: os.remove(_p('state.json'))

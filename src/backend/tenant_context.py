@@ -146,7 +146,8 @@ def resolve_tenant_by_member(member_id: str, fallback: str = 'microjet') -> str:
             bundle = TENANT_CTX.get(tid)
             if member_id in bundle.attendance.members:
                 return tid
-        except Exception:
+        except Exception as e:
+            print(f'[tenant_context] resolve_tenant_by_member failed for tid={tid} member={member_id}: {e}')
             continue
     return fallback
 

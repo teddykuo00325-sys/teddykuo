@@ -182,6 +182,11 @@ function setTenantAndPage(tenant, page) {
     }
     // 其他 group 保持使用者的展開/收合狀態
   });
+  // 同步 URL hash（重整後狀態會還原，書籤/分享也對）
+  try {
+    const newHash = `#page=${encodeURIComponent(page)}&tenant=${encodeURIComponent(tenant)}`;
+    if (location.hash !== newHash) history.replaceState(null, '', newHash);
+  } catch {}
   showPage(page, tenant);
 }
 
@@ -199,6 +204,91 @@ function toggleTenantGroup(tenant) {
 function withTenant(url) {
   const sep = url.includes('?') ? '&' : '?';
   return url + sep + 'tenant=' + encodeURIComponent(CURRENT_TENANT);
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🛡️ 前端 helper：safeFetch / loading / confirmModal / toast
+//    取代散落各處的 naked fetch + confirm + 空白頁
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * safeFetch：所有 fetch 應該走這條路
+ * - 自動 75s timeout（比後端 60s Ollama 多一點 margin）
+ * - 檢查 r.ok，非 2xx 時回傳 {ok:false, error, status}
+ * - JSON parse 失敗時回傳 body_preview 方便除錯
+ * - 回傳統一格式：{ ok, data, error?, status? }
+ */
+async function safeFetch(url, opts = {}) {
+  const timeoutMs = opts.timeoutMs || 75000;
+  const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const tid = ctrl ? setTimeout(() => ctrl.abort(), timeoutMs) : null;
+  try {
+    const r = await fetch(url, { ...opts, signal: ctrl ? ctrl.signal : undefined });
+    const text = await r.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; }
+    catch { return { ok: false, status: r.status, error: 'JSON 解析失敗', body_preview: text.slice(0, 200) }; }
+    if (!r.ok) return { ok: false, status: r.status, error: (data && (data.error || data.message)) || `HTTP ${r.status}`, data };
+    return { ok: true, data, status: r.status };
+  } catch (e) {
+    const isAbort = e && (e.name === 'AbortError');
+    return { ok: false, error: isAbort ? `請求逾時（${Math.round(timeoutMs/1000)}s）` : (e && e.message ? e.message : String(e)) };
+  } finally {
+    if (tid) clearTimeout(tid);
+  }
+}
+
+/** 統一 loading HTML（async render 進入時立刻塞這個，避免白屏） */
+function loadingHTML(msg = '讀取中...', hint = '') {
+  return `
+    <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+      <div class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+      <div class="text-sm">${escapeHtml(msg)}</div>
+      ${hint ? `<div class="text-xs text-slate-500 mt-1">${escapeHtml(hint)}</div>` : ''}
+    </div>`;
+}
+
+/** 錯誤面板 HTML（網路/後端錯誤統一樣式） */
+function errorHTML(err, onRetryFn) {
+  const msg = (err && err.error) || err || '未知錯誤';
+  const status = err && err.status ? `（HTTP ${err.status}）` : '';
+  const retryBtn = onRetryFn ? `<button onclick="${onRetryFn}" class="mt-3 text-xs bg-slate-700 hover:bg-slate-600 rounded px-3 py-1.5">🔄 重試</button>` : '';
+  return `
+    <div class="max-w-xl mx-auto my-8 bg-rose-900/30 border border-rose-500/40 rounded-xl p-5 text-sm">
+      <div class="text-rose-200 font-bold mb-1">⚠️ 載入失敗 ${status}</div>
+      <div class="text-rose-100/80 text-xs break-all">${escapeHtml(String(msg))}</div>
+      ${retryBtn}
+    </div>`;
+}
+
+/** 顯示 loading 在任一容器 */
+function setLoading(containerIdOrEl, msg, hint) {
+  const el = (typeof containerIdOrEl === 'string') ? document.getElementById(containerIdOrEl) : containerIdOrEl;
+  if (el) el.innerHTML = loadingHTML(msg, hint);
+}
+
+/** Promise-based confirmation modal（取代原生 confirm()） */
+function confirmModal(message, { title = '請確認', okText = '確認', cancelText = '取消', danger = false } = {}) {
+  return new Promise(resolve => {
+    const wrap = document.createElement('div');
+    wrap.className = 'fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm';
+    const btnCls = danger ? 'bg-rose-600 hover:bg-rose-500' : 'bg-blue-600 hover:bg-blue-500';
+    wrap.innerHTML = `
+      <div class="bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-w-md w-full mx-4 p-5">
+        <div class="text-base font-bold text-white mb-2">${escapeHtml(title)}</div>
+        <div class="text-sm text-slate-300 whitespace-pre-wrap mb-5">${escapeHtml(message)}</div>
+        <div class="flex gap-2 justify-end">
+          <button id="__cm_cancel" class="text-sm bg-slate-700 hover:bg-slate-600 rounded px-4 py-2 text-slate-200">${escapeHtml(cancelText)}</button>
+          <button id="__cm_ok" class="text-sm ${btnCls} rounded px-4 py-2 text-white">${escapeHtml(okText)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const cleanup = (v) => { wrap.remove(); resolve(v); };
+    wrap.querySelector('#__cm_ok').addEventListener('click', () => cleanup(true));
+    wrap.querySelector('#__cm_cancel').addEventListener('click', () => cleanup(false));
+    wrap.addEventListener('click', (e) => { if (e.target === wrap) cleanup(false); });
+    setTimeout(() => wrap.querySelector('#__cm_ok').focus(), 50);
+  });
 }
 
 let LIVE_MODE = false;
@@ -395,12 +485,10 @@ async function fetchScenario() {
 
 async function procurementAction(path, method='POST') {
   if (!LIVE_MODE) { toast('需啟動後端才能執行此動作', 'error'); return null; }
-  try {
-    const r = await fetch(API_BASE + path, { method });
-    const data = await r.json();
-    if (!data.ok) { toast('操作失敗：' + (data.error || 'unknown'), 'error'); return null; }
-    return data;
-  } catch(e) { toast('連線失敗：' + e.message, 'error'); return null; }
+  const r = await safeFetch(API_BASE + path, { method });
+  if (!r.ok) { toast('連線失敗：' + r.error, 'error'); return null; }
+  if (!r.data || !r.data.ok) { toast('操作失敗：' + ((r.data && r.data.error) || 'unknown'), 'error'); return null; }
+  return r.data;
 }
 
 // ═══ 非阻塞 Toast 通知（取代 alert）═══
@@ -469,7 +557,7 @@ async function actionAdvanceOrder(order_id, btn) {
 }
 
 async function actionResetScenario(btn) {
-  if (!confirm('確認重置 12 坪情境至初始狀態？所有出貨/序號紀錄將清除。')) return;
+  if (!(await confirmModal('確認重置 12 坪情境至初始狀態？所有出貨/序號紀錄將清除。', {title:'重置情境', okText:'重置', danger:true}))) return;
   if (!LIVE_MODE) { toast('需啟動後端', 'error'); return; }
   const el = btn || (event && event.currentTarget);
   const loading = _withBtnLoading(el, '重置中…');
@@ -1102,21 +1190,22 @@ async function renderCRM(){
 }
 
 async function _crmLoadKPI(){
-  try{
-    const s = await fetch(API_BASE + withTenant('/api/crm/summary')).then(r=>r.json());
-    const el = document.getElementById('crm-kpis');
-    if(!el) return;
-    el.innerHTML = `
-      ${_crmKpi('累計客戶詢問', s.inquiries, 'blue')}
-      ${_crmKpi('已發報價單', s.quotes, 'cyan')}
-      ${_crmKpi('成交訂單', s.orders, 'amber')}
-      ${_crmKpi('安裝派工中', s.installations, 'purple')}
-      ${_crmKpi('本月實收月費', 'NT$ ' + s.mrr.toLocaleString(), 'green')}
-      ${_crmKpi('洽談中案件總額', 'NT$ ' + s.pipeline_value.toLocaleString(), 'rose')}
-    `;
-  }catch(e){
-    document.getElementById('crm-kpis').innerHTML = '<div class="col-span-6 text-red-400 text-sm">後端連線失敗，請確認伺服器已啟動</div>';
+  const el = document.getElementById('crm-kpis');
+  if(!el) return;
+  const r = await safeFetch(API_BASE + withTenant('/api/crm/summary'));
+  if (!r.ok) {
+    el.innerHTML = `<div class="col-span-6 text-rose-300 text-sm">⚠️ ${escapeHtml(r.error)}</div>`;
+    return;
   }
+  const s = r.data || {};
+  el.innerHTML = `
+    ${_crmKpi('累計客戶詢問', s.inquiries ?? 0, 'blue')}
+    ${_crmKpi('已發報價單', s.quotes ?? 0, 'cyan')}
+    ${_crmKpi('成交訂單', s.orders ?? 0, 'amber')}
+    ${_crmKpi('安裝派工中', s.installations ?? 0, 'purple')}
+    ${_crmKpi('本月實收月費', 'NT$ ' + Number(s.mrr||0).toLocaleString(), 'green')}
+    ${_crmKpi('洽談中案件總額', 'NT$ ' + Number(s.pipeline_value||0).toLocaleString(), 'rose')}
+  `;
 }
 function _crmKpi(label, val, color){
   return `<div class="bg-gradient-to-br from-${color}-900/40 to-${color}-800/20 border border-${color}-500/30 rounded-lg p-3">
@@ -1127,20 +1216,18 @@ function _crmKpi(label, val, color){
 
 async function _crmLoadTab(){
   const body = document.getElementById('crm-body');
-  body.innerHTML = '<div class="text-slate-400 text-sm">讀取中...</div>';
+  if (!body) return;
+  body.innerHTML = loadingHTML('讀取 CRM 資料中...');
   const mapping = {
     inquiries: {url:'/api/crm/inquiries', render:_crmRenderInq},
     quotes: {url:'/api/crm/quotes', render:_crmRenderQuo},
     orders: {url:'/api/crm/orders', render:_crmRenderOrd},
     installations: {url:'/api/crm/installations', render:_crmRenderIns},
   };
-  const m = mapping[CRM_TAB];
-  try{
-    const data = await fetch(API_BASE + withTenant(m.url)).then(r=>r.json());
-    body.innerHTML = m.render(data);
-  }catch(e){
-    body.innerHTML = '<div class="text-red-400 text-sm">讀取失敗</div>';
-  }
+  const m = mapping[CRM_TAB] || mapping.inquiries;  // tab 遺失時 fallback 到首頁
+  const r = await safeFetch(API_BASE + withTenant(m.url));
+  if (!r.ok) { body.innerHTML = errorHTML(r, '_crmLoadTab()'); return; }
+  body.innerHTML = m.render(r.data || []);
 }
 
 function _crmRenderInq(rows){
@@ -1397,7 +1484,7 @@ async function crmSubmitInq(){
 }
 
 async function crmToQuote(iid){
-  if(!confirm('確定將此詢問單轉為正式報價嗎？')) return;
+  if(!(await confirmModal('確定將此詢問單轉為正式報價嗎？',{okText:'轉為報價'}))) return;
   const r = await fetch(API_BASE + withTenant('/api/crm/inquiry/' + iid + '/to-quote'), {method:'POST'}).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
   alert('✅ 已產生報價單 ' + r.報價編號);
@@ -1405,7 +1492,7 @@ async function crmToQuote(iid){
   renderCRM();
 }
 async function crmAcceptQuote(qid){
-  if(!confirm('客戶接受此報價，轉為正式訂單？')) return;
+  if(!(await confirmModal('客戶接受此報價，轉為正式訂單？',{okText:'建立訂單'}))) return;
   const r = await fetch(API_BASE + withTenant('/api/crm/quote/' + qid + '/accept'), {method:'POST'}).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
   alert('✅ 已產生訂單 ' + r.訂單編號);
@@ -1413,12 +1500,12 @@ async function crmAcceptQuote(qid){
   renderCRM();
 }
 async function crmRejectQuote(qid){
-  if(!confirm('確定拒絕此報價？')) return;
+  if(!(await confirmModal('確定拒絕此報價？',{okText:'拒絕',danger:true}))) return;
   await fetch(API_BASE + withTenant('/api/crm/quote/' + qid + '/reject'), {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
   renderCRM();
 }
 async function crmStartInstall(oid){
-  if(!confirm('啟動安裝流程？凌策 AI Deploy Agent 將自動部署所有模組')) return;
+  if(!(await confirmModal('啟動安裝流程？凌策 AI Deploy Agent 將自動部署所有模組',{okText:'啟動安裝'}))) return;
   const r = await fetch(API_BASE + withTenant('/api/crm/order/' + oid + '/install'), {method:'POST'}).then(r=>r.json());
   if(r.error){ alert('❌ ' + r.error); return; }
   alert('✅ 已建立安裝記錄 ' + r.安裝編號);
@@ -1426,7 +1513,7 @@ async function crmStartInstall(oid){
   renderCRM();
 }
 async function crmCompleteInstall(iid){
-  if(!confirm('確認完成交付？所有模組已上線運作')) return;
+  if(!(await confirmModal('確認完成交付？所有模組已上線運作',{okText:'確認完成'}))) return;
   await fetch(API_BASE + withTenant('/api/crm/installation/' + iid + '/complete'), {method:'POST'});
   renderCRM();
 }
@@ -3021,9 +3108,9 @@ function enterDragMode() {
   renderOrgTree();
 }
 
-function exitDragMode() {
+async function exitDragMode() {
   if (Object.keys(ORG_PENDING_CHANGES).length > 0) {
-    if (!confirm(`您有 ${Object.keys(ORG_PENDING_CHANGES).length} 項未儲存的變更，確定離開？`)) return;
+    if (!(await confirmModal(`您有 ${Object.keys(ORG_PENDING_CHANGES).length} 項未儲存的變更，確定離開？`,{okText:'離開',danger:true}))) return;
   }
   ORG_EDIT_MODE = false;
   ORG_PENDING_CHANGES = {};
@@ -3058,9 +3145,9 @@ function updatePendingCount() {
   }
 }
 
-function discardPendingChanges() {
+async function discardPendingChanges() {
   if (Object.keys(ORG_PENDING_CHANGES).length === 0) return;
-  if (!confirm('確定放棄所有暫存變更？')) return;
+  if (!(await confirmModal('確定放棄所有暫存變更？',{okText:'放棄',danger:true}))) return;
   ORG_PENDING_CHANGES = {};
   updatePendingCount();
   renderOrgTree();
@@ -3069,7 +3156,7 @@ function discardPendingChanges() {
 async function savePendingChanges() {
   const changes = Object.entries(ORG_PENDING_CHANGES);
   if (changes.length === 0) { alert('目前沒有變更需要儲存'); return; }
-  if (!confirm(`將儲存 ${changes.length} 項組織變更，確定？`)) return;
+  if (!(await confirmModal(`將儲存 ${changes.length} 項組織變更，確定？`,{okText:'儲存'}))) return;
 
   const results = [];
   for (const [mid, newSup] of changes) {
@@ -3199,12 +3286,15 @@ let HR_EDITOR_SELECTED_DEPT = null;   // null = 尚未選擇
 let HR_EDITOR_SEARCH = '';
 
 async function renderOrgEditor() {
+  const ct = document.getElementById('org-editor-content');
+  if (ct) ct.innerHTML = loadingHTML('載入組織成員中...');
   if (!(await ensureLive())) {
-    document.getElementById('org-editor-content').innerHTML = '<div class="text-center text-slate-400 py-12">需後端連線<br><button onclick="renderOrgEditor()" class="mt-3 px-3 py-1 bg-blue-600 rounded text-sm">🔄 重試</button></div>';
+    if (ct) ct.innerHTML = '<div class="text-center text-slate-400 py-12">需後端連線<br><button onclick="renderOrgEditor()" class="mt-3 px-3 py-1 bg-blue-600 rounded text-sm">🔄 重試</button></div>';
     return;
   }
-  const r = await fetch(API_BASE + withTenant('/api/org/members-flat'));
-  const members = await r.json();
+  const rr = await safeFetch(API_BASE + withTenant('/api/org/members-flat'));
+  if (!rr.ok) { if (ct) ct.innerHTML = errorHTML(rr, 'renderOrgEditor()'); return; }
+  const members = rr.data || [];
 
   // 統計各部門人數 + 排序
   const deptStats = {};
@@ -3384,10 +3474,16 @@ function switchLeaveOTTab(tab) {
 // ── 我的請假 tab ──
 async function renderLeavesTab() {
   const content = document.getElementById('lot-content');
-  const typesR = await fetch(API_BASE + '/api/leave/types');
-  const types = await typesR.json();
-  const leavesR = await fetch(API_BASE + '/api/leave/member/' + ORG_CURRENT_USER_PERSONA);
-  const leaves = await leavesR.json();
+  if (!content) return;
+  content.innerHTML = loadingHTML('載入請假資料中...');
+  const [tR, lR] = await Promise.all([
+    safeFetch(API_BASE + '/api/leave/types'),
+    safeFetch(API_BASE + '/api/leave/member/' + ORG_CURRENT_USER_PERSONA),
+  ]);
+  if (!tR.ok) { content.innerHTML = errorHTML(tR, 'renderLeavesTab()'); return; }
+  if (!lR.ok) { content.innerHTML = errorHTML(lR, 'renderLeavesTab()'); return; }
+  const types = tR.data || [];
+  const leaves = lR.data || [];
 
   const today = new Date().toISOString().split('T')[0];
   content.innerHTML = `
@@ -3548,8 +3644,11 @@ async function submitLeave() {
 // ── 我的加班 tab ──
 async function renderOvertimesTab() {
   const content = document.getElementById('lot-content');
-  const r = await fetch(API_BASE + '/api/overtime/member/' + ORG_CURRENT_USER_PERSONA);
-  const ots = await r.json();
+  if (!content) return;
+  content.innerHTML = loadingHTML('載入加班資料中...');
+  const r = await safeFetch(API_BASE + '/api/overtime/member/' + ORG_CURRENT_USER_PERSONA);
+  if (!r.ok) { content.innerHTML = errorHTML(r, 'renderOvertimesTab()'); return; }
+  const ots = r.data || [];
   const today = new Date().toISOString().split('T')[0];
 
   content.innerHTML = `
@@ -3624,13 +3723,23 @@ async function submitOvertime() {
     reason: document.getElementById('ot-reason').value,
     monthly_salary: document.getElementById('ot-salary').value || null,
   };
-  const r = await fetch(API_BASE + '/api/overtime/submit', {
+  // 前端驗證（避免後端無謂拒絕）
+  if (!data.work_date)                       { toast('請選擇加班日期', 'warn'); return; }
+  if (!/^\d{1,2}:\d{2}$/.test(data.start_hhmm||''))
+                                              { toast('起始時間格式錯誤（需 HH:MM）', 'warn'); return; }
+  const hr = parseFloat(data.overtime_hours);
+  if (!(hr > 0))                             { toast('加班時數必須 > 0', 'warn'); return; }
+  if (hr > 12)                               { toast('加班時數不可超過 12 小時', 'warn'); return; }
+  if (!data.reason || data.reason.trim().length < 3)
+                                              { toast('請輸入加班理由（至少 3 字）', 'warn'); return; }
+  const r = await safeFetch(API_BASE + '/api/overtime/submit', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(data)
   });
-  const d = await r.json();
-  if (!d.success) { alert('❌ ' + d.error); return; }
-  alert('✅ 加班申報已送出');
+  if (!r.ok) { toast('送出失敗：' + r.error, 'error'); return; }
+  const d = r.data || {};
+  if (!d.success) { toast('❌ ' + (d.error || '後端拒絕'), 'error'); return; }
+  toast('✅ 加班申報已送出', 'success');
   renderOvertimesTab();
 }
 
@@ -3732,13 +3841,17 @@ async function runCalcPay() {
 
 // ── 待審批 tab ──
 async function renderPendingTab() {
-  const [lR, oR] = await Promise.all([
-    fetch(API_BASE + '/api/leave/pending/' + ORG_CURRENT_USER_PERSONA),
-    fetch(API_BASE + '/api/overtime/pending/' + ORG_CURRENT_USER_PERSONA),
-  ]);
-  const leaves = await lR.json();
-  const ots = await oR.json();
   const content = document.getElementById('lot-content');
+  if (!content) return;
+  content.innerHTML = loadingHTML('讀取待審批項目中...');
+  const [lR, oR] = await Promise.all([
+    safeFetch(API_BASE + '/api/leave/pending/' + ORG_CURRENT_USER_PERSONA),
+    safeFetch(API_BASE + '/api/overtime/pending/' + ORG_CURRENT_USER_PERSONA),
+  ]);
+  if (!lR.ok) { content.innerHTML = errorHTML(lR, 'renderPendingTab()'); return; }
+  if (!oR.ok) { content.innerHTML = errorHTML(oR, 'renderPendingTab()'); return; }
+  const leaves = lR.data || [];
+  const ots = oR.data || [];
 
   if (leaves.length === 0 && ots.length === 0) {
     content.innerHTML = `<div class="text-center text-slate-500 py-12">
@@ -4073,7 +4186,7 @@ async function submitImportMembers() {
   const targetDept = HR_EDITOR_SELECTED_DEPT;
 
   const supText = newSup ? `\n並指派新上級` : `\n（保留原上級）`;
-  if (!confirm(`將 ${ids.length} 位成員搬移至「${targetDept}」${supText}\n確定？`)) return;
+  if (!(await confirmModal(`將 ${ids.length} 位成員搬移至「${targetDept}」${supText}\n確定？`,{okText:'搬移'}))) return;
 
   let ok = 0, fails = [];
   for (const mid of ids) {
@@ -4127,7 +4240,7 @@ async function updateMemberField(mid, field, value) {
 }
 
 async function deleteMember(mid, name) {
-  if (!confirm(`確定要移除 ${name}？\n其下屬會改掛到原本的祖父節點。`)) return;
+  if (!(await confirmModal(`確定要移除 ${name}？\n其下屬會改掛到原本的祖父節點。`,{okText:'移除',danger:true}))) return;
   const r = await fetch(API_BASE + `/api/org/members/${mid}?actor_id=${ORG_CURRENT_USER_PERSONA}`, {
     method: 'DELETE'
   });
@@ -6725,8 +6838,8 @@ function _simHistorySave(record) {
   try { localStorage.setItem(SIM_HISTORY_KEY, JSON.stringify(list)); }
   catch(e) { console.warn('history save failed', e); }
 }
-function _simHistoryClear() {
-  if (!confirm('確定清空所有模擬歷史紀錄？')) return;
+async function _simHistoryClear() {
+  if (!(await confirmModal('確定清空所有模擬歷史紀錄？',{okText:'清空',danger:true}))) return;
   localStorage.removeItem(SIM_HISTORY_KEY);
   toast('已清空執行歷史', 'info');
   showPage('lingce-acceptance');
@@ -8452,7 +8565,8 @@ function accUpdateChips(){
 window.__QA_CACHE = window.__QA_CACHE || new Map();
 
 // ─── localStorage 持久化 cache（跨重整、跨分頁）───
-const QA_CACHE_LS_KEY = 'lingce_qa_cache_v1';
+// v2：key 加入 pii_guard 版本，PII 規則變動時舊快取自動失效
+const QA_CACHE_LS_KEY = 'lingce_qa_cache_v2';
 const QA_CACHE_TTL_MS = 24 * 60 * 60 * 1000;  // 24 小時
 
 function _qaCacheLoadAll() {
@@ -8489,8 +8603,8 @@ function _qaCacheSet(key, data) {
     localStorage.setItem(QA_CACHE_LS_KEY, JSON.stringify(Object.fromEntries(entries)));
   } catch(e) { /* quota exceeded ok */ }
 }
-function _qaCacheClear() {
-  if (!confirm('確定清除所有問答快取？（下次問會重新呼叫 AI）')) return;
+async function _qaCacheClear() {
+  if (!(await confirmModal('確定清除所有問答快取？（下次問會重新呼叫 AI）',{okText:'清除',danger:true}))) return;
   window.__QA_CACHE.clear();
   localStorage.removeItem(QA_CACHE_LS_KEY);
   toast('已清除問答快取', 'info');
@@ -9900,7 +10014,7 @@ async function _attnPendingFilter(approverId, statusOverride){
 }
 
 async function _attnApproveEdit(id){
-  if(!confirm('確認核准此編輯 → 直接寫入歷史紀錄？')) return;
+  if(!(await confirmModal('確認核准此編輯 → 直接寫入歷史紀錄？',{okText:'核准'}))) return;
   const r = await fetch(`${API_BASE}/api/attendance-stats/edit/${id}/approve`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({approver_id: ORG_CURRENT_USER_PERSONA})
@@ -10803,7 +10917,7 @@ async function _csvlabAnalyze() {
   const reason = document.getElementById('csvlab-reason').value.trim();
   if (!actor || reason.length < 5) { alert('請填完整 actor 和 reason（≥5字）'); return; }
   if (!_csvlabTaskId || !_csvlabText) { alert('請先執行掃描'); return; }
-  if (!confirm(`確認以 ${actor} 身分核准並執行分析？此操作將寫入不可逆稽核`)) return;
+  if (!(await confirmModal(`確認以 ${actor} 身分核准並執行分析？此操作將寫入不可逆稽核`,{okText:'核准並執行'}))) return;
 
   const res = document.getElementById('csvlab-result');
   res.innerHTML = '<div class="text-slate-400 text-sm">分析中...</div>';
@@ -10902,7 +11016,7 @@ async function _simulateDangerousOp() {
   const reason = prompt(`⚠️ 人工審核閘\n\n您即將刪除「${target}」的所有資料。\n此操作不可復原，且會永久寫入稽核 log。\n\n請輸入執行理由（必填，至少 10 字）：`);
   if (!reason) { alert('操作已取消'); return; }
   if (reason.trim().length < 10) { alert('理由過短（至少 10 字）'); return; }
-  if (!confirm(`最終確認：\n\n目標：${target}\n理由：${reason}\n\n確定執行？`)) return;
+  if (!(await confirmModal(`最終確認：\n\n目標：${target}\n理由：${reason}\n\n確定執行？`,{title:'高風險操作',okText:'執行',danger:true}))) return;
 
   try {
     const r = await fetch(API_BASE + '/api/compliance/human-gate-log', {
@@ -11049,7 +11163,7 @@ async function triggerOllamaAction(action, options = {}) {
     if (await postOllama('/api/ollama/install')) startProgressPoll();
     else OLLAMA_AUTO_CHAIN = false;
   } else if (action === 'pull') {
-    if (!silent && !confirm('將下載 Qwen 2.5 7B 模型（約 4.7 GB，視網速 10–20 分鐘）。\n下載完成後會自動啟用 AI 功能。\n確認執行？')) return;
+    if (!silent && !(await confirmModal('將下載 Qwen 2.5 7B 模型（約 4.7 GB，視網速 10–20 分鐘）。\n下載完成後會自動啟用 AI 功能。\n確認執行？',{title:'下載 AI 模型',okText:'開始下載'}))) return;
     OLLAMA_AUTO_CHAIN = true;
     if (await postOllama('/api/ollama/pull-model')) startProgressPoll();
     else OLLAMA_AUTO_CHAIN = false;
@@ -11250,12 +11364,15 @@ async function renderLingceAcceptance() {
   const microjetKeys= ['printer-qa','tickets','proposal','dashboard','sec'];
   const addwiiDone  = addwiiKeys.filter(k => history.some(r => r.tenant==='addwii'   && r.tab_key===k)).length;
   const microjetDone= microjetKeys.filter(k => history.some(r => r.tenant==='microjet' && r.tab_key===k)).length;
-  const addwiiScore = history
-    .filter(r => r.tenant==='addwii' && addwiiKeys.includes(r.tab_key))
-    .reduce((acc, r) => acc.set(r.tab_key, r.weight || 0), new Map());
-  const microjetScore = history
-    .filter(r => r.tenant==='microjet' && microjetKeys.includes(r.tab_key))
-    .reduce((acc, r) => acc.set(r.tab_key, r.weight || 0), new Map());
+  // 同一題多次執行 → 取歷史最高分（避免重跑時反而覆蓋原本較高的分數）
+  const maxByKey = (tenant, keys) => history
+    .filter(r => r.tenant===tenant && keys.includes(r.tab_key))
+    .reduce((acc, r) => {
+      const prev = acc.get(r.tab_key) || 0;
+      return acc.set(r.tab_key, Math.max(prev, r.weight || 0));
+    }, new Map());
+  const addwiiScore   = maxByKey('addwii',   addwiiKeys);
+  const microjetScore = maxByKey('microjet', microjetKeys);
   const addwiiPoints   = [...addwiiScore.values()].reduce((s,v)=>s+v,0);
   const microjetPoints = [...microjetScore.values()].reduce((s,v)=>s+v,0);
 
@@ -11731,9 +11848,9 @@ async function _runMJCustom(key, apiPath, method) {
 }
 
 // 清除本 tenant 驗收進度
-function _clearTenantAcceptanceProgress(tenantId) {
+async function _clearTenantAcceptanceProgress(tenantId) {
   const tenantName = tenantId === 'addwii' ? 'addwii' : tenantId === 'microjet' ? 'microjet' : tenantId;
-  if (!confirm(`確定清除「${tenantName}」驗收中心的所有執行紀錄？\n（只影響本驗收中心，其他 tenant 不動）`)) return;
+  if (!(await confirmModal(`確定清除「${tenantName}」驗收中心的所有執行紀錄？\n（只影響本驗收中心，其他 tenant 不動）`,{okText:'清除紀錄',danger:true}))) return;
   const list = _simHistoryLoad();
   const filtered = list.filter(r => r.tenant !== tenantId);
   try {
@@ -12102,7 +12219,7 @@ async function renderWeimingProcurement() {
             <button onclick="wmReload()" class="ml-auto text-[11px] px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded">🔄 刷新</button>
             <button onclick="wmReset()" class="text-[11px] px-2 py-1 bg-rose-700 hover:bg-rose-600 rounded text-white">🗑 重置示範資料</button>
           </div>
-          <div class="grid grid-cols-3 gap-3">${metricsHtml}</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${metricsHtml}</div>
         </div>
 
         <!-- 快速模擬：PR → CS → PO → GRN → Invoice → KPI -->
@@ -12161,7 +12278,7 @@ async function renderWeimingProcurement() {
 
     window.wmReload = reload;
     window.wmReset = async () => {
-      if (!confirm('確定重置維明採購系統至示範初始狀態？')) return;
+      if (!(await confirmModal('確定重置維明採購系統至示範初始狀態？',{okText:'重置',danger:true}))) return;
       await j('/api/weiming/reset-demo', { method: 'POST' });
       reload();
     };
@@ -12275,7 +12392,7 @@ async function renderWeimingProcurement() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver: 'warehouse-1' })
     }).then(x => x.json());
     if (!r.ok) { alert('❌ ' + (r.error||'')); return; }
-    if (confirm(`✅ GRN ${r.grn.grn_no} 已建立\n是否立即開立發票並執行 3-way match？`)) {
+    if (await confirmModal(`GRN ${r.grn.grn_no} 已建立\n是否立即開立發票並執行 3-way match？`,{title:'收貨完成',okText:'立即開票'})) {
       const r2 = await fetch(API_BASE + '/api/weiming/invoice', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ po_no: poNo, grn_no: r.grn.grn_no })
@@ -12354,7 +12471,27 @@ async function renderWeimingProcurement() {
 }
 
 // Init
-showPage('dashboard');
+// ─── 啟動：支援 URL hash 直達頁面 + tenant 狀態還原 ───
+// 格式：#page=lingce-acceptance&tenant=lingce
+(function bootFromHash() {
+  try {
+    const h = (location.hash || '').replace(/^#/, '');
+    if (!h) { showPage('dashboard'); return; }
+    const params = Object.fromEntries(new URLSearchParams(h));
+    const page = params.page || 'dashboard';
+    const tenant = params.tenant;
+    if (tenant && ['lingce','microjet','addwii','weiming'].includes(tenant)) {
+      CURRENT_TENANT = tenant;
+    }
+    showPage(page, tenant || CURRENT_TENANT);
+  } catch { showPage('dashboard'); }
+})();
+
+// 切頁時同步 URL hash（利於分享 / 重整 / 書籤）
+window.addEventListener('hashchange', () => {
+  const params = Object.fromEntries(new URLSearchParams(location.hash.replace(/^#/, '')));
+  if (params.page) showPage(params.page, params.tenant || CURRENT_TENANT);
+});
 </script>
 </body>
 </html>
