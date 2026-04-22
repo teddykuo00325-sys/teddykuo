@@ -172,8 +172,9 @@ def ollama_chat(messages, system_prompt=None, temperature=0.7):
     payload['messages'].extend(masked_messages)
 
     try:
-        # ngrok-skip-browser-warning 讓免費 ngrok tunnel 不跳瀏覽器警告頁
-        headers = {'ngrok-skip-browser-warning': 'true'}
+        # ngrok-skip-browser-warning 讓免費 ngrok tunnel 不跳警告頁
+        # Cloudflare tunnel 本身無警告頁，此 header 也不會干擾
+        headers = {'ngrok-skip-browser-warning': 'true', 'User-Agent': 'lingce-backend/1.0'}
         resp = requests.post(f'{OLLAMA_URL}/api/chat', json=payload, headers=headers, timeout=300)
         resp.raise_for_status()
         data = resp.json()
