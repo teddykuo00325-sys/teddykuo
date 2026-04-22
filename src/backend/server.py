@@ -45,6 +45,7 @@ from members_data import build_initial_org, WEEKLY_OBJECTIVES_TEMPLATE
 from chat_manager import ChatManager, ChatRelation
 from task_manager import TaskManager
 import acceptance_scenarios as accs
+import weiming_scenarios as wms
 from crm_manager import CRMManager, MODULE_NAMES, MODULE_PRICES, calc_quote
 # 多租戶 Context（lingce / microjet / addwii / weiming）— 每家獨立 CRM / Org
 from tenant_context import TENANT_CTX, TENANT_IDS, TENANT_META, parse_tenant
@@ -1263,6 +1264,111 @@ def api_weiming_evaluation():
         return jsonify({'error': 'not found'}), 404
     with open(path, 'r', encoding='utf-8') as f:
         return jsonify(json.load(f))
+
+
+# ══════════════════════════════════════════════════════════
+# 維明 · Palantir AI 採購作業系統 API
+#   對應 docx「維明驗收標準 20260420」6 項驗收指標
+#   PR → Change Set → PO → GRN → Invoice → KPI → 上鏈
+# ══════════════════════════════════════════════════════════
+@app.route('/api/weiming/prs')
+def api_weiming_prs():
+    return jsonify(wms.list_prs())
+
+@app.route('/api/weiming/pr/<pr_no>')
+def api_weiming_pr(pr_no):
+    pr = wms.get_pr(pr_no)
+    if not pr:
+        return jsonify({'error': 'PR not found'}), 404
+    return jsonify(pr)
+
+@app.route('/api/weiming/suppliers')
+def api_weiming_suppliers():
+    return jsonify(wms.list_suppliers())
+
+@app.route('/api/weiming/pr/<pr_no>/recommend', methods=['POST'])
+def api_weiming_recommend(pr_no):
+    """AI 產生 Change Set：供應商 + 價格推薦 + 風險評估"""
+    data = request.json or {}
+    user = data.get('user', 'operator')
+    try:
+        return jsonify(wms.generate_change_set(pr_no, user))
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/weiming/change-sets')
+def api_weiming_change_sets():
+    return jsonify(wms.list_change_sets())
+
+@app.route('/api/weiming/change-set/<cs_id>/apply', methods=['POST'])
+def api_weiming_apply(cs_id):
+    """套用 Change Set → 建立 PO Draft + 上鏈"""
+    data = request.json or {}
+    accepted = data.get('accepted_fields') or ['supplier', 'price', 'delivery_date']
+    reviewer = data.get('reviewer', 'reviewer')
+    try:
+        return jsonify(wms.apply_change_set(cs_id, accepted, reviewer))
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/weiming/pos')
+def api_weiming_pos():
+    return jsonify(wms.list_pos())
+
+@app.route('/api/weiming/po/<po_no>/grn', methods=['POST'])
+def api_weiming_grn(po_no):
+    """建立 GRN（收貨單）"""
+    data = request.json or {}
+    receiver = data.get('receiver', 'warehouse')
+    try:
+        return jsonify(wms.create_grn(po_no, receiver))
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/weiming/invoice', methods=['POST'])
+def api_weiming_invoice():
+    """建立 Invoice + 執行 3-way match"""
+    data = request.json or {}
+    try:
+        return jsonify(wms.create_invoice(
+            po_no=data.get('po_no'),
+            grn_no=data.get('grn_no'),
+            invoice_no=data.get('invoice_no'),
+            accountant=data.get('accountant') or data.get('submitter', 'acct-01'),
+        ))
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/weiming/invoices')
+def api_weiming_invoices():
+    return jsonify(wms.list_invoices())
+
+@app.route('/api/weiming/kpi/settle', methods=['POST'])
+def api_weiming_kpi_settle():
+    """月結供應商 KPI 並上鏈"""
+    data = request.json or {}
+    period = data.get('period')
+    try:
+        return jsonify(wms.settle_supplier_kpi(period=period))
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/weiming/chain')
+def api_weiming_chain():
+    return jsonify(wms.list_chain_blocks(limit=int(request.args.get('limit', 50))))
+
+@app.route('/api/weiming/audit')
+def api_weiming_audit():
+    return jsonify(wms.list_audit_log(limit=int(request.args.get('limit', 100))))
+
+@app.route('/api/weiming/metrics')
+def api_weiming_metrics():
+    """6 項驗收指標即時計算"""
+    return jsonify(wms.get_acceptance_metrics())
+
+@app.route('/api/weiming/reset-demo', methods=['POST'])
+def api_weiming_reset():
+    return jsonify(wms.reset_demo())
 
 
 @app.route('/api/tenants')

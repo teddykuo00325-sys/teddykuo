@@ -1,0 +1,816 @@
+{
+  "suppliers": [
+    {
+      "id": "S001",
+      "name": "台灣精密五金",
+      "region": "新北",
+      "risk_level": "low",
+      "score": 92,
+      "delivery_ontime_pct": 96,
+      "quality_pass_pct": 99.1,
+      "avg_response_hr": 4,
+      "last_audit": "2026-01-15"
+    },
+    {
+      "id": "S002",
+      "name": "昇陽貿易",
+      "region": "台中",
+      "risk_level": "low",
+      "score": 88,
+      "delivery_ontime_pct": 93,
+      "quality_pass_pct": 98.5,
+      "avg_response_hr": 6,
+      "last_audit": "2026-01-22"
+    },
+    {
+      "id": "S003",
+      "name": "東光化學",
+      "region": "高雄",
+      "risk_level": "medium",
+      "score": 78,
+      "delivery_ontime_pct": 86,
+      "quality_pass_pct": 96.2,
+      "avg_response_hr": 12,
+      "last_audit": "2025-11-08",
+      "note": "近 3 個月交期略延"
+    },
+    {
+      "id": "S004",
+      "name": "新合興包材",
+      "region": "桃園",
+      "risk_level": "low",
+      "score": 90,
+      "delivery_ontime_pct": 95,
+      "quality_pass_pct": 98.9,
+      "avg_response_hr": 3,
+      "last_audit": "2026-02-10"
+    },
+    {
+      "id": "S005",
+      "name": "佳和特殊電子",
+      "region": "新竹",
+      "risk_level": "high",
+      "score": 61,
+      "delivery_ontime_pct": 72,
+      "quality_pass_pct": 92.5,
+      "avg_response_hr": 28,
+      "last_audit": "2025-09-03",
+      "note": "⚠️ 需重新評估合作"
+    },
+    {
+      "id": "S006",
+      "name": "晶圓耗材國際",
+      "region": "新竹",
+      "risk_level": "low",
+      "score": 94,
+      "delivery_ontime_pct": 97,
+      "quality_pass_pct": 99.4,
+      "avg_response_hr": 2,
+      "last_audit": "2026-03-01"
+    },
+    {
+      "id": "S007",
+      "name": "華通機電",
+      "region": "桃園",
+      "risk_level": "medium",
+      "score": 82,
+      "delivery_ontime_pct": 89,
+      "quality_pass_pct": 97.1,
+      "avg_response_hr": 8,
+      "last_audit": "2026-01-05"
+    },
+    {
+      "id": "S008",
+      "name": "大東原物料",
+      "region": "高雄",
+      "risk_level": "low",
+      "score": 91,
+      "delivery_ontime_pct": 96,
+      "quality_pass_pct": 98.8,
+      "avg_response_hr": 5,
+      "last_audit": "2026-02-28"
+    }
+  ],
+  "prs": [
+    {
+      "pr_no": "PR-2026-0001",
+      "project_code": "P-LCD-Q2",
+      "requester": "陳 OO",
+      "request_date": "2026-04-10",
+      "status": "DRAFT",
+      "source_type": "MRP",
+      "lines": [
+        {
+          "line_no": 1,
+          "material_no": "M-HEPA-H13",
+          "description": "HEPA H13 濾網 600×600 mm",
+          "qty": 100,
+          "uom": "PCS",
+          "target_date": "2026-05-30",
+          "unit_price_last": 9.5,
+          "currency": "USD"
+        }
+      ],
+      "total_amount_est_usd": 950
+    },
+    {
+      "pr_no": "PR-2026-0002",
+      "project_code": "P-MEMS-A1",
+      "requester": "林 OO",
+      "request_date": "2026-04-12",
+      "status": "DRAFT",
+      "source_type": "人工",
+      "lines": [
+        {
+          "line_no": 1,
+          "material_no": "M-PZT-001",
+          "description": "壓電薄膜基板 4 inch",
+          "qty": 50,
+          "uom": "PCS",
+          "target_date": "2026-05-20",
+          "unit_price_last": 145.0,
+          "currency": "USD"
+        },
+        {
+          "line_no": 2,
+          "material_no": "M-EPOXY-UV",
+          "description": "UV 硬化環氧樹脂",
+          "qty": 20,
+          "uom": "KG",
+          "target_date": "2026-05-20",
+          "unit_price_last": 68.0,
+          "currency": "USD"
+        }
+      ],
+      "total_amount_est_usd": 8610
+    },
+    {
+      "pr_no": "PR-2026-0003",
+      "project_code": "P-FACILITY",
+      "requester": "張 OO",
+      "request_date": "2026-04-15",
+      "status": "DRAFT",
+      "source_type": "人工",
+      "lines": [
+        {
+          "line_no": 1,
+          "material_no": "M-ALCOHOL-99",
+          "description": "無水酒精 99% 20L 桶裝",
+          "qty": 30,
+          "uom": "桶",
+          "target_date": "2026-05-10",
+          "unit_price_last": 42.0,
+          "currency": "USD"
+        }
+      ],
+      "total_amount_est_usd": 1260
+    },
+    {
+      "pr_no": "PR-2026-0004",
+      "project_code": "P-EXPAND",
+      "requester": "郭 OO",
+      "request_date": "2026-04-18",
+      "status": "DRAFT",
+      "source_type": "人工",
+      "lines": [
+        {
+          "line_no": 1,
+          "material_no": "M-LASER-CO2",
+          "description": "CO2 雷射管 80W",
+          "qty": 2,
+          "uom": "PCS",
+          "target_date": "2026-06-15",
+          "unit_price_last": 2800.0,
+          "currency": "USD"
+        }
+      ],
+      "total_amount_est_usd": 5600
+    },
+    {
+      "pr_no": "PR-2026-0005",
+      "project_code": "P-URGENT",
+      "requester": "黃 OO",
+      "request_date": "2026-04-20",
+      "status": "DRAFT",
+      "source_type": "急單",
+      "lines": [
+        {
+          "line_no": 1,
+          "material_no": "M-GASKET-FKM",
+          "description": "FKM 氟橡膠墊片（耐高溫）",
+          "qty": 500,
+          "uom": "PCS",
+          "target_date": "2026-04-28",
+          "unit_price_last": 1.8,
+          "currency": "USD"
+        }
+      ],
+      "total_amount_est_usd": 900
+    }
+  ],
+  "history_pos": [
+    {
+      "po_no": "PO-2025-3401",
+      "material_no": "M-HEPA-H13",
+      "supplier_id": "S006",
+      "unit_price": 9.2,
+      "qty": 120,
+      "delivered_on_time": true,
+      "po_date": "2025-10-15"
+    },
+    {
+      "po_no": "PO-2025-3412",
+      "material_no": "M-HEPA-H13",
+      "supplier_id": "S006",
+      "unit_price": 9.2,
+      "qty": 80,
+      "delivered_on_time": true,
+      "po_date": "2025-12-02"
+    },
+    {
+      "po_no": "PO-2026-0145",
+      "material_no": "M-HEPA-H13",
+      "supplier_id": "S006",
+      "unit_price": 9.3,
+      "qty": 100,
+      "delivered_on_time": true,
+      "po_date": "2026-02-10"
+    },
+    {
+      "po_no": "PO-2026-0201",
+      "material_no": "M-HEPA-H13",
+      "supplier_id": "S008",
+      "unit_price": 9.8,
+      "qty": 60,
+      "delivered_on_time": true,
+      "po_date": "2026-03-05"
+    },
+    {
+      "po_no": "PO-2025-3100",
+      "material_no": "M-PZT-001",
+      "supplier_id": "S001",
+      "unit_price": 148.0,
+      "qty": 40,
+      "delivered_on_time": true,
+      "po_date": "2025-11-20"
+    },
+    {
+      "po_no": "PO-2026-0080",
+      "material_no": "M-PZT-001",
+      "supplier_id": "S001",
+      "unit_price": 145.0,
+      "qty": 50,
+      "delivered_on_time": true,
+      "po_date": "2026-01-25"
+    },
+    {
+      "po_no": "PO-2026-0198",
+      "material_no": "M-PZT-001",
+      "supplier_id": "S005",
+      "unit_price": 155.0,
+      "qty": 30,
+      "delivered_on_time": false,
+      "po_date": "2026-03-02"
+    },
+    {
+      "po_no": "PO-2026-0050",
+      "material_no": "M-EPOXY-UV",
+      "supplier_id": "S003",
+      "unit_price": 72.0,
+      "qty": 15,
+      "delivered_on_time": true,
+      "po_date": "2026-01-10"
+    },
+    {
+      "po_no": "PO-2026-0130",
+      "material_no": "M-EPOXY-UV",
+      "supplier_id": "S003",
+      "unit_price": 70.0,
+      "qty": 25,
+      "delivered_on_time": false,
+      "po_date": "2026-02-18"
+    },
+    {
+      "po_no": "PO-2026-0090",
+      "material_no": "M-ALCOHOL-99",
+      "supplier_id": "S008",
+      "unit_price": 42.0,
+      "qty": 25,
+      "delivered_on_time": true,
+      "po_date": "2026-01-30"
+    },
+    {
+      "po_no": "PO-2026-0170",
+      "material_no": "M-ALCOHOL-99",
+      "supplier_id": "S008",
+      "unit_price": 41.5,
+      "qty": 40,
+      "delivered_on_time": true,
+      "po_date": "2026-02-25"
+    },
+    {
+      "po_no": "PO-2026-0100",
+      "material_no": "M-LASER-CO2",
+      "supplier_id": "S007",
+      "unit_price": 2900.0,
+      "qty": 1,
+      "delivered_on_time": true,
+      "po_date": "2026-01-15"
+    },
+    {
+      "po_no": "PO-2026-0190",
+      "material_no": "M-GASKET-FKM",
+      "supplier_id": "S004",
+      "unit_price": 1.8,
+      "qty": 300,
+      "delivered_on_time": true,
+      "po_date": "2026-03-01"
+    },
+    {
+      "po_no": "PO-2026-0220",
+      "material_no": "M-GASKET-FKM",
+      "supplier_id": "S004",
+      "unit_price": 1.75,
+      "qty": 500,
+      "delivered_on_time": true,
+      "po_date": "2026-03-20"
+    }
+  ],
+  "change_sets": [
+    {
+      "change_set_id": "CS-20260422-001",
+      "pr_no": "PR-2026-0001",
+      "status": "APPLIED",
+      "recommendations": [
+        {
+          "line_no": 1,
+          "material_no": "M-HEPA-H13",
+          "description": "HEPA H13 濾網 600×600 mm",
+          "qty": 100,
+          "uom": "PCS",
+          "recommended_supplier_id": "S006",
+          "recommended_supplier_name": "晶圓耗材國際",
+          "recommended_unit_price": 9.05,
+          "recommended_lead_time_days": 25,
+          "currency": "USD",
+          "risk_score_delivery": "low",
+          "risk_score_quality": "low",
+          "risk_score_price": "low",
+          "reasoning": [
+            "過去 4 筆 M-HEPA-H13 PO · 晶圓耗材國際 準時率 97%",
+            "建議價 USD 9.05/PCS = 歷史均價 USD 9.38 × 0.98",
+            "綜合分 96.4 / 100"
+          ],
+          "supplier_score": 96.4
+        }
+      ],
+      "risk_notes": [],
+      "rule_hits": [
+        {
+          "rule": "R005",
+          "line": null,
+          "detail": "全部建議低風險 + 金額 < 5,000 → 可自動建立 PO Draft（Level 3）"
+        }
+      ],
+      "auto_eligible": true,
+      "created_by_ai": true,
+      "model": "rule-engine+heuristics",
+      "created_at": "2026-04-22T18:53:10",
+      "elapsed_s": 0.0,
+      "applied_fields_count": 3,
+      "reviewed_by": "boss",
+      "reviewed_at": "2026-04-22T18:53:10",
+      "accepted_fields": [
+        "supplier",
+        "price",
+        "delivery_date"
+      ],
+      "override_price": {}
+    }
+  ],
+  "pos": [
+    {
+      "po_no": "PO-20260422-001",
+      "pr_no": "PR-2026-0001",
+      "change_set_id": "CS-20260422-001",
+      "supplier_id": "S006",
+      "currency": "USD",
+      "items": [
+        {
+          "line_no": 1,
+          "material_no": "M-HEPA-H13",
+          "description": "HEPA H13 濾網 600×600 mm",
+          "qty": 100,
+          "uom": "PCS",
+          "supplier_id": "S006",
+          "unit_price": 9.05,
+          "currency": "USD",
+          "subtotal": 905.0
+        }
+      ],
+      "total_amount": 905.0,
+      "status": "MATCHED",
+      "created_at": "2026-04-22T18:53:10",
+      "created_by": "boss",
+      "level": 3
+    }
+  ],
+  "grns": [
+    {
+      "grn_no": "GRN-20260422-001",
+      "po_no": "PO-20260422-001",
+      "received_items": [
+        {
+          "line_no": 1,
+          "material_no": "M-HEPA-H13",
+          "qty_received": 100,
+          "qty_ordered": 100,
+          "passed_qc": true
+        }
+      ],
+      "receiver": "wh1",
+      "received_at": "2026-04-22T18:53:10"
+    }
+  ],
+  "invoices": [
+    {
+      "invoice_no": "INV-20260422-001",
+      "po_no": "PO-20260422-001",
+      "grn_no": "GRN-20260422-001",
+      "supplier_id": "S006",
+      "amount": 905.0,
+      "currency": "USD",
+      "received_at": "2026-04-22T18:53:11",
+      "three_way_match": {
+        "po_amount": 905.0,
+        "invoice_amount": 905.0,
+        "grn_items_count": 1,
+        "po_items_count": 1,
+        "amount_match": true,
+        "qty_match": true,
+        "qc_passed": true,
+        "overall_pass": true
+      }
+    }
+  ],
+  "kpi_settlements": [
+    {
+      "settlement_id": "KPI-2026-04-S001",
+      "supplier_id": "S001",
+      "supplier_name": "台灣精密五金",
+      "period": "2026-04",
+      "delivery_ontime_pct": 96,
+      "quality_pass_pct": 99.1,
+      "avg_response_hr": 4,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 97.2,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 4,
+      "chain_hash": "8d9a20a90a1cc7b275880e7afa0a30ea891855807705d166cbdb8214f1255915"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S002",
+      "supplier_id": "S002",
+      "supplier_name": "昇陽貿易",
+      "period": "2026-04",
+      "delivery_ontime_pct": 93,
+      "quality_pass_pct": 98.5,
+      "avg_response_hr": 6,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 95.3,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 5,
+      "chain_hash": "969826a0edf9b65798cba6eab3a11f4aae3b4d2bcc0e29957573c8afee2d823c"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S003",
+      "supplier_id": "S003",
+      "supplier_name": "東光化學",
+      "period": "2026-04",
+      "delivery_ontime_pct": 86,
+      "quality_pass_pct": 96.2,
+      "avg_response_hr": 12,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 90.3,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 6,
+      "chain_hash": "853d2b4bfc7a1360de9e8060eb6abd437c28f860af619c81df9950e4720f9c5a"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S004",
+      "supplier_id": "S004",
+      "supplier_name": "新合興包材",
+      "period": "2026-04",
+      "delivery_ontime_pct": 95,
+      "quality_pass_pct": 98.9,
+      "avg_response_hr": 3,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 96.8,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 7,
+      "chain_hash": "45e0bfd1e4018f2e338dd075246cb3bebb8e8f8bf5aa58ffd484d53b0a65988e"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S005",
+      "supplier_id": "S005",
+      "supplier_name": "佳和特殊電子",
+      "period": "2026-04",
+      "delivery_ontime_pct": 72,
+      "quality_pass_pct": 92.5,
+      "avg_response_hr": 28,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 80.2,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 8,
+      "chain_hash": "0c55809e7a2bb17276fbb2f31bcc0bebf7a208698092e776da298a0a9cb92205"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S006",
+      "supplier_id": "S006",
+      "supplier_name": "晶圓耗材國際",
+      "period": "2026-04",
+      "delivery_ontime_pct": 100.0,
+      "quality_pass_pct": 100.0,
+      "avg_response_hr": 2,
+      "po_count": 1,
+      "invoice_count": 1,
+      "overall_score": 99.8,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 9,
+      "chain_hash": "b84952daa29731248a02cc6ef1d248a03a86f1e626c0619bc547f0365ba57f47"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S007",
+      "supplier_id": "S007",
+      "supplier_name": "華通機電",
+      "period": "2026-04",
+      "delivery_ontime_pct": 89,
+      "quality_pass_pct": 97.1,
+      "avg_response_hr": 8,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 92.5,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 10,
+      "chain_hash": "bcee1df6974d90e79f68b151238892f045efc55ab1a51e66004b1233dd60d112"
+    },
+    {
+      "settlement_id": "KPI-2026-04-S008",
+      "supplier_id": "S008",
+      "supplier_name": "大東原物料",
+      "period": "2026-04",
+      "delivery_ontime_pct": 96,
+      "quality_pass_pct": 98.8,
+      "avg_response_hr": 5,
+      "po_count": 0,
+      "invoice_count": 0,
+      "overall_score": 97.0,
+      "created_at": "2026-04-22T18:53:11",
+      "chain_block_no": 11,
+      "chain_hash": "c548e242904b427d3e064cba89ccc9780ea5e976ba73d7232ab765a3bdcce701"
+    }
+  ],
+  "chain_blocks": [
+    {
+      "block_no": 1,
+      "type": "PO_DRAFT",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "payload": {
+        "po_no": "PO-20260422-001",
+        "pr_no": "PR-2026-0001",
+        "total": 905.0,
+        "supplier_ids": [
+          "S006"
+        ],
+        "approved_by": "boss"
+      },
+      "timestamp": "2026-04-22T18:53:10",
+      "hash": "1778aaac5057efdcb6a7db0ccbd140e8824101b97c12ac728ea9d361b27d6550"
+    },
+    {
+      "block_no": 2,
+      "type": "GRN",
+      "prev_hash": "1778aaac5057efdcb6a7db0ccbd140e8824101b97c12ac728ea9d361b27d6550",
+      "payload": {
+        "grn_no": "GRN-20260422-001",
+        "po_no": "PO-20260422-001",
+        "total_items": 1,
+        "all_passed_qc": true
+      },
+      "timestamp": "2026-04-22T18:53:10",
+      "hash": "19842f51809ba82f630f0156ac0555fbee9e4bc6d9082ac028e4b1200b6a6dc7"
+    },
+    {
+      "block_no": 3,
+      "type": "INVOICE",
+      "prev_hash": "19842f51809ba82f630f0156ac0555fbee9e4bc6d9082ac028e4b1200b6a6dc7",
+      "payload": {
+        "invoice_no": "INV-20260422-001",
+        "po_no": "PO-20260422-001",
+        "grn_no": "GRN-20260422-001",
+        "amount": 905.0,
+        "three_way_match_pass": true
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "0503dafeccb52d348e01437e2f6a5748a617b865e45f49765db949558844efa2"
+    },
+    {
+      "block_no": 4,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "0503dafeccb52d348e01437e2f6a5748a617b865e45f49765db949558844efa2",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S001",
+        "supplier_id": "S001",
+        "period": "2026-04",
+        "score": 97.2,
+        "snapshot_hash": "4fffe752baa3a6371066e1f363e4b9e49a3fa2bd2fe72576825f79c8f46ec34f"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "8d9a20a90a1cc7b275880e7afa0a30ea891855807705d166cbdb8214f1255915"
+    },
+    {
+      "block_no": 5,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "8d9a20a90a1cc7b275880e7afa0a30ea891855807705d166cbdb8214f1255915",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S002",
+        "supplier_id": "S002",
+        "period": "2026-04",
+        "score": 95.3,
+        "snapshot_hash": "87ff3b1fe425f3510f990c6fa832ddabd2ac0ca5432857af90d1825cc9921b2c"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "969826a0edf9b65798cba6eab3a11f4aae3b4d2bcc0e29957573c8afee2d823c"
+    },
+    {
+      "block_no": 6,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "969826a0edf9b65798cba6eab3a11f4aae3b4d2bcc0e29957573c8afee2d823c",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S003",
+        "supplier_id": "S003",
+        "period": "2026-04",
+        "score": 90.3,
+        "snapshot_hash": "6bea3425becbfb54d064b0418e00dc495beabd0fb5d9b4df81d98c43a969002c"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "853d2b4bfc7a1360de9e8060eb6abd437c28f860af619c81df9950e4720f9c5a"
+    },
+    {
+      "block_no": 7,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "853d2b4bfc7a1360de9e8060eb6abd437c28f860af619c81df9950e4720f9c5a",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S004",
+        "supplier_id": "S004",
+        "period": "2026-04",
+        "score": 96.8,
+        "snapshot_hash": "66b32fe0cbd1c06a9e2896b2a2c427e7629d8fd6f174cb7a6cf65ce68c74031a"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "45e0bfd1e4018f2e338dd075246cb3bebb8e8f8bf5aa58ffd484d53b0a65988e"
+    },
+    {
+      "block_no": 8,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "45e0bfd1e4018f2e338dd075246cb3bebb8e8f8bf5aa58ffd484d53b0a65988e",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S005",
+        "supplier_id": "S005",
+        "period": "2026-04",
+        "score": 80.2,
+        "snapshot_hash": "0e590cc650c53e56cd0d0ed07bad40d7470804056d687068fec7a9916e2b0614"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "0c55809e7a2bb17276fbb2f31bcc0bebf7a208698092e776da298a0a9cb92205"
+    },
+    {
+      "block_no": 9,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "0c55809e7a2bb17276fbb2f31bcc0bebf7a208698092e776da298a0a9cb92205",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S006",
+        "supplier_id": "S006",
+        "period": "2026-04",
+        "score": 99.8,
+        "snapshot_hash": "d93db7bcf8574d7598d25ea65d9a1b693c52d0a588680de45d8fc6e332b7a9e9"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "b84952daa29731248a02cc6ef1d248a03a86f1e626c0619bc547f0365ba57f47"
+    },
+    {
+      "block_no": 10,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "b84952daa29731248a02cc6ef1d248a03a86f1e626c0619bc547f0365ba57f47",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S007",
+        "supplier_id": "S007",
+        "period": "2026-04",
+        "score": 92.5,
+        "snapshot_hash": "5552aa78e76b9b8b4d362802db1d3e8da7591ed7e4ce1f77d24c443bc7773bd9"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "bcee1df6974d90e79f68b151238892f045efc55ab1a51e66004b1233dd60d112"
+    },
+    {
+      "block_no": 11,
+      "type": "KPI_SETTLEMENT",
+      "prev_hash": "bcee1df6974d90e79f68b151238892f045efc55ab1a51e66004b1233dd60d112",
+      "payload": {
+        "settlement_id": "KPI-2026-04-S008",
+        "supplier_id": "S008",
+        "period": "2026-04",
+        "score": 97.0,
+        "snapshot_hash": "20f3431955425ee09ff428a86af7f38f2c7e808f73c8f6d356571300a5b3548a"
+      },
+      "timestamp": "2026-04-22T18:53:11",
+      "hash": "c548e242904b427d3e064cba89ccc9780ea5e976ba73d7232ab765a3bdcce701"
+    }
+  ],
+  "audit_log": [
+    {
+      "audit_id": "A-1776855190890-0f40",
+      "actor_type": "ai",
+      "actor_id": "ai-procurement-agent",
+      "action_type": "generate_change_set",
+      "object_type": "change_set",
+      "object_id": "CS-20260422-001",
+      "detail": {
+        "pr_no": "PR-2026-0001",
+        "recommendations": 1,
+        "rule_hits": 1
+      },
+      "created_at": "2026-04-22T18:53:10"
+    },
+    {
+      "audit_id": "A-1776855190931-191f",
+      "actor_type": "human",
+      "actor_id": "boss",
+      "action_type": "apply_change_set",
+      "object_type": "change_set",
+      "object_id": "CS-20260422-001",
+      "detail": {
+        "accepted_fields_count": 3,
+        "po_no": "PO-20260422-001"
+      },
+      "created_at": "2026-04-22T18:53:10"
+    },
+    {
+      "audit_id": "A-1776855190931-02dc",
+      "actor_type": "system",
+      "actor_id": "chain",
+      "action_type": "hash_po_draft",
+      "object_type": "po",
+      "object_id": "PO-20260422-001",
+      "detail": {
+        "block_no": 1
+      },
+      "created_at": "2026-04-22T18:53:10"
+    },
+    {
+      "audit_id": "A-1776855190980-9ba3",
+      "actor_type": "human",
+      "actor_id": "wh1",
+      "action_type": "create_grn",
+      "object_type": "grn",
+      "object_id": "GRN-20260422-001",
+      "detail": {
+        "po_no": "PO-20260422-001"
+      },
+      "created_at": "2026-04-22T18:53:10"
+    },
+    {
+      "audit_id": "A-1776855191030-ed68",
+      "actor_type": "human",
+      "actor_id": "acct-01",
+      "action_type": "create_invoice_3way_match",
+      "object_type": "invoice",
+      "object_id": "INV-20260422-001",
+      "detail": {
+        "po_no": "PO-20260422-001",
+        "grn_no": "GRN-20260422-001",
+        "match_pass": true
+      },
+      "created_at": "2026-04-22T18:53:11"
+    },
+    {
+      "audit_id": "A-1776855191066-5101",
+      "actor_type": "system",
+      "actor_id": "kpi-scheduler",
+      "action_type": "settle_supplier_kpi_monthly",
+      "object_type": "kpi_batch",
+      "object_id": "2026-04",
+      "detail": {
+        "suppliers": 8,
+        "period": "2026-04"
+      },
+      "created_at": "2026-04-22T18:53:11"
+    }
+  ],
+  "rule_hits": []
+}

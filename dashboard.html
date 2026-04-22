@@ -124,12 +124,12 @@
                 class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-slate-500/40 text-slate-300">
           <span class="text-base">📋</span>
           <span class="flex-1 text-left">維明顧問</span>
-          <span class="text-[10px] text-slate-400 bg-slate-900/60 px-1.5 rounded-full">評估中</span>
+          <span class="text-[10px] text-emerald-300 bg-emerald-900/60 px-1.5 rounded-full">MVP</span>
           <span class="tenant-caret text-xs">▼</span>
         </button>
         <div class="tenant-body space-y-0.5 mt-1">
-          <button onclick="setTenantAndPage('weiming','weiming-eval')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="weiming-eval">📝 評估進度</button>
-          <button onclick="setTenantAndPage('weiming','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-400" data-page="crm">📋 維明 CRM（未啟用）</button>
+          <button onclick="setTenantAndPage('weiming','weiming-procurement')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="weiming-procurement">🛒 AI 採購驗收中心</button>
+          <button onclick="setTenantAndPage('weiming','weiming-eval')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-400" data-page="weiming-eval">📝 評估進度</button>
         </div>
       </div>
 
@@ -511,7 +511,8 @@ function showPage(page){
     dataflow: renderDataflow,
     compliance:renderCompliance,
     'addwii-ws':renderAddwiiWorkspace,'microjet-ws':renderMicrojetWorkspace,
-    'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval
+    'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval,
+    'weiming-procurement':renderWeimingProcurement
   };
   // 舊 acceptance 路由相容：預設導向凌策自評中心
   if (page === 'acceptance') { page = 'lingce-acceptance'; }
@@ -12021,6 +12022,328 @@ async function renderWeimingEval() {
       </div>
     </div>
   `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🛒 維明 · Palantir AI 採購作業系統驗收中心
+//    對應 docx「維明驗收標準 20260420」6 項指標
+// ═══════════════════════════════════════════════════════════
+async function renderWeimingProcurement() {
+  const box = document.getElementById('main-content');
+  box.innerHTML = '<div class="text-slate-400 p-6">載入維明採購驗收中心...</div>';
+
+  async function j(url, opts) {
+    const r = await fetch(API_BASE + url, opts);
+    const t = await r.text();
+    try { return JSON.parse(t); } catch { return { ok: false, error: t.slice(0, 200) }; }
+  }
+
+  async function reload() {
+    const [prs, suppliers, chSets, pos, invoices, chain, audit, metrics] = await Promise.all([
+      j('/api/weiming/prs'), j('/api/weiming/suppliers'),
+      j('/api/weiming/change-sets'), j('/api/weiming/pos'),
+      j('/api/weiming/invoices'), j('/api/weiming/chain?limit=30'),
+      j('/api/weiming/audit?limit=40'), j('/api/weiming/metrics'),
+    ]);
+    render({ prs, suppliers, chSets, pos, invoices, chain, audit, metrics });
+  }
+
+  function metricBadge(m) {
+    const pass = m.pass;
+    const cls = pass === true ? 'border-emerald-500/50 bg-emerald-900/30 text-emerald-200'
+              : pass === false ? 'border-rose-500/50 bg-rose-900/30 text-rose-200'
+              : 'border-slate-500/50 bg-slate-900/30 text-slate-300';
+    const icon = pass === true ? '✅' : pass === false ? '❌' : '⏳';
+    return `
+      <div class="rounded-xl border ${cls} p-4">
+        <div class="text-[11px] opacity-80">${escapeHtml(m.label)}</div>
+        <div class="text-2xl font-bold mt-1">${icon} ${escapeHtml(String(m.value))}<span class="text-sm opacity-70">${escapeHtml(m.unit || '')}</span></div>
+        <div class="text-[11px] mt-1 opacity-70">${escapeHtml(m.description || '')}</div>
+        ${m.note ? `<div class="text-[10px] mt-1 text-amber-300/80">ℹ ${escapeHtml(m.note)}</div>` : ''}
+      </div>`;
+  }
+
+  function render(d) {
+    const { prs, suppliers, chSets, pos, invoices, chain, audit, metrics } = d;
+    const m = metrics.metrics || {};
+    const overallPass = metrics.overall_pass;
+    const metricsHtml = Object.values(m).map(metricBadge).join('');
+
+    box.innerHTML = `
+      <div class="max-w-7xl mx-auto space-y-4">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-indigo-900 via-purple-900 to-fuchsia-900 border border-purple-500/40 rounded-xl p-5">
+          <div class="flex items-center gap-4">
+            <div class="text-5xl">🛒</div>
+            <div class="flex-1">
+              <h1 class="text-2xl font-bold text-white">維明 · Palantir AI 採購作業系統</h1>
+              <div class="text-sm text-purple-200 mt-1">PR → Change Set → PO → GRN → Invoice → KPI → 上鏈　｜　6 項驗收指標即時計算</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[11px] text-purple-200">整體驗收</div>
+              <div class="text-2xl font-bold ${overallPass ? 'text-emerald-300' : 'text-amber-300'}">${overallPass ? '✅ PASS' : '⏳ Running'}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 項指標 -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="text-sm font-bold text-purple-200">📊 6 項驗收指標（即時）</div>
+            <div class="text-[11px] text-slate-400">· 依 docx「維明驗收標準 20260420」</div>
+            <button onclick="wmReload()" class="ml-auto text-[11px] px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded">🔄 刷新</button>
+            <button onclick="wmReset()" class="text-[11px] px-2 py-1 bg-rose-700 hover:bg-rose-600 rounded text-white">🗑 重置示範資料</button>
+          </div>
+          <div class="grid grid-cols-3 gap-3">${metricsHtml}</div>
+        </div>
+
+        <!-- 快速模擬：PR → CS → PO → GRN → Invoice → KPI -->
+        <div class="bg-slate-800/80 border border-indigo-500/40 rounded-xl p-4">
+          <div class="text-sm font-bold text-indigo-300 mb-2">⚡ 一鍵全流程示範（真實呼叫 10 個 API）</div>
+          <div class="text-[11px] text-slate-400 mb-3">將對 <b class="text-white">PR-2026-0001</b> 執行：AI Change Set → Apply → GRN → Invoice（3-way match）→ KPI 月結 → 上鏈</div>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="wmRunDemo()" class="text-xs bg-indigo-600 hover:bg-indigo-500 rounded px-3 py-1.5 text-white">🚀 執行全流程</button>
+            <button onclick="wmSettleAll()" class="text-xs bg-emerald-700 hover:bg-emerald-600 rounded px-3 py-1.5 text-white">📅 月結所有供應商 KPI</button>
+            <div id="wm-demo-log" class="text-[11px] text-slate-300 ml-2 self-center"></div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-slate-800 border border-slate-700 rounded-xl">
+          <div class="flex gap-1 border-b border-slate-700 px-2 pt-2 overflow-x-auto">
+            ${[
+              ['pr','📋 請購單 PR', prs.length],
+              ['cs','🤖 Change Set', (chSets||[]).length],
+              ['po','📄 採購單 PO', (pos||[]).length],
+              ['inv','💵 發票 / 3-way', (invoices||[]).length],
+              ['sup','🏭 供應商', suppliers.length],
+              ['chain','🔗 區塊鏈', (chain||[]).length],
+              ['audit','📜 稽核日誌', (audit||[]).length],
+            ].map(([k,l,c],i) => `
+              <button onclick="wmTab('${k}')" data-wmtab="${k}"
+                class="wm-tab-btn text-xs px-3 py-2 rounded-t ${i===0?'bg-slate-900 text-white':'text-slate-400 hover:text-white'}">
+                ${l} <span class="text-[10px] opacity-70">(${c})</span>
+              </button>`).join('')}
+          </div>
+          <div id="wm-tab-content" class="p-4 text-sm"></div>
+        </div>
+
+      </div>`;
+
+    // Tab render fns (stored on window so buttons can call)
+    window._wm_data = d;
+
+    window.wmTab = function(k) {
+      document.querySelectorAll('.wm-tab-btn').forEach(b => {
+        b.classList.toggle('bg-slate-900', b.dataset.wmtab === k);
+        b.classList.toggle('text-white', b.dataset.wmtab === k);
+        b.classList.toggle('text-slate-400', b.dataset.wmtab !== k);
+      });
+      const c = document.getElementById('wm-tab-content');
+      const D = window._wm_data;
+      if (k === 'pr') c.innerHTML = wmPRView(D.prs);
+      else if (k === 'cs') c.innerHTML = wmCSView(D.chSets);
+      else if (k === 'po') c.innerHTML = wmPOView(D.pos);
+      else if (k === 'inv') c.innerHTML = wmInvView(D.invoices);
+      else if (k === 'sup') c.innerHTML = wmSupView(D.suppliers);
+      else if (k === 'chain') c.innerHTML = wmChainView(D.chain);
+      else if (k === 'audit') c.innerHTML = wmAuditView(D.audit);
+    };
+    window.wmTab('pr');
+
+    window.wmReload = reload;
+    window.wmReset = async () => {
+      if (!confirm('確定重置維明採購系統至示範初始狀態？')) return;
+      await j('/api/weiming/reset-demo', { method: 'POST' });
+      reload();
+    };
+    window.wmRunDemo = async () => {
+      const log = document.getElementById('wm-demo-log');
+      log.textContent = '[1/5] 產生 AI Change Set...';
+      const r1 = await j('/api/weiming/pr/PR-2026-0001/recommend',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: 'boss' }) });
+      if (!r1.ok) { log.textContent = '❌ ' + (r1.error || 'Change Set 失敗'); return; }
+      const csId = r1.change_set.change_set_id;
+      log.textContent = `[2/5] 已產生 ${csId}（${r1.change_set.elapsed_s}s）· 套用...`;
+      const r2 = await j(`/api/weiming/change-set/${csId}/apply`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accepted_fields: ['supplier','price','delivery_date'], reviewer: 'boss' }) });
+      if (!r2.ok) { log.textContent = '❌ Apply 失敗：' + (r2.error||''); return; }
+      const poNo = r2.po.po_no;
+      log.textContent = `[3/5] PO ${poNo} 已建立 · 收貨...`;
+      const r3 = await j(`/api/weiming/po/${poNo}/grn`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver: 'warehouse-1' }) });
+      if (!r3.ok) { log.textContent = '❌ GRN 失敗：' + (r3.error||''); return; }
+      log.textContent = `[4/5] GRN ${r3.grn.grn_no} · 發票 3-way match...`;
+      const r4 = await j('/api/weiming/invoice',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ po_no: poNo, grn_no: r3.grn.grn_no, submitter: 'ap-clerk' }) });
+      if (!r4.ok) { log.textContent = '❌ Invoice 失敗：' + (r4.error||''); return; }
+      log.textContent = `[5/5] Invoice ${r4.invoice.invoice_no} · 3-way match ${r4.invoice.three_way_match.overall_pass?'✅':'❌'} · 月結 KPI...`;
+      const r5 = await j('/api/weiming/kpi/settle',
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      log.textContent = `✅ 全流程完成 · KPI 上鏈 ${r5.total_suppliers||0} 家 · 刷新中...`;
+      setTimeout(reload, 300);
+    };
+    window.wmSettleAll = async () => {
+      const log = document.getElementById('wm-demo-log');
+      log.textContent = '月結 KPI 中...';
+      const r = await j('/api/weiming/kpi/settle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      log.textContent = r.ok ? `✅ 已上鏈 ${r.total_suppliers} 家供應商（${r.period}）` : '❌ ' + (r.error||'');
+      setTimeout(reload, 300);
+    };
+  }
+
+  function wmPRView(prs) {
+    if (!prs || !prs.length) return '<div class="text-slate-500">無 PR</div>';
+    return `<div class="space-y-2">${prs.map(p => `
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-3">
+        <div class="flex items-center gap-2">
+          <div class="font-bold text-white text-sm">${escapeHtml(p.pr_no)}</div>
+          <span class="text-[10px] bg-slate-700 text-slate-200 px-1.5 rounded">${escapeHtml(p.status)}</span>
+          <span class="text-[10px] text-slate-400">${escapeHtml(p.project_code)} · ${escapeHtml(p.requester)} · ${escapeHtml(p.request_date)}</span>
+          <span class="ml-auto text-[11px] text-emerald-300">USD ${Number(p.total_amount_est_usd).toLocaleString()}</span>
+          <button onclick="wmRecommend('${p.pr_no}')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 rounded px-2 py-1 text-white">🤖 AI 建議</button>
+        </div>
+        <div class="mt-2 text-xs text-slate-300">
+          ${(p.lines||[]).map(l => `L${l.line_no} ${escapeHtml(l.material_no)} × ${l.qty} ${escapeHtml(l.uom)} (${escapeHtml(l.description)})`).join(' · ')}
+        </div>
+      </div>`).join('')}</div>`;
+  }
+  window.wmRecommend = async (prNo) => {
+    const r = await fetch(API_BASE + `/api/weiming/pr/${prNo}/recommend`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: 'boss' })
+    }).then(x => x.json());
+    if (r.ok) alert(`✅ ${r.change_set.change_set_id} 產生成功 (${r.change_set.elapsed_s}s)\n推薦 ${r.change_set.recommendations.length} 項 · 規則命中 ${r.change_set.rule_hits.length}`);
+    else alert('❌ ' + (r.error||'失敗'));
+    window.wmReload();
+  };
+
+  function wmCSView(css) {
+    if (!css || !css.length) return '<div class="text-slate-500">尚無 Change Set · 點上方「🤖 AI 建議」產生</div>';
+    return `<div class="space-y-2">${css.map(c => `
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="font-mono text-xs text-indigo-300">${escapeHtml(c.change_set_id)}</div>
+          <span class="text-[10px] ${c.status==='APPLIED'?'bg-emerald-700':'bg-amber-700'} text-white px-1.5 rounded">${escapeHtml(c.status)}</span>
+          <span class="text-[10px] text-slate-400">PR ${escapeHtml(c.pr_no)} · ${c.elapsed_s}s · ${escapeHtml(c.model)}</span>
+          ${c.status==='PENDING_REVIEW' ? `<button onclick="wmApply('${c.change_set_id}')" class="ml-auto text-[11px] bg-emerald-600 hover:bg-emerald-500 rounded px-2 py-1 text-white">✅ Apply → PO</button>` : ''}
+        </div>
+        ${(c.recommendations||[]).map(r => `
+          <div class="text-xs bg-slate-950/50 rounded p-2 mt-2">
+            L${r.line_no} ${escapeHtml(r.material_no)} × ${r.qty} → <b class="text-emerald-300">${escapeHtml(r.recommended_supplier_name)}</b>
+            @ USD ${r.recommended_unit_price}/${escapeHtml(r.uom)} · 綜合分 ${r.supplier_score}
+            <span class="ml-2 text-slate-400">交期風險: ${escapeHtml(r.risk_score_delivery)} · 品質: ${escapeHtml(r.risk_score_quality)} · 價格: ${escapeHtml(r.risk_score_price)}</span>
+            <div class="text-[11px] text-slate-500 mt-1">${(r.reasoning||[]).map(x=>escapeHtml(x)).join(' · ')}</div>
+          </div>`).join('')}
+        ${(c.rule_hits||[]).length ? `<div class="text-[11px] text-amber-300 mt-2">📌 規則命中：${c.rule_hits.map(h => `${escapeHtml(h.rule)}: ${escapeHtml(h.detail)}`).join(' ｜ ')}</div>` : ''}
+      </div>`).join('')}</div>`;
+  }
+  window.wmApply = async (csId) => {
+    const r = await fetch(API_BASE + `/api/weiming/change-set/${csId}/apply`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accepted_fields: ['supplier','price','delivery_date'], reviewer: 'boss' })
+    }).then(x => x.json());
+    alert(r.ok ? `✅ PO ${r.po.po_no} 已建立（Total USD ${r.po.total_amount}）` : '❌ ' + (r.error||''));
+    window.wmReload();
+  };
+
+  function wmPOView(pos) {
+    if (!pos || !pos.length) return '<div class="text-slate-500">尚無 PO</div>';
+    return `<div class="space-y-2">${pos.map(p => `
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="font-mono text-xs text-cyan-300">${escapeHtml(p.po_no)}</div>
+          <span class="text-[10px] bg-slate-700 text-slate-200 px-1.5 rounded">${escapeHtml(p.status)}</span>
+          <span class="text-[10px] text-slate-400">供應商 ${escapeHtml(p.supplier_id)} · PR ${escapeHtml(p.pr_no)}</span>
+          <span class="ml-auto text-[11px] text-emerald-300">USD ${Number(p.total_amount).toLocaleString()}</span>
+          ${p.status==='OPEN' ? `<button onclick="wmGRN('${p.po_no}')" class="text-[11px] bg-amber-600 hover:bg-amber-500 rounded px-2 py-1 text-white">📦 收貨 GRN</button>` : ''}
+        </div>
+        <div class="mt-1 text-[11px] text-slate-400">${(p.items||[]).map(i => `L${i.line_no} ${escapeHtml(i.material_no)} × ${i.qty} @${i.unit_price}`).join(' · ')}</div>
+      </div>`).join('')}</div>`;
+  }
+  window.wmGRN = async (poNo) => {
+    const r = await fetch(API_BASE + `/api/weiming/po/${poNo}/grn`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver: 'warehouse-1' })
+    }).then(x => x.json());
+    if (!r.ok) { alert('❌ ' + (r.error||'')); return; }
+    if (confirm(`✅ GRN ${r.grn.grn_no} 已建立\n是否立即開立發票並執行 3-way match？`)) {
+      const r2 = await fetch(API_BASE + '/api/weiming/invoice', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ po_no: poNo, grn_no: r.grn.grn_no })
+      }).then(x => x.json());
+      alert(r2.ok ? `✅ Invoice ${r2.invoice.invoice_no} · 3-way match ${r2.invoice.three_way_match.overall_pass?'✅ PASS':'❌ FAIL'}` : '❌ '+(r2.error||''));
+    }
+    window.wmReload();
+  };
+
+  function wmInvView(invs) {
+    if (!invs || !invs.length) return '<div class="text-slate-500">尚無 Invoice</div>';
+    return `<div class="space-y-2">${invs.map(iv => {
+      const m = iv.three_way_match || {};
+      return `
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="font-mono text-xs text-emerald-300">${escapeHtml(iv.invoice_no)}</div>
+          <span class="text-[10px] text-slate-400">PO ${escapeHtml(iv.po_no)} · GRN ${escapeHtml(iv.grn_no)}</span>
+          <span class="ml-auto text-xs ${m.overall_pass?'text-emerald-300':'text-rose-300'}">3-way: ${m.overall_pass?'✅ PASS':'❌ FAIL'}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-2 text-[11px]">
+          <div class="${m.amount_match?'text-emerald-300':'text-rose-300'}">${m.amount_match?'✓':'✗'} 金額 (PO ${m.po_amount} vs INV ${m.invoice_amount})</div>
+          <div class="${m.qty_match?'text-emerald-300':'text-rose-300'}">${m.qty_match?'✓':'✗'} 數量 (${m.grn_items_count}/${m.po_items_count})</div>
+          <div class="${m.qc_passed?'text-emerald-300':'text-rose-300'}">${m.qc_passed?'✓':'✗'} QC 驗收</div>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function wmSupView(sups) {
+    return `<div class="grid grid-cols-2 gap-2">${sups.map(s => {
+      const riskCls = s.risk_level==='low' ? 'text-emerald-300' : s.risk_level==='medium' ? 'text-amber-300' : 'text-rose-300';
+      return `
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-3">
+        <div class="flex items-center gap-2">
+          <div class="font-bold text-white text-sm">${escapeHtml(s.name)}</div>
+          <span class="text-[10px] ${riskCls}">● ${escapeHtml(s.risk_level)}</span>
+          <span class="text-[10px] text-slate-500">${escapeHtml(s.id)} · ${escapeHtml(s.region)}</span>
+          <span class="ml-auto text-sm font-bold text-cyan-300">${s.score}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1 mt-2 text-[11px] text-slate-400">
+          <div>準時: <span class="text-slate-200">${s.delivery_ontime_pct}%</span></div>
+          <div>良率: <span class="text-slate-200">${s.quality_pass_pct}%</span></div>
+          <div>回應: <span class="text-slate-200">${s.avg_response_hr}h</span></div>
+        </div>
+        ${s.note ? `<div class="text-[10px] text-amber-300/70 mt-1">${escapeHtml(s.note)}</div>` : ''}
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function wmChainView(chain) {
+    if (!chain || !chain.length) return '<div class="text-slate-500">尚無區塊（執行全流程即會上鏈）</div>';
+    return `<div class="space-y-1 font-mono text-[11px]">${chain.map(b => `
+      <div class="bg-slate-950/80 border border-indigo-500/30 rounded p-2">
+        <span class="text-indigo-300">#${b.index}</span>
+        <span class="text-slate-400">${escapeHtml(b.timestamp)}</span>
+        <span class="text-emerald-300">[${escapeHtml(b.block_type)}]</span>
+        <span class="text-slate-200">${escapeHtml(JSON.stringify(b.payload).slice(0,120))}</span>
+        <div class="text-[10px] text-slate-500">hash: ${escapeHtml((b.hash||'').slice(0,32))}... · prev: ${escapeHtml((b.prev_hash||'').slice(0,16))}...</div>
+      </div>`).join('')}</div>`;
+  }
+
+  function wmAuditView(audit) {
+    if (!audit || !audit.length) return '<div class="text-slate-500">無稽核記錄</div>';
+    return `<div class="space-y-1 font-mono text-[11px]">${audit.map(a => `
+      <div class="bg-slate-950/60 rounded p-2">
+        <span class="text-slate-500">${escapeHtml(a.timestamp)}</span>
+        <span class="${a.actor_type==='ai'?'text-purple-300':a.actor_type==='human'?'text-emerald-300':'text-slate-400'}">[${escapeHtml(a.actor_type)}]</span>
+        <span class="text-slate-300">${escapeHtml(a.actor_id)}</span>
+        <span class="text-amber-300">${escapeHtml(a.action_type)}</span>
+        <span class="text-slate-400">→ ${escapeHtml(a.target_type)}:${escapeHtml(a.target_id)}</span>
+      </div>`).join('')}</div>`;
+  }
+
+  reload();
 }
 
 // Init
