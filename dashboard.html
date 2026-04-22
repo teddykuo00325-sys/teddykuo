@@ -6112,11 +6112,11 @@ const SIM_SCENARIOS = [
     ],
     // 每題對應的後端 endpoint + Agent 使用組合
     preset_routes: [
-      { api:'/api/acceptance/product-qa',       agents:['orchestrator','cs','doc'],              scenario:'addwii 構面 1' },
-      { api:'/api/acceptance/feedback',         agents:['orchestrator','cs','qa','doc','legal'], scenario:'addwii 構面 2' },
-      { api:'/api/acceptance/proposal',         agents:['orchestrator','bd','proposal','fin'],   scenario:'addwii 構面 3' },
-      { api:'/api/acceptance/content',          agents:['orchestrator','bd','doc','qa'],         scenario:'addwii 構面 4' },
-      { api:'/api/compliance/csv-preview',      agents:['orchestrator','legal','be','doc'],      scenario:'addwii 構面 5（一票否決）' },
+      { api:'/api/acceptance/product-qa',       agents:['orchestrator','cs','doc'],              scenario:'addwii 構面 1', tab_key:'qa',       weight:15 },
+      { api:'/api/acceptance/feedback',         agents:['orchestrator','cs','qa','doc','legal'], scenario:'addwii 構面 2', tab_key:'feedback', weight:25 },
+      { api:'/api/acceptance/proposal',         agents:['orchestrator','bd','proposal','fin'],   scenario:'addwii 構面 3', tab_key:'proposal', weight:20 },
+      { api:'/api/acceptance/content',          agents:['orchestrator','bd','doc','qa'],         scenario:'addwii 構面 4', tab_key:'content',  weight:15 },
+      { api:'/api/compliance/csv-preview',      agents:['orchestrator','legal','be','doc'],      scenario:'addwii 構面 5（一票否決）', tab_key:'csv', weight:25 },
     ],
     pipeline: [
       { phase: '1. 客戶接洽', agent: 'BD Agent', icon: '📋', color: 'blue',
@@ -6226,11 +6226,11 @@ const SIM_SCENARIOS = [
       '【場景 E · 資安合規｜20 分】偵測存取異常（非工時 + 單次下載 > 1,000 筆）+ 合規缺口掃描（25 項控制點）+ 個資法第 12 條事件通報草稿。',
     ],
     preset_routes: [
-      { api:'/api/acceptance/product-qa',       agents:['orchestrator','cs','doc'],               scenario:'microjet 場景 A' },
-      { api:'/api/microjet/classify-tickets',   agents:['orchestrator','cs','qa','legal','doc'],  scenario:'microjet 場景 B' },
-      { api:'/api/microjet/b2b-proposal-8sec',  agents:['orchestrator','bd','proposal','fin','legal','doc'], scenario:'microjet 場景 C' },
-      { api:'/api/microjet/daily-dashboard',    agents:['orchestrator','cs','qa','doc'],          scenario:'microjet 場景 D' },
-      { api:'/api/microjet/compliance-gaps',    agents:['orchestrator','legal','qa','doc'],       scenario:'microjet 場景 E' },
+      { api:'/api/acceptance/product-qa',       agents:['orchestrator','cs','doc'],               scenario:'microjet 場景 A', tab_key:'printer-qa', weight:25 },
+      { api:'/api/microjet/classify-tickets',   agents:['orchestrator','cs','qa','legal','doc'],  scenario:'microjet 場景 B', tab_key:'tickets',    weight:20 },
+      { api:'/api/microjet/b2b-proposal-8sec',  agents:['orchestrator','bd','proposal','fin','legal','doc'], scenario:'microjet 場景 C', tab_key:'proposal', weight:20 },
+      { api:'/api/microjet/daily-dashboard',    agents:['orchestrator','cs','qa','doc'],          scenario:'microjet 場景 D', tab_key:'dashboard',  weight:15 },
+      { api:'/api/microjet/compliance-gaps',    agents:['orchestrator','legal','qa','doc'],       scenario:'microjet 場景 E', tab_key:'sec',        weight:20 },
     ],
     pipeline: [
       { phase: '1. 客戶接洽', agent: 'BD Agent', icon: '📋', color: 'blue',
@@ -6584,6 +6584,38 @@ const AGENT_META = {
   doc:          {name:'文件 Agent',    icon:'📝', color:'orange', role:'報告 / PDF'},
 };
 
+// ═══════════════════════════════════════════════════════════
+// 模擬器任務歷史 · localStorage 持久化
+// ═══════════════════════════════════════════════════════════
+const SIM_HISTORY_KEY = 'lingce_sim_history_v1';
+
+function _simHistoryLoad() {
+  try {
+    const raw = localStorage.getItem(SIM_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function _simHistorySave(record) {
+  const list = _simHistoryLoad();
+  list.unshift(record);   // 新紀錄在前
+  if (list.length > 100) list.length = 100;  // 上限
+  try { localStorage.setItem(SIM_HISTORY_KEY, JSON.stringify(list)); }
+  catch(e) { console.warn('history save failed', e); }
+}
+function _simHistoryClear() {
+  if (!confirm('確定清空所有模擬歷史紀錄？')) return;
+  localStorage.removeItem(SIM_HISTORY_KEY);
+  toast('已清空執行歷史', 'info');
+  showPage('lingce-acceptance');
+}
+// 判斷某 tenant + tab_key 是否已執行過
+function _simHistoryHasCompleted(tenantId, tabKey) {
+  return _simHistoryLoad().some(r => r.tenant === tenantId && r.tab_key === tabKey);
+}
+function _simHistoryGetByKey(tenantId, tabKey) {
+  return _simHistoryLoad().find(r => r.tenant === tenantId && r.tab_key === tabKey);
+}
+
 
 async function runSimQuestionMode(scenario, question){
   // 偵測是第幾個 preset（用以選 preset_route）
@@ -6749,6 +6781,23 @@ function _renderDeliverableReport({scenario, question, route, agents, apiResult,
   const reportId = `REPORT-${new Date().toISOString().replace(/[-:]/g,'').slice(0,15)}-${Math.floor(Math.random()*9999).toString(16).toUpperCase()}`;
   const taskId = apiResult?.task_id || apiResult?.pending?.task_id || '—';
 
+  // ─ 存進 localStorage（凌策自評中心 + 驗收中心進度用）─
+  _simHistorySave({
+    report_id: reportId,
+    timestamp: new Date().toISOString(),
+    tenant: scenario.id,
+    scenario_label: route?.scenario || scenario.client,
+    tab_key: route?.tab_key || null,
+    weight: route?.weight || 0,
+    question: question,
+    agents: agents,
+    api_path: route?.api || null,
+    elapsed_ms: elapsedMs,
+    success: !apiResult?.error,
+    task_id: taskId,
+    summary_snippet: _extractSummarySnippet(apiResult),
+  });
+
   // 摘取 API 結果的關鍵訊息（依不同 endpoint 格式）
   let mainContent = '';
   if (apiResult?.error) {
@@ -6853,7 +6902,7 @@ function _renderDeliverableReport({scenario, question, route, agents, apiResult,
 
   return `
     <div class="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 border border-emerald-500/30 rounded-xl p-5">
-      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
+      <div class="flex items-center gap-3 mb-3 pb-3 border-b border-slate-700">
         <div class="text-3xl">📄</div>
         <div class="flex-1">
           <div class="text-lg font-bold text-emerald-200">交付報告</div>
@@ -6862,11 +6911,17 @@ function _renderDeliverableReport({scenario, question, route, agents, apiResult,
         <button onclick="resetSimulator()" class="text-xs bg-slate-700 hover:bg-slate-600 rounded px-3 py-1.5">🔄 換一題</button>
       </div>
 
+      <!-- 已自動存檔標示 -->
+      <div class="mb-3 bg-emerald-900/20 border border-emerald-600/40 rounded px-3 py-2 text-[11px] text-emerald-300 flex items-center gap-2">
+        <span>✅</span>
+        <span>本報告已自動存入 <b>凌策自評中心 · 執行任務歷史</b>${route ? ` · 驗收進度已更新` : ''}</span>
+      </div>
+
       <!-- 提問 + 評分對應 -->
       <div class="mb-3 bg-slate-900/50 rounded-lg p-3">
         <div class="text-[10px] text-slate-500 mb-1">📋 客戶提問</div>
         <div class="text-xs text-slate-300 leading-relaxed mb-2">${escapeHtml(question)}</div>
-        ${route ? `<div class="text-[11px] text-yellow-300">🎯 評分標準：${escapeHtml(route.scenario)}</div>` : ''}
+        ${route ? `<div class="text-[11px] text-yellow-300">🎯 評分標準：${escapeHtml(route.scenario)}（${route.weight} 分）</div>` : ''}
       </div>
 
       <!-- Agent 參與軌跡 -->
@@ -6890,11 +6945,31 @@ function _renderDeliverableReport({scenario, question, route, agents, apiResult,
       </div>
 
       <div class="flex gap-2 text-xs">
-        <button onclick="showPage('commander')" class="flex-1 bg-blue-600 hover:bg-blue-500 rounded px-3 py-2">⚡ 去 AI 指揮官</button>
+        <button onclick="resetSimulator()" class="flex-1 bg-slate-700 hover:bg-slate-600 rounded px-3 py-2">🔄 換一題</button>
+        <button onclick="setTenantAndPage('lingce','lingce-acceptance')" class="flex-1 bg-purple-600 hover:bg-purple-500 rounded px-3 py-2">📝 查看自評歷史</button>
         ${scenario.id === 'addwii' ? `<button onclick="setTenantAndPage('addwii','addwii-acceptance')" class="flex-1 bg-sky-600 hover:bg-sky-500 rounded px-3 py-2">🏠 去 addwii 驗收中心</button>` : ''}
         ${scenario.id === 'microjet' ? `<button onclick="setTenantAndPage('microjet','microjet-acceptance')" class="flex-1 bg-amber-600 hover:bg-amber-500 rounded px-3 py-2">🏭 去 microjet 驗收中心</button>` : ''}
       </div>
     </div>`;
+}
+
+// 從 API 結果抽取摘要 snippet（存歷史用，~200 字內）
+function _extractSummarySnippet(r) {
+  if (!r) return '—';
+  if (r.error) return `❌ ${r.error}`.slice(0, 200);
+  if (r.answer) return String(r.answer).slice(0, 200);
+  if (r.daily_summary) {
+    const s = r.daily_summary.sentiment_breakdown || {};
+    return `情緒：+${s.positive||0}/${s.neutral||0}/-${s.negative||0}，優先改善 ${(r.daily_summary.top_priorities||[]).length} 項`;
+  }
+  if (r.proposal) return (r.proposal.title || '') + ' | ' + (r.proposal.solution||[]).slice(0,2).join(' / ');
+  if (r.content)  return String(r.content).slice(0, 200);
+  if (r.sections) return `8 段落完整度 ${r.completeness_pct}% · ${r.rubric?.within_3min?'3min 內達':'逾時'}`;
+  if (r.tickets)  return `分類 ${r.tickets.length} 筆 · 重複合併 ${r.stats?.duplicate_count||0}`;
+  if (r.top3_complaints) return `Top 抱怨：${r.top3_complaints.slice(0,2).map(x=>x.theme).join('、')}`;
+  if (r.total_controls)  return `控制點 ${r.implemented_count}/${r.total_controls} · 覆蓋 ${r.coverage_pct}%`;
+  if (r.pending) return `CSV ${r.pending.rows_scanned} 列 · PII ${r.pending.pii_detected_count} 筆`;
+  return JSON.stringify(r).slice(0, 200);
 }
 
 // 舊的 _isDeploymentRequest 已廢除（現在一律走工作流 + 報告模式）
@@ -10852,6 +10927,39 @@ function _acceptHeader(title, subtitle, weight, color='yellow') {
 }
 
 // ── addwii 驗收中心（5 構面 · 100 分）
+// 共用：驗收 tabs（含打勾 + 進度條 + 去模擬器 CTA）
+function _renderAcceptanceTabsWithProgress(tenantId, scenarios, activeKey, rerenderFn, color) {
+  const doneKeys = scenarios.filter(s => _simHistoryHasCompleted(tenantId, s.k)).map(s=>s.k);
+  const donePts  = scenarios.filter(s => _simHistoryHasCompleted(tenantId, s.k)).reduce((sum,x)=>sum+x.w, 0);
+  const doneCnt  = doneKeys.length;
+  const progressBar = `
+    <div class="bg-slate-900/50 border border-slate-700 rounded-lg p-3 mb-3 flex items-center gap-3">
+      <span class="text-xs text-slate-400">📊 驗收進度</span>
+      <span class="text-sm font-bold ${doneCnt===5?'text-emerald-300':'text-'+color+'-300'}">${doneCnt}/5 題 · ${donePts}/100 分</span>
+      <div class="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden">
+        <div class="h-full bg-${color}-500 transition-all" style="width:${donePts}%"></div>
+      </div>
+      <button onclick="setTenantAndPage('lingce','simulator')" class="text-[11px] bg-green-600 hover:bg-green-500 rounded px-3 py-1">🎯 去模擬器跑題</button>
+    </div>`;
+  const tabsHtml = scenarios.map(s => {
+    const done = doneKeys.includes(s.k);
+    const active = activeKey === s.k;
+    const rec = done ? _simHistoryGetByKey(tenantId, s.k) : null;
+    const tsShort = rec ? new Date(rec.timestamp).toLocaleTimeString('zh-TW', {hour12:false, hour:'2-digit', minute:'2-digit'}) : '';
+    const borderCls = active ? 'border-'+color+'-500 text-'+color+'-200' : (done ? 'border-emerald-500/50 text-slate-200' : 'border-slate-700 text-slate-300');
+    return `
+      <button onclick="${rerenderFn}('${s.k}')" class="relative bg-slate-800 hover:bg-slate-700 border ${borderCls} rounded-lg p-3 text-left">
+        ${done ? '<span class="absolute top-1 right-1 text-emerald-400 text-sm">✓</span>' : ''}
+        <div class="text-xs">${s.t}</div>
+        <div class="text-[10px] text-slate-500 mt-0.5">${s.w} 分${done?' · '+tsShort:''}</div>
+      </button>`;
+  }).join('');
+  return progressBar + `<div class="grid grid-cols-5 gap-2 mb-4">${tabsHtml}</div>`;
+}
+
+function _setAddwiiTab(k) { window.ADDWII_ACC_TAB = k; renderAddwiiAcceptance(); }
+function _setMicrojetTab(k) { window.MJ_ACC_TAB = k; renderMicrojetAcceptance(); }
+
 async function renderAddwiiAcceptance() {
   CURRENT_TENANT = 'addwii';
   const scenarios = [
@@ -10861,19 +10969,13 @@ async function renderAddwiiAcceptance() {
     {k:'content',   t:'4️⃣ 內容行銷自動化',       w:15, d:'官網/社群 300 字文案 + SEO 關鍵字自動植入', api:'/api/acceptance/content'},
     {k:'csv',       t:'5️⃣ 系統安全與資料合規 ⚠️一票否決', w:25, d:'CSV Field Trial + PII 遮蔽 + 人審閘', api:'/api/compliance/csv-preview'},
   ];
+  const tab = window.ADDWII_ACC_TAB || 'qa';
   document.getElementById('main-content').innerHTML = `
     <div class="max-w-7xl mx-auto">
-      ${_acceptHeader('🏠 addwii 驗收中心 · 5 構面 / 100 分', '依據 addwii_驗收評比標準_含測試題目v3.docx 逐項對應 AI 能力', '100', 'sky')}
-      <div class="grid grid-cols-5 gap-2 mb-4">
-        ${scenarios.map((s,i) => `
-          <button onclick="ADDWII_ACC_TAB='${s.k}';renderAddwiiAcceptance()" class="bg-slate-800 hover:bg-slate-700 border ${(window.ADDWII_ACC_TAB||'qa')===s.k?'border-sky-500 text-sky-200':'border-slate-700 text-slate-300'} rounded-lg p-3 text-left">
-            <div class="text-xs">${s.t}</div>
-            <div class="text-[10px] text-slate-500 mt-0.5">${s.w} 分</div>
-          </button>`).join('')}
-      </div>
+      ${_acceptHeader('🏠 addwii 驗收中心 · 5 構面 / 100 分', '依據 addwii_驗收評比標準_含測試題目v3.docx 逐項對應 AI 能力 · 模擬器跑過即自動打勾', '100', 'sky')}
+      ${_renderAcceptanceTabsWithProgress('addwii', scenarios, tab, '_setAddwiiTab', 'sky')}
       <div id="addwii-acc-body"></div>
     </div>`;
-  const tab = window.ADDWII_ACC_TAB || 'qa';
   const sc = scenarios.find(s => s.k === tab);
   document.getElementById('addwii-acc-body').innerHTML = _renderAcceptanceTabContent('addwii', sc);
 }
@@ -10888,19 +10990,13 @@ async function renderMicrojetAcceptance() {
     {k:'dashboard',  t:'D. 回饋日報 Dashboard', w:15, d:'Top3 抱怨/讚美 + 新興風險 + 改善建議', api:'/api/microjet/daily-dashboard'},
     {k:'sec',        t:'E. 資安合規',           w:20, d:'存取異常 + 25 控制點 + 個資法通報', api:'/api/microjet/compliance-gaps'},
   ];
+  const tab = window.MJ_ACC_TAB || 'printer-qa';
   document.getElementById('main-content').innerHTML = `
     <div class="max-w-7xl mx-auto">
-      ${_acceptHeader('🏭 microjet · CurieJet 驗收中心 · 5 場景 / 100 分', '依據 microjet_驗收標準_v0.3.docx 逐項對應 AI 能力', '100', 'amber')}
-      <div class="grid grid-cols-5 gap-2 mb-4">
-        ${scenarios.map(s => `
-          <button onclick="MJ_ACC_TAB='${s.k}';renderMicrojetAcceptance()" class="bg-slate-800 hover:bg-slate-700 border ${(window.MJ_ACC_TAB||'printer-qa')===s.k?'border-amber-500 text-amber-200':'border-slate-700 text-slate-300'} rounded-lg p-3 text-left">
-            <div class="text-xs">${s.t}</div>
-            <div class="text-[10px] text-slate-500 mt-0.5">${s.w} 分</div>
-          </button>`).join('')}
-      </div>
+      ${_acceptHeader('🏭 microjet · CurieJet 驗收中心 · 5 場景 / 100 分', '依據 microjet_驗收標準_v0.3.docx 逐項對應 AI 能力 · 模擬器跑過即自動打勾', '100', 'amber')}
+      ${_renderAcceptanceTabsWithProgress('microjet', scenarios, tab, '_setMicrojetTab', 'amber')}
       <div id="mj-acc-body"></div>
     </div>`;
-  const tab = window.MJ_ACC_TAB || 'printer-qa';
   const sc = scenarios.find(s => s.k === tab);
   document.getElementById('mj-acc-body').innerHTML = _renderAcceptanceTabContent('microjet', sc);
 }
@@ -10908,23 +11004,46 @@ async function renderMicrojetAcceptance() {
 // ── 凌策自評中心（系統整體）
 async function renderLingceAcceptance() {
   CURRENT_TENANT = 'lingce';
+  const history = _simHistoryLoad();
+  // 依 tenant 統計已完成題目（每題 tab_key 唯一，重複執行只算最近那筆）
+  const addwiiKeys  = ['qa','feedback','proposal','content','csv'];
+  const microjetKeys= ['printer-qa','tickets','proposal','dashboard','sec'];
+  const addwiiDone  = addwiiKeys.filter(k => history.some(r => r.tenant==='addwii'   && r.tab_key===k)).length;
+  const microjetDone= microjetKeys.filter(k => history.some(r => r.tenant==='microjet' && r.tab_key===k)).length;
+  const addwiiScore = history
+    .filter(r => r.tenant==='addwii' && addwiiKeys.includes(r.tab_key))
+    .reduce((acc, r) => acc.set(r.tab_key, r.weight || 0), new Map());
+  const microjetScore = history
+    .filter(r => r.tenant==='microjet' && microjetKeys.includes(r.tab_key))
+    .reduce((acc, r) => acc.set(r.tab_key, r.weight || 0), new Map());
+  const addwiiPoints   = [...addwiiScore.values()].reduce((s,v)=>s+v,0);
+  const microjetPoints = [...microjetScore.values()].reduce((s,v)=>s+v,0);
+
   document.getElementById('main-content').innerHTML = `
     <div class="max-w-7xl mx-auto">
       ${_acceptHeader('🏛️ 凌策自評中心 · 系統整體展示', '展示凌策公司作為 AI Agent 服務型組織的整體能力 — 架構深度 / 合規完整度 / 跨 tenant 協作', '綜合', 'yellow')}
 
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
-          <div class="text-sm font-bold text-yellow-300 mb-2">📊 服務中客戶驗收分數</div>
-          <div class="space-y-2 text-sm">
-            <div class="flex items-center gap-2">
-              <span class="text-sky-300">🏠 addwii</span>
-              <span class="flex-1 text-slate-400">5 構面 · 100 分制</span>
-              <button onclick="setTenantAndPage('addwii','addwii-acceptance')" class="text-xs bg-sky-600 hover:bg-sky-500 rounded px-3 py-1">前往驗收 →</button>
+          <div class="text-sm font-bold text-yellow-300 mb-3">📊 服務中客戶驗收進度</div>
+          <div class="space-y-3 text-sm">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sky-300">🏠 addwii</span>
+                <span class="flex-1 text-slate-400 text-xs">5 構面 / 100 分</span>
+                <span class="text-xs ${addwiiDone===5?'text-emerald-300':'text-sky-300'} font-bold">${addwiiDone}/5 題 · ${addwiiPoints}/100 分</span>
+                <button onclick="setTenantAndPage('addwii','addwii-acceptance')" class="text-xs bg-sky-600 hover:bg-sky-500 rounded px-2 py-0.5">→</button>
+              </div>
+              <div class="h-1.5 bg-slate-900 rounded-full overflow-hidden"><div class="h-full bg-sky-500 transition-all" style="width:${addwiiPoints}%"></div></div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-amber-300">🏭 microjet · CurieJet</span>
-              <span class="flex-1 text-slate-400">5 場景 · 100 分制</span>
-              <button onclick="setTenantAndPage('microjet','microjet-acceptance')" class="text-xs bg-amber-600 hover:bg-amber-500 rounded px-3 py-1">前往驗收 →</button>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-amber-300">🏭 microjet</span>
+                <span class="flex-1 text-slate-400 text-xs">5 場景 / 100 分</span>
+                <span class="text-xs ${microjetDone===5?'text-emerald-300':'text-amber-300'} font-bold">${microjetDone}/5 題 · ${microjetPoints}/100 分</span>
+                <button onclick="setTenantAndPage('microjet','microjet-acceptance')" class="text-xs bg-amber-600 hover:bg-amber-500 rounded px-2 py-0.5">→</button>
+              </div>
+              <div class="h-1.5 bg-slate-900 rounded-full overflow-hidden"><div class="h-full bg-amber-500 transition-all" style="width:${microjetPoints}%"></div></div>
             </div>
             <div class="flex items-center gap-2">
               <span class="text-slate-400">📋 維明顧問</span>
@@ -10947,14 +11066,62 @@ async function renderLingceAcceptance() {
         </div>
       </div>
 
+      <!-- ═══ 執行任務歷史（核心新增）═══ -->
+      <div class="bg-slate-800 border border-purple-500/30 rounded-xl p-5 mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="text-sm font-bold text-purple-300">📝 執行任務歷史</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">由「客戶上門模擬器」每次跑一題都會自動存入此處（localStorage 持久化）</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">共 ${history.length} 筆</span>
+            ${history.length > 0 ? `<button onclick="_simHistoryClear()" class="text-[10px] bg-red-900/40 hover:bg-red-800/60 border border-red-700/40 text-red-200 rounded px-2 py-0.5">🗑️ 清空</button>` : ''}
+            <button onclick="setTenantAndPage('lingce','simulator')" class="text-xs bg-green-600 hover:bg-green-500 rounded px-3 py-1">+ 去模擬器跑新題</button>
+          </div>
+        </div>
+        ${history.length === 0 ? `
+          <div class="text-center py-8 bg-slate-900/50 rounded-lg text-slate-500 text-sm">
+            尚未執行任何任務<br>
+            <button onclick="setTenantAndPage('lingce','simulator')" class="mt-3 bg-green-600 hover:bg-green-500 rounded px-4 py-2 text-white text-xs">🎯 去客戶上門模擬器開始</button>
+          </div>
+        ` : `
+          <div class="space-y-2">
+            ${history.slice(0, 20).map((r,i) => {
+              const colorMap = {addwii:'sky', microjet:'amber', weiming:'slate', lingce:'purple'};
+              const color = colorMap[r.tenant] || 'slate';
+              const ts = new Date(r.timestamp).toLocaleString('zh-TW', {hour12:false}).replace(/\//g,'-');
+              return `
+                <details class="bg-slate-900/60 border border-slate-700 rounded-lg">
+                  <summary class="cursor-pointer p-3 text-xs flex items-center gap-2 hover:bg-slate-800/50">
+                    <span class="text-slate-500 font-mono text-[10px]">${escapeHtml(ts)}</span>
+                    <span class="bg-${color}-900/40 text-${color}-300 border border-${color}-600/40 rounded px-1.5 py-0.5 text-[10px]">${escapeHtml(r.tenant)}</span>
+                    <span class="flex-1 text-slate-300 font-bold">${escapeHtml(r.scenario_label || '—')}${r.weight ? ` <span class="text-yellow-400">${r.weight} 分</span>`:''}</span>
+                    <span class="text-[10px] text-slate-500">${(r.agents||[]).map(a => (AGENT_META[a]?.icon||'🤖')).join('')} · ${r.elapsed_ms}ms</span>
+                    <span class="${r.success?'text-emerald-400':'text-red-400'}">${r.success?'✅':'❌'}</span>
+                  </summary>
+                  <div class="px-3 pb-3 text-[11px] text-slate-400 border-t border-slate-700/50 pt-2 space-y-1">
+                    <div><b>Report ID:</b> <span class="font-mono">${escapeHtml(r.report_id)}</span></div>
+                    <div><b>Task ID:</b> <span class="font-mono">${escapeHtml(String(r.task_id).slice(0,32))}</span></div>
+                    <div><b>API:</b> <code class="bg-slate-800 rounded px-1">${escapeHtml(r.api_path||'—')}</code></div>
+                    <div><b>Agent 軌跡:</b> ${(r.agents||[]).map(a=>{const m=AGENT_META[a]||{};return `<span class="text-${m.color||'slate'}-300">${m.icon||'🤖'} ${escapeHtml(m.name||a)}</span>`}).join(' → ')}</div>
+                    <div><b>提問:</b> <div class="text-slate-300 italic">${escapeHtml((r.question||'').slice(0, 150))}${(r.question||'').length>150?'…':''}</div></div>
+                    <div><b>摘要:</b> <div class="text-slate-300 bg-slate-800/50 rounded p-2 mt-1 whitespace-pre-wrap">${escapeHtml(r.summary_snippet||'—')}</div></div>
+                  </div>
+                </details>`;
+            }).join('')}
+          </div>
+          ${history.length > 20 ? `<div class="text-center text-xs text-slate-500 mt-2">只顯示最近 20 筆（共 ${history.length} 筆）</div>` : ''}
+        `}
+      </div>
+
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
         <div class="text-sm font-bold text-yellow-300 mb-3">🎯 評審建議走訪動線</div>
         <ol class="list-decimal list-inside space-y-1.5 text-sm text-slate-300">
           <li>先讀 <code class="bg-slate-900 px-1.5 rounded">PROJECT_BRIEF.md</code>（根目錄 · 2 頁完整 briefing）</li>
           <li>至「📐 資料流圖」理解 4 tenant 的金流/資料流關係</li>
           <li>至「🛡️ 合規中心」驗證 C1~C4 四大控制項即時證據（跨 tenant）</li>
-          <li>至 addwii / microjet 各自驗收中心跑 5 題／5 場景</li>
-          <li>至「🎯 客戶上門模擬器」體驗自然語言派工（AI 指揮官 dispatch）</li>
+          <li>至「🎯 客戶上門模擬器」跑 addwii 5 題 + microjet 5 題 → 所有結果會自動存入本頁「執行任務歷史」</li>
+          <li>回此頁看進度條與歷史紀錄（${addwiiDone+microjetDone}/10 題已完成 · ${addwiiPoints+microjetPoints}/200 分）</li>
           <li>至「👤 陳先生 12 坪」看 B2B2C 真實跨公司服務鏈</li>
         </ol>
       </div>
