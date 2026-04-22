@@ -6099,14 +6099,24 @@ const SIM_SCENARIOS = [
     client: 'addwii 加我科技',
     avatar: '🛒',
     color: 'blue',
-    industry: 'B2C 場域無塵室品牌 · 6 人 · 六款場域產品（嬰兒/廚房/浴室/客廳/臥室/餐廳）',
-    request: '我們 6 人 B2C 團隊最痛的不是組織管理，而是客服回覆慢（HCR 規格問到爆）、官網文案寫不完。想導入凌策的 AI 客服 + AI 內容行銷 + B2C CRM 模組。',
+    industry: 'B2C 場域無塵室品牌 · 6 人 · 5 構面驗收標準（100 分）',
+    rubric_url: 'addwii_驗收評比標準_含測試題目v3.docx',
+    request: '【構面 1】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。',
+    // 5 題 ↔ 5 構面（addwii 驗收評比標準 v3）
     presets: [
-      '我們 6 人 B2C 團隊最痛的不是組織管理，而是客服回覆慢（HCR 規格問到爆）、官網文案寫不完。想導入凌策的 AI 客服 + AI 內容行銷 + B2C CRM 模組。',
-      '想在官網推六款無塵室的故事行銷，請凌策幫我們規劃 AI 內容行銷方案，涵蓋 FB / IG / 部落格三個通路。',
-      '客服最近接到不少嬰兒無塵室的諮詢，想導入 AI 客服 Agent，讓客戶 24 小時問產品都能秒回。',
-      '我們有一批歷史客訴紀錄想做情緒分析，找出哪個場域產品最常被抱怨，請凌策用 AI 幫我們歸類派工。',
-      '計畫進軍 B2B 幼兒園/托育中心，需要一份精美的企業方案書，能否用 AI 生成給我們參考？',
+      '【構面 1 · 產品知識 AI 化｜15 分】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。',
+      '【構面 2 · 客戶回饋自動分析｜25 分】請分析 3 筆客服紀錄（噪音投訴 / 效果讚美 / 售後抱怨），做正負評情緒分類 + 問題類型標記 + 產品改善優先度排序 + 當日摘要報告。',
+      '【構面 3 · B2B 提案自動生成｜20 分】工程整合商需求：20 坪，需同時淨化 PM2.5 與 VOC，預算 NT$200,000 以內，請在 5 分鐘內生成含產品選型、CADR 規格對照、數量建議、含稅報價的 B2B 提案。',
+      '【構面 4 · 內容行銷自動化｜15 分】請針對「嬰幼兒房空氣淨化」場景生成 300 字以內官網文案，植入 SEO「嬰兒房空氣清淨」「PM2.5 過濾」「CADR 認證」，符合 addwii 品牌調性（專業 / 溫暖 / 可信賴）。',
+      '【構面 5 · 系統安全與資料合規｜25 分 · 一票否決】提供含真實用戶姓名與裝置 ID 的 Field Trial CSV（10 組），請完成空氣品質分析 + 稽核日誌 + 個資零外流證明 + 人工審核閘展示。',
+    ],
+    // 每題對應的後端 endpoint + Agent 使用組合
+    preset_routes: [
+      { api:'/api/acceptance/product-qa',       agents:['orchestrator','cs','doc'],              scenario:'addwii 構面 1' },
+      { api:'/api/acceptance/feedback',         agents:['orchestrator','cs','qa','doc','legal'], scenario:'addwii 構面 2' },
+      { api:'/api/acceptance/proposal',         agents:['orchestrator','bd','proposal','fin'],   scenario:'addwii 構面 3' },
+      { api:'/api/acceptance/content',          agents:['orchestrator','bd','doc','qa'],         scenario:'addwii 構面 4' },
+      { api:'/api/compliance/csv-preview',      agents:['orchestrator','legal','be','doc'],      scenario:'addwii 構面 5（一票否決）' },
     ],
     pipeline: [
       { phase: '1. 客戶接洽', agent: 'BD Agent', icon: '📋', color: 'blue',
@@ -6204,15 +6214,23 @@ const SIM_SCENARIOS = [
     client: 'microjet 微型噴射',
     avatar: '🏭',
     color: 'amber',
-    industry: '精密感測製造 · 140 人跨廠區組織 · CurieJet 感測器 / ComeTrue 3D 列印',
-    request: '我們頂埔廠 140 多位員工分屬 14 個部門，跨部門溝通成本高、出缺勤管理散亂、審批常跨階混亂。希望導入凌策的智慧組織管理系統整廠部署。',
+    industry: 'microjet · CurieJet · 精密感測製造 · 134 人 · 5 場景驗收（100 分）',
+    rubric_url: 'microjet_驗收標準_v0.3.docx',
+    request: '【場景 A】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？',
+    // 5 題 ↔ 5 場景（microjet 驗收標準 v0.3）
     presets: [
-      '我們頂埔廠 140 多位員工分屬 14 個部門，跨部門溝通成本高、出缺勤管理散亂、審批常跨階混亂。希望導入凌策的智慧組織管理系統整廠部署。',
-      'CurieJet P760 感測器業務詢單暴增，客戶常問規格、應用場景、競品比較，請幫我們建置 AI Q&A 知識庫讓業務即時查。',
-      'ComeTrue T10 / M10 3D 印表機要拓展國際客戶，想要一份結合產業痛點的 B2B 提案模板，讓業務能在 5 分鐘內客製化生成。',
-      '最近半年累積 200 筆客戶意見，想請 AI 幫我們做情緒分析與分類，找出品質／服務／交期哪個抱怨最多。',
-      '140 人打卡資料每月都要人工稽核異常、產出勞基法合規報表，希望 AI 自動化，並含加班費估算。',
-      '國外客戶寄來的 email 常含客戶身分證、信用卡等敏感資料，想做 PII 自動掃描與遮罩避免個資外洩。',
+      '【場景 A · 印表機客服｜25 分】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？請給完整排除步驟。',
+      '【場景 B · 客訴工單分類｜20 分】請分類 6 筆客訴工單（含 1 筆「冒煙 + 消保會」高風險），標記緊急度（高/中/低）、產出回覆模板、偵測 24h 內重複工單。',
+      '【場景 C · B2B 提案（8 段落）｜20 分】客戶：奇景光電（20 坪 / PM2.5+VOC / 預算 NT$200K），請在 3 分鐘內生成含摘要、合作回顧、市場分析、新品推薦、採購方案、通路活動、雙方承諾、附件的完整提案。',
+      '【場景 D · 回饋日報 Dashboard｜15 分】提供 12 筆多平台客戶評論，請產出 Top3 抱怨 + Top3 讚美 + 新興風險偵測（近 7 天異常上升）+ 改善建議。',
+      '【場景 E · 資安合規｜20 分】偵測存取異常（非工時 + 單次下載 > 1,000 筆）+ 合規缺口掃描（25 項控制點）+ 個資法第 12 條事件通報草稿。',
+    ],
+    preset_routes: [
+      { api:'/api/acceptance/product-qa',       agents:['orchestrator','cs','doc'],               scenario:'microjet 場景 A' },
+      { api:'/api/microjet/classify-tickets',   agents:['orchestrator','cs','qa','legal','doc'],  scenario:'microjet 場景 B' },
+      { api:'/api/microjet/b2b-proposal-8sec',  agents:['orchestrator','bd','proposal','fin','legal','doc'], scenario:'microjet 場景 C' },
+      { api:'/api/microjet/daily-dashboard',    agents:['orchestrator','cs','qa','doc'],          scenario:'microjet 場景 D' },
+      { api:'/api/microjet/compliance-gaps',    agents:['orchestrator','legal','qa','doc'],       scenario:'microjet 場景 E' },
     ],
     pipeline: [
       { phase: '1. 客戶接洽', agent: 'BD Agent', icon: '📋', color: 'blue',
@@ -6310,14 +6328,18 @@ const SIM_SCENARIOS = [
     client: '維明 顧問',
     avatar: '🏛️',
     color: 'green',
-    industry: '企業系統整合顧問 · 多專案並行矩陣組織',
-    request: '我們是系統整合顧問公司，同時並行 10+ 個客戶專案，顧問常需跨專案支援。現在用 Excel 管理組織與任務很混亂。希望凌策幫我們導入智慧組織管理系統，特別需要 AI 任務派工與進度自動彙整。',
+    industry: '企業顧問 · 評估中 · 尚未提供正式驗收標準',
+    rubric_url: null,
+    request: '【評估初談】我們是系統整合顧問公司，同時並行 10+ 個客戶專案，顧問常需跨專案支援。請用 AI 幫我們做初步診斷。',
     presets: [
-      '我們是系統整合顧問公司，同時並行 10+ 個客戶專案，顧問常需跨專案支援。現在用 Excel 管理組織與任務很混亂。希望凌策幫我們導入智慧組織管理系統，特別需要 AI 任務派工與進度自動彙整。',
-      '合夥人想要「用一句自然語言就派專案給 30 位顧問」的指揮官功能，AI 自動判斷誰適合、自動產生週目標。',
-      '每週三要產出各專案進度摘要給 C-level，目前要人工彙整 4 小時，希望 AI 從顧問日報自動生成執行摘要。',
-      '想導入跨專案 PII 稽核，避免顧問誤傳客戶敏感資料（身分證/信用卡/地址）到 Slack 或 Email。',
-      '現有 Excel 管理的 150 位顧問資料要匯入系統，包含技能樹、專案經歷、可派程度，請協助 AI 自動建模。',
+      '【評估初談】我們是系統整合顧問公司，同時並行 10+ 個客戶專案，顧問常需跨專案支援。請用 AI 幫我們做初步診斷。',
+      '【通用測試】請幫我把客戶上週的 Slack 訊息做情緒分析，找出哪個專案最令人焦慮。',
+      '【通用測試】幫我生成一份給 C-level 的 Q2 報告摘要，凸顯「AI 指揮官每週省 4h 合夥人時間」。',
+    ],
+    preset_routes: [
+      { api:'/api/acceptance/product-qa',  agents:['orchestrator','cs','doc'],             scenario:'維明 評估初談' },
+      { api:'/api/acceptance/feedback',    agents:['orchestrator','cs','qa','doc'],        scenario:'維明 情緒分析（通用）' },
+      { api:'/api/acceptance/content',     agents:['orchestrator','bd','doc','qa'],        scenario:'維明 報告生成（通用）' },
     ],
     pipeline: [
       { phase: '1. 客戶接洽', agent: 'BD Agent', icon: '📋', color: 'blue',
@@ -6545,16 +6567,38 @@ function startSimulationFromPicker(clientId){
 
 // 判斷是否為「導入部署類」需求（跑完整 pipeline）或「具體問題類」（路由到 AI 指揮官即時回應）
 // 具體問題模式：真正調用 AI 指揮官並顯示結構化答案
+// ═══════════════════════════════════════════════════════════
+// 客戶上門模擬器：一律走「工作流圖 + 報告」模式
+// （凌策是 AI 公司，不顯示實體組織派工；改為視覺化 AI 工作流 + 交付報告）
+// ═══════════════════════════════════════════════════════════
+const AGENT_META = {
+  orchestrator: {name:'Orchestrator', icon:'🎯', color:'purple', role:'總指揮 · 任務派發'},
+  bd:           {name:'BD Agent',      icon:'💼', color:'blue',   role:'需求解析 · 客戶對接'},
+  cs:           {name:'客服 Agent',    icon:'💬', color:'cyan',   role:'客戶回饋 · 情緒分類'},
+  proposal:     {name:'提案 Agent',    icon:'📄', color:'indigo', role:'B2B 提案生成'},
+  fin:          {name:'財務 Agent',    icon:'💰', color:'emerald',role:'報價 · ROI 試算'},
+  legal:        {name:'法務 Agent',    icon:'⚖️', color:'amber',  role:'PII · 合規 · 稽核'},
+  qa:           {name:'QA Agent',      icon:'🔍', color:'yellow', role:'品質驗證'},
+  fe:           {name:'前端 Agent',    icon:'🎨', color:'pink',   role:'UI / 呈現'},
+  be:           {name:'後端 Agent',    icon:'⚙️', color:'teal',   role:'API / 資料處理'},
+  doc:          {name:'文件 Agent',    icon:'📝', color:'orange', role:'報告 / PDF'},
+};
+
+
 async function runSimQuestionMode(scenario, question){
+  // 偵測是第幾個 preset（用以選 preset_route）
+  const presetIdx = Math.max(0, (scenario.presets||[]).findIndex(p => p === question));
+  const route = (scenario.preset_routes || [])[presetIdx] || scenario.preset_routes?.[0] || null;
+
   // Disable buttons
   document.querySelectorAll('.sim-client-btn').forEach(b => { b.disabled = true; b.classList.add('opacity-50'); });
-  document.getElementById('sim-btn-' + scenario.id).classList.remove('opacity-50');
-  document.getElementById('sim-btn-' + scenario.id).classList.add('ring-2', 'ring-' + scenario.color + '-500');
+  const btnEl = document.getElementById('sim-btn-' + scenario.id);
+  if (btnEl) { btnEl.classList.remove('opacity-50'); btnEl.classList.add('ring-2', 'ring-' + scenario.color + '-500'); }
 
   const area = document.getElementById('sim-area');
   area.classList.remove('hidden');
 
-  // Show client request with typing
+  // 1) 客戶提問卡
   document.getElementById('sim-request').innerHTML = `
     <div class="bg-${scenario.color}-900/20 border border-${scenario.color}-500/30 rounded-xl p-5">
       <div class="flex items-center gap-3 mb-3">
@@ -6563,91 +6607,298 @@ async function runSimQuestionMode(scenario, question){
           <span class="font-bold text-${scenario.color}-400">${scenario.client}</span>
           <span class="text-xs text-slate-500 ml-2">${scenario.industry}</span>
         </div>
-        <span class="ml-auto text-xs bg-${scenario.color}-600/30 text-${scenario.color}-300 px-3 py-1 rounded-full">客戶詢問</span>
+        <span class="ml-auto text-xs bg-${scenario.color}-600/30 text-${scenario.color}-300 px-3 py-1 rounded-full">📋 客戶提問</span>
       </div>
       <p class="text-sm text-slate-200 leading-relaxed" id="sim-typing"></p>
+      ${route ? `<div class="mt-3 pt-3 border-t border-slate-700/50 flex items-center gap-2 text-[11px]">
+        <span class="text-slate-500">🎯 對應評分標準：</span>
+        <span class="text-yellow-300 font-bold">${escapeHtml(route.scenario)}</span>
+        <span class="ml-auto text-slate-500 font-mono">${escapeHtml(route.api)}</span>
+      </div>` : ''}
     </div>`;
   const typingEl = document.getElementById('sim-typing');
   for (let i = 0; i <= question.length; i++) {
     typingEl.textContent = question.substring(0, i);
-    await sleep(12);
+    await sleep(8);
   }
 
-  // Pipeline area → 改為「即時處理」單卡
-  document.getElementById('sim-title').textContent = `${scenario.client} — AI 指揮官即時分派`;
-  document.getElementById('sim-progress-text').textContent = '⏳ 處理中...';
-  document.getElementById('sim-progress-bar').style.width = '30%';
+  // 2) 工作流圖（動畫式）
+  document.getElementById('sim-title').textContent = `AI 工作流圖（Agent Dispatch Graph）`;
+  document.getElementById('sim-progress-text').textContent = '🔁 處理中...';
+  document.getElementById('sim-progress-bar').style.width = '15%';
 
+  const agents = route?.agents || ['orchestrator','cs','doc'];
   const pipelineEl = document.getElementById('sim-pipeline');
-  pipelineEl.innerHTML = `
-    <div class="bg-slate-900/50 rounded-xl border border-purple-500/30 p-4">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="inline-block w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></span>
-        <span class="text-sm text-purple-300">🧠 Orchestrator 正在解析指令並派發 Agent...</span>
-      </div>
-    </div>`;
+  pipelineEl.innerHTML = _renderWorkflowGraph(agents);
+  await sleep(300);
 
-  // 呼叫後端
-  const customerHint = scenario.id === 'weiming' ? '維明' : scenario.id;
-  const enrichedMessage = `${customerHint} ${question}`;  // 明示客戶名給 Orchestrator
-  let liveResult = null;
-  try {
-    const r = await fetch(API_BASE + '/api/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ message: enrichedMessage })
-    });
-    liveResult = await r.json();
-  } catch(e) {
-    liveResult = null;
+  // 動畫點亮 agents
+  for (let i = 0; i < agents.length; i++) {
+    await sleep(400);
+    const el = document.getElementById('wf-node-' + agents[i]);
+    if (el) {
+      el.classList.remove('opacity-40');
+      el.classList.add('ring-2','ring-' + (AGENT_META[agents[i]]?.color||'purple') + '-400');
+    }
+    document.getElementById('sim-progress-bar').style.width = Math.round(15 + (i+1)/agents.length*60) + '%';
   }
+
+  // 3) 呼叫後端（依 route 選 API）
+  document.getElementById('sim-progress-bar').style.width = '80%';
+  let apiResult = null;
+  const startTs = Date.now();
+  try {
+    const body = _buildSimRequestBody(scenario.id, route?.api, question);
+    const r = await fetch(API_BASE + (route?.api || '/api/chat'), {
+      method: 'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    apiResult = await r.json();
+  } catch(e) {
+    console.warn('simulator api error:', e);
+    apiResult = { error: e.message || '後端連線失敗' };
+  }
+  const elapsedMs = Date.now() - startTs;
 
   document.getElementById('sim-progress-bar').style.width = '100%';
   document.getElementById('sim-progress-bar').classList.remove('bg-blue-500');
   document.getElementById('sim-progress-bar').classList.add('bg-green-500');
   document.getElementById('sim-progress-text').textContent = '✓ 完成';
 
-  if (!liveResult) {
-    pipelineEl.innerHTML = `
-      <div class="bg-red-900/40 border border-red-500/40 rounded-xl p-4">
-        <div class="text-red-300 text-sm">⚠️ 無法連線 AI 指揮官，請確認後端是否啟動。</div>
-      </div>`;
-    return;
-  }
-
-  // 若是 scenario-dispatch，渲染專屬卡片
-  if (liveResult.source === 'scenario-dispatch' && liveResult.dispatch) {
-    pipelineEl.innerHTML = renderDispatchCard(liveResult);
-  } else {
-    const safeHtml = (liveResult.response||'')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
-      .replace(/\n/g, '<br>');
-    pipelineEl.innerHTML = `
-      <div class="bg-slate-900/50 border border-purple-500/40 rounded-xl p-4">
-        <div class="text-xs text-purple-300 mb-2">Orchestrator — 分派至 ${escapeHtml(liveResult.agent||'-')} (${escapeHtml(liveResult.department||'-')})</div>
-        <div class="text-sm text-slate-200 leading-relaxed">${safeHtml}</div>
-        <div class="text-[10px] text-slate-500 mt-3 pt-2 border-t border-slate-700">
-          ${liveResult.source==='rule+ai' ? '🧪 規則 + AI 深化' : '⚡ 規則引擎秒回'} · 耗時 ${liveResult.elapsed}s · task:${liveResult.task_id}
-        </div>
-      </div>`;
-  }
-
-  // Summary 區塊：簡化成「可繼續提問」
+  // 4) 交付報告
   document.getElementById('sim-summary').classList.remove('hidden');
-  document.getElementById('sim-summary').innerHTML = `
-    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center gap-3">
-      <span class="text-2xl">💬</span>
-      <div class="flex-1 text-sm text-slate-300">AI Agent 已回覆此需求。要模擬別的問題嗎？</div>
-      <button onclick="resetSimulator()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs">🔄 換一題</button>
-      <button onclick="showPage('commander')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-xs">⚡ 去 AI 指揮官</button>
-    </div>`;
+  document.getElementById('sim-summary').innerHTML = _renderDeliverableReport({
+    scenario, question, route, agents, apiResult, elapsedMs,
+  });
   document.getElementById('sim-summary').scrollIntoView({behavior:'smooth'});
 }
 
-function _isDeploymentRequest(text){
-  const deployKw = ['導入','部署','建置','上線','整廠','整套','智慧組織管理系統','數位化','全員','導系統'];
-  return deployKw.some(k => text.includes(k));
+
+// 工作流圖：Orchestrator 中心，其他 Agent 環繞
+function _renderWorkflowGraph(agents) {
+  const core = agents[0] || 'orchestrator';
+  const others = agents.slice(1);
+  const coreMeta = AGENT_META[core] || AGENT_META.orchestrator;
+  const nodeHtml = (k) => {
+    const m = AGENT_META[k] || {};
+    return `
+      <div id="wf-node-${k}" class="opacity-40 transition-all bg-slate-900 border border-${m.color}-500/40 rounded-lg p-3 text-center">
+        <div class="text-2xl mb-1">${m.icon || '🤖'}</div>
+        <div class="font-bold text-${m.color}-300 text-sm">${escapeHtml(m.name || k)}</div>
+        <div class="text-[10px] text-slate-500">${escapeHtml(m.role || '')}</div>
+      </div>`;
+  };
+  return `
+    <div class="bg-slate-900/50 border border-slate-700 rounded-xl p-5">
+      <div class="text-[11px] text-slate-500 mb-3">🔗 AI 工作流圖 · Orchestrator 為核心 · 動畫顯示 Agent dispatch 順序</div>
+      <!-- 中心節點 -->
+      <div class="flex justify-center mb-3">
+        <div id="wf-node-${core}" class="opacity-40 transition-all bg-${coreMeta.color}-900/40 border-2 border-${coreMeta.color}-500 rounded-xl p-4 text-center w-52">
+          <div class="text-3xl mb-1">${coreMeta.icon || '🎯'}</div>
+          <div class="font-bold text-${coreMeta.color}-300">${escapeHtml(coreMeta.name || core)}</div>
+          <div class="text-[10px] text-slate-400">${escapeHtml(coreMeta.role || '')}</div>
+        </div>
+      </div>
+      <div class="flex justify-center text-slate-600 text-xl mb-3">⤵  ⤴</div>
+      <!-- 分支 agents -->
+      <div class="grid grid-cols-${Math.min(others.length, 5)} gap-2">
+        ${others.map(nodeHtml).join('')}
+      </div>
+      <div class="mt-3 text-[10px] text-slate-500 text-center">↓ Orchestrator 依語意派發任務 · 每個 Agent 完成後回傳結果整合</div>
+    </div>`;
 }
+
+
+// 依 scenario + API path 建 request body（demo 資料預設）
+function _buildSimRequestBody(scenarioId, apiPath, question) {
+  const base = { user: `sim-${scenarioId}`, question };
+  if (!apiPath) return { message: question };
+  // Product-QA
+  if (apiPath.includes('/product-qa'))
+    return { customer: scenarioId === 'addwii' ? 'addwii' : 'microjet', question, user: base.user };
+  // Feedback
+  if (apiPath.includes('/feedback'))
+    return { use_ai: false };   // 用預設 DEMO_FEEDBACK
+  // Proposal（addwii 構面 3）
+  if (apiPath === '/api/acceptance/proposal')
+    return {
+      customer: 'addwii',
+      client_profile: { industry:'工程整合商', scale:'20 坪', pain_point:'PM2.5 + VOC',
+                        budget:'NT$200,000', area_ping:20 }
+    };
+  // Content
+  if (apiPath.includes('/content'))
+    return { topic:'嬰幼兒房空氣淨化', channel:'website', user: base.user,
+             seo_keywords:['嬰兒房空氣清淨','PM2.5 過濾','CADR 認證'] };
+  // microjet
+  if (apiPath.includes('/microjet/'))
+    return {};   // 全部有 demo fallback
+  // CSV preview
+  if (apiPath.includes('/csv-preview'))
+    return {
+      csv_text: 'datetime_local_taipei,roomId,customer_name,device_id,pm25\n2026-04-15T08:00:00,RM-001,陳雅婷,DEV-A123456789,32.5\n2026-04-15T08:15:00,RM-002,林建宏,DEV-B234567890,18.2',
+      filename: 'field_trial_demo.csv', actor: 'judge'
+    };
+  // Compliance gaps (GET)
+  return {};
+}
+
+
+// 交付報告
+function _renderDeliverableReport({scenario, question, route, agents, apiResult, elapsedMs}) {
+  const reportId = `REPORT-${new Date().toISOString().replace(/[-:]/g,'').slice(0,15)}-${Math.floor(Math.random()*9999).toString(16).toUpperCase()}`;
+  const taskId = apiResult?.task_id || apiResult?.pending?.task_id || '—';
+
+  // 摘取 API 結果的關鍵訊息（依不同 endpoint 格式）
+  let mainContent = '';
+  if (apiResult?.error) {
+    mainContent = `<div class="bg-red-900/40 border border-red-500/40 rounded p-3 text-sm text-red-200">⚠️ 處理失敗：${escapeHtml(apiResult.error)}</div>`;
+  } else if (apiResult?.answer) {
+    // product-qa
+    mainContent = `<pre class="text-xs text-slate-200 whitespace-pre-wrap bg-slate-900/60 rounded p-3 max-h-80 overflow-y-auto">${escapeHtml(apiResult.answer.slice(0,1500))}${apiResult.answer.length>1500?'…':''}</pre>`;
+  } else if (apiResult?.daily_summary) {
+    // feedback analysis
+    const s = apiResult.daily_summary;
+    mainContent = `
+      <div class="grid grid-cols-3 gap-2 text-xs mb-2">
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">正面</div><div class="text-xl font-bold text-emerald-300">${s.sentiment_breakdown?.positive||0}</div></div>
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">中性</div><div class="text-xl font-bold text-slate-300">${s.sentiment_breakdown?.neutral||0}</div></div>
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">負面</div><div class="text-xl font-bold text-rose-300">${s.sentiment_breakdown?.negative||0}</div></div>
+      </div>
+      <div class="text-xs text-slate-400 mb-1">🎯 產品改善優先度 Top ${Math.min(3, (s.top_priorities||[]).length)}</div>
+      <ol class="text-xs text-slate-200 list-decimal list-inside space-y-1">
+        ${(s.top_priorities||[]).slice(0,3).map(p=>`<li>[${p.category}] ${p.issue_count} 件 · ${escapeHtml(p.recommended_action||'')}</li>`).join('')}
+      </ol>`;
+  } else if (apiResult?.proposal) {
+    // proposal
+    const p = apiResult.proposal;
+    mainContent = `
+      <div class="text-sm text-slate-200 mb-2"><b>${escapeHtml(p.title||'-')}</b></div>
+      <div class="text-xs text-slate-300 space-y-1">
+        ${(p.solution||[]).map(s=>`<div>· ${escapeHtml(s)}</div>`).join('')}
+      </div>
+      ${apiResult.within_time_limit !== undefined ?
+        `<div class="mt-2 text-[11px] ${apiResult.within_time_limit?'text-emerald-300':'text-rose-300'}">
+          ⏱️ ${apiResult.within_time_limit?'✅':'❌'} 生成耗時 ${apiResult.elapsed_sec}s / 限制 ${apiResult.time_limit_sec}s
+        </div>` : ''}`;
+  } else if (apiResult?.content) {
+    // content marketing
+    mainContent = `
+      <pre class="text-xs text-slate-200 whitespace-pre-wrap bg-slate-900/60 rounded p-3 mb-2">${escapeHtml(apiResult.content)}</pre>
+      ${apiResult.seo_check ? `<div class="text-[11px] text-emerald-300">SEO 覆蓋率 ${apiResult.seo_check.coverage_pct}% · ${apiResult.seo_check.keywords_hit}/${apiResult.seo_check.keywords_total} 關鍵字命中</div>` : ''}`;
+  } else if (apiResult?.sections) {
+    // 8-section proposal
+    mainContent = `
+      <div class="text-xs text-emerald-300 mb-2">✅ 8 段落完整度 ${apiResult.completeness_pct}% · ${apiResult.rubric?.within_3min?'✅':'❌'} 3 分鐘內完成</div>
+      <div class="space-y-1 text-xs text-slate-300">
+        ${apiResult.section_order.map(s=>`<div>· <b class="text-slate-200">${escapeHtml(s)}</b> <span class="text-slate-500">（已產出）</span></div>`).join('')}
+      </div>`;
+  } else if (apiResult?.tickets) {
+    // classify-tickets
+    const byC = apiResult.stats?.by_category || {};
+    const byU = apiResult.stats?.by_urgency || {};
+    mainContent = `
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="bg-slate-900/60 rounded p-2">
+          <div class="text-slate-500 mb-1">🗂️ 分類</div>
+          ${Object.entries(byC).map(([k,v])=>`<div>${escapeHtml(k)}: <b class="text-cyan-300">${v}</b></div>`).join('')}
+        </div>
+        <div class="bg-slate-900/60 rounded p-2">
+          <div class="text-slate-500 mb-1">🚨 緊急度</div>
+          ${Object.entries(byU).map(([k,v])=>`<div>${escapeHtml(k)}: <b class="${k==='高'?'text-rose-300':k==='中'?'text-amber-300':'text-slate-300'}">${v}</b></div>`).join('')}
+        </div>
+      </div>
+      <div class="mt-2 text-[11px] text-slate-400">重複工單偵測：<b class="text-amber-300">${apiResult.stats?.duplicate_count||0}</b> 筆合併</div>`;
+  } else if (apiResult?.top3_complaints) {
+    // daily-dashboard
+    mainContent = `
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="bg-slate-900/60 rounded p-2">
+          <div class="text-rose-300 font-bold mb-1">😟 Top 3 抱怨</div>
+          ${apiResult.top3_complaints.map(c=>`<div>· ${escapeHtml(c.theme)} (${c.count})</div>`).join('')}
+        </div>
+        <div class="bg-slate-900/60 rounded p-2">
+          <div class="text-emerald-300 font-bold mb-1">😊 Top 3 讚美</div>
+          ${apiResult.top3_praises.map(c=>`<div>· ${escapeHtml(c.theme)} (${c.count})</div>`).join('')}
+        </div>
+      </div>
+      <div class="mt-2 text-[11px] text-amber-300">⚠️ 新興風險：${apiResult.emerging_risks?.length||0} 項 · 改善建議：${apiResult.recommendations?.length||0} 條</div>`;
+  } else if (apiResult?.total_controls) {
+    // compliance-gaps
+    mainContent = `
+      <div class="grid grid-cols-4 gap-2 text-xs">
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">控制點</div><div class="text-xl text-cyan-300">${apiResult.total_controls}</div></div>
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">已實作</div><div class="text-xl text-emerald-300">${apiResult.implemented_count}</div></div>
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">缺口</div><div class="text-xl text-rose-300">${apiResult.gap_count}</div></div>
+        <div class="bg-slate-900/60 rounded p-2"><div class="text-slate-500">覆蓋率</div><div class="text-xl text-amber-300">${apiResult.coverage_pct}%</div></div>
+      </div>`;
+  } else if (apiResult?.pending) {
+    // csv-preview
+    const p = apiResult.pending;
+    mainContent = `
+      <div class="text-xs text-slate-300 space-y-1">
+        <div>📁 檔案：<b class="text-cyan-300">${escapeHtml(p.filename)}</b> · ${p.rows_scanned} 列</div>
+        <div>🔍 PII 偵測：<b class="text-rose-300">${p.pii_detected_count}</b> 筆 · <b>${Object.keys(p.pii_type_breakdown||{}).length}</b> 類</div>
+        <div>🔒 階段：<b class="text-amber-300">${escapeHtml(p.stage)}</b>（等待人工審核閘）</div>
+      </div>`;
+  } else {
+    mainContent = `<pre class="text-[11px] text-slate-400 bg-slate-900/60 rounded p-2 max-h-40 overflow-y-auto">${escapeHtml(JSON.stringify(apiResult, null, 2).slice(0, 800))}</pre>`;
+  }
+
+  // Agent 參與軌跡
+  const agentChain = agents.map(k => {
+    const m = AGENT_META[k] || {};
+    return `<span class="inline-flex items-center gap-1 text-xs bg-${m.color}-900/40 border border-${m.color}-600/40 text-${m.color}-200 rounded-full px-2 py-0.5">${m.icon} ${escapeHtml(m.name)}</span>`;
+  }).join(' <span class="text-slate-600">→</span> ');
+
+  return `
+    <div class="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 border border-emerald-500/30 rounded-xl p-5">
+      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700">
+        <div class="text-3xl">📄</div>
+        <div class="flex-1">
+          <div class="text-lg font-bold text-emerald-200">交付報告</div>
+          <div class="text-[11px] text-slate-500 font-mono">${reportId}</div>
+        </div>
+        <button onclick="resetSimulator()" class="text-xs bg-slate-700 hover:bg-slate-600 rounded px-3 py-1.5">🔄 換一題</button>
+      </div>
+
+      <!-- 提問 + 評分對應 -->
+      <div class="mb-3 bg-slate-900/50 rounded-lg p-3">
+        <div class="text-[10px] text-slate-500 mb-1">📋 客戶提問</div>
+        <div class="text-xs text-slate-300 leading-relaxed mb-2">${escapeHtml(question)}</div>
+        ${route ? `<div class="text-[11px] text-yellow-300">🎯 評分標準：${escapeHtml(route.scenario)}</div>` : ''}
+      </div>
+
+      <!-- Agent 參與軌跡 -->
+      <div class="mb-3 bg-slate-900/50 rounded-lg p-3">
+        <div class="text-[10px] text-slate-500 mb-2">🔗 AI Agent 參與軌跡（dispatch chain）</div>
+        <div class="flex flex-wrap gap-1.5 items-center">${agentChain}</div>
+      </div>
+
+      <!-- 交付內容 -->
+      <div class="mb-3 bg-slate-900/50 rounded-lg p-3">
+        <div class="text-[10px] text-slate-500 mb-2">📊 交付內容</div>
+        ${mainContent}
+      </div>
+
+      <!-- 合規徽章 -->
+      <div class="grid grid-cols-4 gap-2 text-center text-[11px] mb-3">
+        <div class="bg-emerald-900/30 border border-emerald-700/40 rounded p-2"><div class="text-emerald-300 font-bold">🔒 本地 LLM</div><div class="text-[10px] text-slate-400">個資不外流</div></div>
+        <div class="bg-emerald-900/30 border border-emerald-700/40 rounded p-2"><div class="text-emerald-300 font-bold">🛡️ PII 遮蔽</div><div class="text-[10px] text-slate-400">9 類自動偵測</div></div>
+        <div class="bg-emerald-900/30 border border-emerald-700/40 rounded p-2"><div class="text-emerald-300 font-bold">📝 稽核寫入</div><div class="text-[10px] text-slate-400 font-mono truncate">${escapeHtml(String(taskId).slice(0,16))}</div></div>
+        <div class="bg-emerald-900/30 border border-emerald-700/40 rounded p-2"><div class="text-emerald-300 font-bold">⏱️ ${elapsedMs}ms</div><div class="text-[10px] text-slate-400">Agent 工作流耗時</div></div>
+      </div>
+
+      <div class="flex gap-2 text-xs">
+        <button onclick="showPage('commander')" class="flex-1 bg-blue-600 hover:bg-blue-500 rounded px-3 py-2">⚡ 去 AI 指揮官</button>
+        ${scenario.id === 'addwii' ? `<button onclick="setTenantAndPage('addwii','addwii-acceptance')" class="flex-1 bg-sky-600 hover:bg-sky-500 rounded px-3 py-2">🏠 去 addwii 驗收中心</button>` : ''}
+        ${scenario.id === 'microjet' ? `<button onclick="setTenantAndPage('microjet','microjet-acceptance')" class="flex-1 bg-amber-600 hover:bg-amber-500 rounded px-3 py-2">🏭 去 microjet 驗收中心</button>` : ''}
+      </div>
+    </div>`;
+}
+
+// 舊的 _isDeploymentRequest 已廢除（現在一律走工作流 + 報告模式）
+function _isDeploymentRequest(text) { return false; }
 
 async function startSimulation(clientId, customRequest) {
   if (simRunning) return;
