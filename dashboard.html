@@ -5699,8 +5699,9 @@ function updateChatPanelDynamic(data) {
     msgsEl.appendChild(typingSlot);
   }
 
-  // ★ 先移除所有 optimistic（送出中）訊息 — 因為 data.messages 會包含真正的訊息
-  msgsEl.querySelectorAll('.chat-optimistic').forEach(el => el.remove());
+  // ★ Optimistic 訊息（送出中）不在此處移除 —
+  //   只有 sendChatMessage 自己在收到 POST 成功 + GET 確認後才精準移除對應的 tempId
+  //   若在此移除，polling 若在 POST 未完成時跑到，會導致使用者訊息短暫消失（race condition）
 
   // 現有訊息節點索引：id → DOM 節點
   const existingNodes = new Map();
@@ -5962,7 +5963,8 @@ function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Optimistic UI helper：送出訊息前先在畫面顯示（解決 A 自己訊息要等 B 回才顯示的 bug）
+// Optimistic UI helper：送出訊息前先在畫面顯示
+// 回傳唯一 temp id，讓 sendChatMessage 後續精確移除（不被 polling 誤刪）
 function _insertOptimisticChatMessage(content) {
   const msgsEl = document.getElementById('cp-messages');
   if (!msgsEl) return null;
@@ -5971,10 +5973,11 @@ function _insertOptimisticChatMessage(content) {
   const avatar = senderMember?.avatar || '👤';
   const now = new Date();
   const timeStr = now.toTimeString().slice(0,5);
+  const tempId = 'TEMP-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
   let typingSlot = msgsEl.querySelector('#cp-typing-slot');
   const node = document.createElement('div');
   node.className = 'chat-optimistic flex gap-2 mb-3 justify-end';
-  node.setAttribute('data-optimistic-ts', String(Date.now()));
+  node.setAttribute('data-temp-id', tempId);
   node.innerHTML = `
     <div class="max-w-[75%]">
       <div class="text-xs text-slate-400 mb-0.5 text-right">
@@ -5990,11 +5993,13 @@ function _insertOptimisticChatMessage(content) {
   if (typingSlot) msgsEl.insertBefore(node, typingSlot);
   else msgsEl.appendChild(node);
   msgsEl.scrollTop = msgsEl.scrollHeight;
-  return node;
+  return tempId;
 }
 
-function _removeOptimisticChatMessages() {
-  document.querySelectorAll('#cp-messages .chat-optimistic').forEach(el => el.remove());
+function _removeOptimisticById(tempId) {
+  if (!tempId) return;
+  const el = document.querySelector(`[data-temp-id="${tempId}"]`);
+  if (el) el.remove();
 }
 
 async function sendChatMessage() {
@@ -6006,7 +6011,7 @@ async function sendChatMessage() {
   inp.focus();  // 保持焦點
 
   // ★ Optimistic UI：先把訊息放上 UI（避免 A 等 B 回才看到自己輸出的 bug）
-  const optimisticNode = _insertOptimisticChatMessage(content);
+  const tempId = _insertOptimisticChatMessage(content);
 
   let data = null;
   try {
@@ -6017,15 +6022,15 @@ async function sendChatMessage() {
     data = await r.json();
   } catch(e) {
     console.error('send chat network error', e);
-    if (optimisticNode) optimisticNode.remove();
+    _removeOptimisticById(tempId);
     inp.value = content;
     toast('❌ 網路錯誤，請重試', 'error');
     return;
   }
 
   if (!data.success) {
-    // 失敗：移除 optimistic 訊息 + 還原輸入
-    if (optimisticNode) optimisticNode.remove();
+    // 失敗：移除這筆 optimistic 訊息 + 還原輸入
+    _removeOptimisticById(tempId);
     if (data.blocked_keyword) {
       toast(`🚫 訊息被系統屏蔽：偵測到關鍵字「${data.blocked_keyword}」`, 'error', 5000);
     } else {
@@ -6034,13 +6039,28 @@ async function sendChatMessage() {
     inp.value = content;
     return;
   }
-  // 成功：刷新訊息區（optimistic 會被 updateChatPanelDynamic 先移除）
+
+  // 成功：取得最新訊息、確認 A 的訊息已在 messages 列表，再移除此 optimistic
   try {
     const url = `${API_BASE}/api/chat/messages/${CHAT_ACTIVE_ROOM}?member_id=${ORG_CURRENT_USER_PERSONA}`;
     const mr = await fetch(url);
     const md = await mr.json();
-    if (md.success) updateChatPanelDynamic(md);
-  } catch(e) { console.error(e); }
+    if (md.success) {
+      // 檢查 A 的新訊息是否真的出現在列表（backend 有寫入）
+      const gotReal = md.messages.some(m => m.sender_id === ORG_CURRENT_USER_PERSONA && m.content === content);
+      if (gotReal) {
+        // 先移除 optimistic，再 diff 更新（避免看到真訊息突然跳出又被 diff 加）
+        _removeOptimisticById(tempId);
+        updateChatPanelDynamic(md);
+      } else {
+        // 真訊息還沒寫入（罕見），先不移除 optimistic，下次 polling 會處理
+        updateChatPanelDynamic(md);
+      }
+    }
+  } catch(e) {
+    console.error('send chat refresh error', e);
+    // 網路錯誤時不要擅自移除 optimistic，讓下次 polling 決定
+  }
 }
 
 function closeChatPanel() {
