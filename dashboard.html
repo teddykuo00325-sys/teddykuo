@@ -11094,6 +11094,8 @@ async function renderAddwiiAcceptance() {
     </div>`;
   const sc = scenarios.find(s => s.k === tab);
   document.getElementById('addwii-acc-body').innerHTML = _renderAcceptanceTabContent('addwii', sc);
+  // 委派至舊版 accRenderXXX 渲染 #acc-body（完整互動 UI）
+  _triggerOldAccTabRender('addwii', tab);
 }
 
 // ── microjet 驗收中心（5 場景 · 100 分）
@@ -11115,6 +11117,8 @@ async function renderMicrojetAcceptance() {
     </div>`;
   const sc = scenarios.find(s => s.k === tab);
   document.getElementById('mj-acc-body').innerHTML = _renderAcceptanceTabContent('microjet', sc);
+  // 委派至舊版 accRenderXXX 渲染 #acc-body（完整互動 UI）
+  _triggerOldAccTabRender('microjet', tab);
 }
 
 // ── 凌策自評中心（系統整體）
@@ -11422,158 +11426,117 @@ function _goToSimulatorWithPreset(tenantId, presetIdx) {
   }, 250);
 }
 
-// ═══ 真實互動測試區 · 依場景類型產出不同 UI ═══
+// ═══ 真實互動測試區 · 委派給舊版 renderAcceptance 的 accRenderXXX（完整功能版）═══
+// 規則：每 tab 把老版 accRenderXXX 的 UI 內嵌入 #acc-body，保留全部原有功能
+//      （自由輸入 + KB 秒回 / AI 深化切換 + RAG badge + workflow 軌跡 + 引用來源）
 function _buildInteractiveZone(tenant, sc) {
-  const uid = `ia-${tenant}-${sc.k}`;
-  const isQA = sc.k === 'qa' || sc.k === 'printer-qa';
-  const isProposal = sc.k === 'proposal';
-  const isContent = sc.k === 'content';
-  const isFeedback = sc.k === 'feedback';
-  const isTickets = sc.k === 'tickets';
-  const isDashboard = sc.k === 'dashboard';
-  const isCSV = sc.k === 'csv';
-  const isSec = sc.k === 'sec';
+  // 需要 #acc-body 給舊版 accRenderXXX 寫入
+  return `<div id="acc-body" class="mt-4"><div class="text-slate-500 italic text-sm py-4 text-center">載入真實互動介面...</div></div>`;
+}
 
-  const runBtn = (label, mode) => `
-    <button onclick="_runAcceptanceInteractive('${tenant}','${sc.k}','${mode}')"
-            class="text-xs bg-${mode==='ai'?'purple-600 hover:bg-purple-500':'slate-700 hover:bg-slate-600'} text-white rounded-lg px-3 py-2 font-bold">
-      ${label}
-    </button>`;
-
-  // QA 類：自由輸入
-  if (isQA) {
-    const placeholder = tenant === 'addwii'
-      ? '例：我家 8 坪客廳想除 PM2.5，推薦什麼？'
-      : '例：MJ-3200 E-051 印頭堵塞怎麼辦？';
-    return `
-      <div class="bg-slate-900/50 border border-cyan-600/40 rounded-lg p-4 mb-3">
-        <div class="text-xs font-bold text-cyan-300 mb-2">🎮 真實互動測試（自由輸入）</div>
-        <div class="text-[11px] text-slate-400 mb-2">輸入任何問題 → ⚡ 規則秒回（KB 檢索） / 🧠 AI 深化（Qwen 2.5 7B 本地推論，20~40 秒）</div>
-        <textarea id="${uid}-input" rows="2" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm" placeholder="${escapeHtml(placeholder)}"></textarea>
-        <div class="flex gap-2 mt-2">
-          ${runBtn('⚡ 資料庫秒回', 'kb')}
-          ${runBtn('🧠 AI 思考後回答', 'ai')}
-          <button onclick="document.getElementById('${uid}-input').value=\`${escapeHtml((scenario?.presets?.[rubric.preset_idx||0] || '')).replace(/`/g,'\\`')}\`" class="text-[11px] text-slate-400 hover:text-white ml-auto">📋 填入標準題</button>
-        </div>
-        <div id="${uid}-result" class="mt-3"></div>
-      </div>`;
+// 在新 tab 頁 render 後，委派呼叫舊版 accRender
+function _triggerOldAccTabRender(tenant, tabKey) {
+  // 統一把「當前 ACC_CLIENT」切到對應 tenant（舊版會看這個）
+  if (tenant === 'addwii' || tenant === 'microjet') {
+    window.ACC_CLIENT = tenant;
   }
+  // Tab 映射：new tab_key → old accRender function
+  const map = {
+    'qa':          () => typeof accRenderQA === 'function'       && accRenderQA(),
+    'feedback':    () => typeof accRenderFeedback === 'function' && accRenderFeedback(),
+    'proposal':    () => typeof accRenderProposal === 'function' && accRenderProposal(),
+    'content':     () => typeof accRenderContent === 'function'  && accRenderContent(),
+    'csv':         () => typeof accRenderCSV === 'function'      && accRenderCSV(),
+    // microjet 專屬（舊版沒有 → 用 product-qa 映射；AI 深化也支援）
+    'printer-qa':  () => typeof accRenderQA === 'function'       && accRenderQA(),
+    // microjet 新端點（舊 accRender 沒有），用簡化 demo 按鈕版
+    'tickets':     () => _renderMJCustomZone('tickets',   '/api/microjet/classify-tickets',  '分類 6 筆工單 demo'),
+    'dashboard':   () => _renderMJCustomZone('dashboard', '/api/microjet/daily-dashboard',   '產出 12 筆回饋日報 demo'),
+    'sec':         () => _renderMJCustomZone('sec',       '/api/microjet/compliance-gaps',   '25 項合規控制點掃描', 'GET'),
+  };
+  const fn = map[tabKey];
+  if (fn) {
+    try { fn(); } catch(e) { console.error('acc render error', e);
+      const el = document.getElementById('acc-body');
+      if (el) el.innerHTML = `<div class="text-red-400 p-4">舊版 render 失敗：${escapeHtml(e.message||String(e))}</div>`;
+    }
+  }
+  // 針對 qa/printer-qa，切換 KB 的 customer 選擇
+  setTimeout(() => {
+    const custSel = document.getElementById('qa-customer');
+    if (custSel && (tenant === 'addwii' || tenant === 'microjet')) {
+      custSel.value = tenant;
+      if (typeof accUpdateChips === 'function') accUpdateChips();
+    }
+    const propSel = document.getElementById('pp-customer');
+    if (propSel && (tenant === 'addwii' || tenant === 'microjet')) {
+      propSel.value = tenant;
+    }
+  }, 80);
+}
 
-  // 非 QA：demo 執行 + AI 切換
-  const label = isProposal ? '生成 B2B 提案' :
-                isContent  ? '生成 SEO 文案' :
-                isFeedback ? '分析 3 筆客訴' :
-                isTickets  ? '分類 6 筆工單' :
-                isDashboard? '產出日報 Dashboard' :
-                isCSV      ? '掃描 CSV 並預覽 PII' :
-                isSec      ? '掃描 25 合規控制點' : '執行';
-  return `
-    <div class="bg-slate-900/50 border border-cyan-600/40 rounded-lg p-4 mb-3">
-      <div class="text-xs font-bold text-cyan-300 mb-2">🎮 真實互動測試</div>
-      <div class="text-[11px] text-slate-400 mb-3">使用內建 demo 資料執行，結果即時顯示於下方</div>
+// microjet 專屬 tab 的客製版（舊版沒實作 → 用新 API）
+function _renderMJCustomZone(key, apiPath, label, method='POST') {
+  const body = document.getElementById('acc-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="bg-slate-800 rounded-xl p-5 space-y-3">
+      <div class="text-sm text-slate-300">${escapeHtml(label)}</div>
+      <div class="text-[11px] text-slate-500 font-mono">${escapeHtml(method)} ${escapeHtml(apiPath)}</div>
       <div class="flex gap-2">
-        ${runBtn('⚡ 規則引擎執行', 'kb')}
-        ${(isFeedback||isProposal||isContent) ? runBtn('🧠 加 AI 深化（Ollama）', 'ai') : ''}
-        <span class="ml-auto text-[10px] text-slate-500 self-center">${label}</span>
+        <button onclick="_runMJCustom('${key}','${apiPath}','${method}')" class="bg-amber-600 hover:bg-amber-500 rounded px-4 py-2 text-sm font-bold">🚀 執行</button>
       </div>
-      <div id="${uid}-result" class="mt-3"></div>
+      <div id="mj-custom-result"></div>
     </div>`;
 }
 
-// 執行 tab 內的互動測試
-async function _runAcceptanceInteractive(tenant, tabKey, mode) {
-  const uid = `ia-${tenant}-${tabKey}`;
-  const resultEl = document.getElementById(`${uid}-result`);
-  if (!resultEl) return;
-  const useAI = mode === 'ai';
-  const waitMsg = useAI ? '🧠 Qwen 2.5 7B AI 思考中...（本地推論 20~40 秒）' : '⚡ 資料庫檢索中...';
-  resultEl.innerHTML = `<div class="text-${useAI?'purple':'cyan'}-300 text-sm flex items-center gap-2"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>${waitMsg}</div>`;
-
-  // 依 tab 類型組 body
-  let url = '', body = {};
-  if (tabKey === 'qa' || tabKey === 'printer-qa') {
-    const q = document.getElementById(`${uid}-input`)?.value?.trim();
-    if (!q) { resultEl.innerHTML = '<div class="text-amber-300 text-sm">⚠️ 請先輸入問題</div>'; return; }
-    url = '/api/acceptance/product-qa';
-    body = { customer: tenant, question: q, use_ai: useAI, user: ORG_CURRENT_USER_PERSONA || 'guest' };
-  } else if (tabKey === 'feedback') {
-    url = '/api/acceptance/feedback'; body = { use_ai: useAI };
-  } else if (tabKey === 'proposal' && tenant === 'addwii') {
-    url = '/api/acceptance/proposal';
-    body = { customer:'addwii', use_ai: useAI,
-             client_profile: { industry:'工程整合商', scale:'20 坪', pain_point:'PM2.5+VOC', budget:'NT$200,000', area_ping:20 } };
-  } else if (tabKey === 'proposal' && tenant === 'microjet') {
-    url = '/api/microjet/b2b-proposal-8sec'; body = {};
-  } else if (tabKey === 'content') {
-    url = '/api/acceptance/content';
-    body = { topic:'嬰幼兒房空氣淨化', channel:'website', use_ai: useAI,
-             seo_keywords:['嬰兒房空氣清淨','PM2.5 過濾','CADR 認證'] };
-  } else if (tabKey === 'tickets')    { url = '/api/microjet/classify-tickets'; body = {}; }
-  else if (tabKey === 'dashboard')    { url = '/api/microjet/daily-dashboard';  body = {}; }
-  else if (tabKey === 'sec')          { url = '/api/microjet/compliance-gaps';  body = {}; }
-  else if (tabKey === 'csv') {
-    url = '/api/compliance/csv-preview';
-    body = { filename:'demo.csv', actor:'judge',
-             csv_text: 'datetime_local_taipei,customer_name,device_id,pm25\n2026-04-15T08:00,陳雅婷,DEV-A123456789,32.5\n2026-04-15T08:15,林建宏,DEV-B234567890,18.2' };
-  }
-
+async function _runMJCustom(key, apiPath, method) {
+  const res = document.getElementById('mj-custom-result');
+  if (!res) return;
+  res.innerHTML = `<div class="text-cyan-300 text-sm flex items-center gap-2"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>執行中...</div>`;
   const t0 = Date.now();
   try {
-    const method = url === '/api/microjet/compliance-gaps' ? 'GET' : 'POST';
-    const opts = method === 'GET' ? {} : { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) };
-    const r = await fetch(API_BASE + url, opts);
+    const opts = method === 'GET' ? {} : { method, headers:{'Content-Type':'application/json'}, body: '{}' };
+    const r = await fetch(API_BASE + apiPath, opts);
     const d = await r.json();
     const ms = Date.now() - t0;
-
-    // 存歷史（含標記互動模式）
-    if (d && !d.error) {
-      const rubric = (ACCEPTANCE_RUBRICS[tenant] || {})[tabKey] || {};
-      _simHistorySave({
-        report_id: `REPORT-IA-${Date.now().toString(36).toUpperCase()}`,
-        timestamp: new Date().toISOString(),
-        tenant, scenario_label: (SIM_SCENARIOS.find(s=>s.id===tenant)?.preset_routes?.[rubric.preset_idx||0]?.scenario) || tabKey,
-        tab_key: tabKey, weight: rubric.preset_idx !== undefined ? (SIM_SCENARIOS.find(s=>s.id===tenant)?.preset_routes?.[rubric.preset_idx]?.weight || 0) : 0,
-        question: (tabKey==='qa'||tabKey==='printer-qa') ? (document.getElementById(`${uid}-input`)?.value || '') : `(demo) ${tabKey}`,
-        agents: (SIM_SCENARIOS.find(s=>s.id===tenant)?.preset_routes?.[rubric.preset_idx||0]?.agents) || [],
-        api_path: url, elapsed_ms: ms, success: true, task_id: d.task_id || d.pending?.task_id || '—',
-        summary_snippet: _extractSummarySnippet(d),
-      });
-      toast(`✅ 執行完成 · ${ms}ms · ${useAI?'AI 模式':'規則模式'}`, 'success', 3000);
-    }
-
-    // 渲染結果
     if (d.error) {
-      resultEl.innerHTML = `<div class="bg-red-900/40 border border-red-500/40 rounded p-3 text-sm text-red-200">❌ ${escapeHtml(d.error)}</div>`;
-    } else {
-      // 簡要摘要（用報告卡的邏輯精簡版）
-      const snippet = _extractSummarySnippet(d);
-      const sourceBadge = (tabKey==='qa'||tabKey==='printer-qa')
-        ? (d.retrieval==='rag'
-            ? '<span class="text-[10px] bg-purple-700/50 text-purple-200 px-2 py-0.5 rounded-full">🧠 ChromaDB 向量</span>'
-            : '<span class="text-[10px] bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full">⚡ bigram 規則</span>')
-        : '';
-      const refs = d.refs || [];
-      const refsHtml = refs.length ? `
-        <div class="mt-2 pt-2 border-t border-slate-700 text-[11px]">
-          <div class="text-cyan-300 mb-1">📄 參考來源</div>
-          <div class="flex flex-wrap gap-1">${refs.map(x=>`<a href="${escapeHtml(x.url)}" target="_blank" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-cyan-700 border border-cyan-500/40 rounded px-2 py-0.5 text-cyan-200">🔗 ${escapeHtml(x.title)}↗</a>`).join('')}</div>
-        </div>` : '';
-      resultEl.innerHTML = `
-        <div class="bg-slate-900/70 border border-emerald-600/40 rounded-lg p-3">
-          <div class="flex items-center gap-2 mb-2 text-xs">
-            <span class="text-emerald-300 font-bold">✅ 執行結果</span>
-            <span class="text-slate-500">耗時 ${ms}ms</span>
-            ${sourceBadge}
-            ${useAI?'<span class="text-[10px] bg-purple-900/40 text-purple-200 px-2 py-0.5 rounded-full border border-purple-500/40">🧠 AI 深化</span>':''}
-            <span class="ml-auto text-[10px] text-emerald-400">已存入自評中心</span>
-          </div>
-          ${d.answer ? `<pre class="text-xs text-slate-200 whitespace-pre-wrap bg-slate-950/50 rounded p-2 max-h-96 overflow-y-auto">${escapeHtml(d.answer)}</pre>` : ''}
-          ${!d.answer ? `<div class="text-xs text-slate-300 bg-slate-950/50 rounded p-2 max-h-96 overflow-y-auto whitespace-pre-wrap">${escapeHtml(snippet)}</div>` : ''}
-          ${refsHtml}
-        </div>`;
+      res.innerHTML = `<div class="bg-red-900/40 border border-red-500/40 rounded p-3 text-sm text-red-200">❌ ${escapeHtml(d.error)}</div>`;
+      return;
     }
+    // 存歷史（讓驗收打勾同步）
+    const rubric = (ACCEPTANCE_RUBRICS.microjet || {})[key] || {};
+    const presetIdx = rubric.preset_idx ?? 0;
+    const sc = SIM_SCENARIOS.find(s => s.id === 'microjet');
+    _simHistorySave({
+      report_id: `REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp: new Date().toISOString(),
+      tenant: 'microjet',
+      scenario_label: sc?.preset_routes?.[presetIdx]?.scenario || key,
+      tab_key: key,
+      weight: sc?.preset_routes?.[presetIdx]?.weight || 0,
+      question: `(demo) ${key}`,
+      agents: sc?.preset_routes?.[presetIdx]?.agents || [],
+      api_path: apiPath,
+      elapsed_ms: ms,
+      success: true,
+      task_id: d.task_id || '—',
+      summary_snippet: _extractSummarySnippet(d),
+    });
+    toast(`✅ 執行完成 · ${ms}ms`, 'success', 3000);
+    const snippet = _extractSummarySnippet(d);
+    res.innerHTML = `
+      <div class="bg-slate-900/70 border border-emerald-600/40 rounded-lg p-3">
+        <div class="flex items-center gap-2 mb-2 text-xs">
+          <span class="text-emerald-300 font-bold">✅ 執行結果</span>
+          <span class="text-slate-500">耗時 ${ms}ms</span>
+          <span class="ml-auto text-[10px] text-emerald-400">已存入自評中心</span>
+        </div>
+        <div class="text-xs text-slate-200 bg-slate-950/50 rounded p-3 max-h-96 overflow-y-auto whitespace-pre-wrap">${escapeHtml(snippet)}</div>
+        <pre class="text-[10px] text-slate-500 bg-slate-950/50 rounded p-2 mt-2 max-h-40 overflow-y-auto">${escapeHtml(JSON.stringify(d, null, 2).slice(0, 2000))}</pre>
+      </div>`;
   } catch(e) {
-    resultEl.innerHTML = `<div class="bg-red-900/40 border border-red-500/40 rounded p-3 text-sm text-red-200">❌ 連線失敗：${escapeHtml(String(e))}</div>`;
+    res.innerHTML = `<div class="bg-red-900/40 border border-red-500/40 rounded p-3 text-sm text-red-200">❌ ${escapeHtml(String(e))}</div>`;
   }
 }
 
