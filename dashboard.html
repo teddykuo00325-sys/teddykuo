@@ -62,21 +62,23 @@
         <div class="tenant-body space-y-0.5 mt-1">
           <button onclick="setTenantAndPage('lingce','dashboard')" class="nav-btn active w-full flex items-center gap-2 px-3 py-2 rounded text-xs" data-page="dashboard">📊 總覽儀表板</button>
           <button onclick="setTenantAndPage('lingce','agents')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="agents">🤖 10 位 AI Agent 員工</button>
-          <button onclick="setTenantAndPage('lingce','modules')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="modules">💼 14 AI 模組商品</button>
+          <button onclick="setTenantAndPage('lingce','modules')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="modules">💼 14 AI 模組（凌策商品陣列）</button>
           <button onclick="setTenantAndPage('lingce','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 凌策 CRM（AI 模組授權）</button>
-          <button onclick="setTenantAndPage('lingce','commander')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-blue-300" data-page="commander">⚡ AI 指揮官</button>
-          <!-- ── 技術資訊分隔 ── -->
+          <button onclick="setTenantAndPage('lingce','commander')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-blue-300" data-page="commander">⚡ AI 指揮官（Orchestrator UI）</button>
+          <!-- ── 技術資訊分隔（Operator Level · 不綁 tenant）── -->
           <div class="pt-2 mt-1 border-t border-slate-700/50">
-            <div class="px-2 py-1 text-[9px] text-slate-500 uppercase tracking-wider">⚙️ 技術資訊</div>
+            <div class="px-2 py-1 text-[9px] text-slate-500 uppercase tracking-wider">⚙️ 技術資訊（系統級）</div>
           </div>
           <button onclick="setTenantAndPage('lingce','tokens')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="tokens">💰 Token 成本</button>
           <button onclick="setTenantAndPage('lingce','arch')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="arch">🏗️ 系統架構</button>
+          <button onclick="setTenantAndPage('lingce','dataflow')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="dataflow">📐 資料流圖</button>
+          <button onclick="setTenantAndPage('lingce','compliance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-300" data-page="compliance">🛡️ 合規中心（跨 tenant）</button>
           <!-- ── 評審專區分隔 ── -->
           <div class="pt-2 mt-1 border-t border-yellow-500/30">
             <div class="px-2 py-1 text-[9px] text-yellow-500/80 uppercase tracking-wider">🎖️ 評審專區（真人體驗）</div>
           </div>
-          <button onclick="setTenantAndPage('lingce','acceptance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-yellow-300" data-page="acceptance">🏆 客戶驗收中心</button>
-          <button onclick="setTenantAndPage('lingce','simulator')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-green-300" data-page="simulator">🎯 客戶模擬器</button>
+          <button onclick="setTenantAndPage('lingce','lingce-acceptance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-yellow-300" data-page="lingce-acceptance">🏆 凌策自評（系統整體）</button>
+          <button onclick="setTenantAndPage('lingce','simulator')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-green-300" data-page="simulator">🎯 客戶上門模擬器</button>
         </div>
       </div>
 
@@ -90,11 +92,11 @@
           <span class="tenant-caret text-xs">▼</span>
         </button>
         <div class="tenant-body space-y-0.5 mt-1">
-          <button onclick="setTenantAndPage('microjet','microjet-ws')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-amber-200" data-page="microjet-ws">📊 microjet 儀表板</button>
+          <button onclick="setTenantAndPage('microjet','microjet-ws')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-amber-200" data-page="microjet-ws">📊 microjet · CurieJet 儀表板</button>
           <button onclick="setTenantAndPage('microjet','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 microjet CRM（B2B 採購）</button>
           <button onclick="setTenantAndPage('microjet','org')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="org">🏢 組織出缺勤（134 人）</button>
           <button onclick="setTenantAndPage('microjet','attn')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="attn">📈 出缺勤統計</button>
-          <button onclick="setTenantAndPage('microjet','compliance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-300" data-page="compliance">🛡️ 合規中心</button>
+          <button onclick="setTenantAndPage('microjet','microjet-acceptance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-yellow-300" data-page="microjet-acceptance">🏆 microjet 驗收中心（5 場景 · 100 分）</button>
         </div>
       </div>
 
@@ -112,7 +114,7 @@
           <button onclick="setTenantAndPage('addwii','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 addwii CRM（B2C 客戶）</button>
           <button onclick="setTenantAndPage('addwii','org')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="org">🏢 組織出缺勤（6 人）</button>
           <button onclick="setTenantAndPage('addwii','attn')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="attn">📈 出缺勤統計</button>
-          <button onclick="setTenantAndPage('addwii','compliance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-300" data-page="compliance">🛡️ 合規中心</button>
+          <button onclick="setTenantAndPage('addwii','addwii-acceptance')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-yellow-300" data-page="addwii-acceptance">🏆 addwii 驗收中心（5 構面 · 100 分）</button>
         </div>
       </div>
 
@@ -141,7 +143,7 @@
           <span class="tenant-caret text-xs">▼</span>
         </button>
         <div class="tenant-body space-y-0.5 mt-1">
-          <button onclick="setTenantAndPage('lingce','customer-portal')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-200" data-page="customer-portal">👤 陳先生 12 坪嬰兒無塵室</button>
+          <button onclick="setTenantAndPage('addwii','customer-portal')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-rose-200" data-page="customer-portal">👤 陳先生 12 坪嬰兒無塵室（addwii 客戶）</button>
         </div>
       </div>
 
@@ -498,7 +500,21 @@ function showPage(page){
   });
   const btn=document.querySelector(`[data-page="${page}"]`);
   if(btn){btn.classList.add('active');btn.classList.remove('text-slate-300');}
-  const renders={dashboard:renderDashboard,agents:renderAgents,modules:renderModules,crm:renderCRM,tokens:renderTokens,arch:renderArch,commander:renderCommander,simulator:renderSimulator,org:renderOrgChart,attn:renderAttendanceStats,acceptance:renderAcceptance,compliance:renderCompliance,'addwii-ws':renderAddwiiWorkspace,'microjet-ws':renderMicrojetWorkspace,'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval};
+  const renders={
+    dashboard:renderDashboard,agents:renderAgents,modules:renderModules,crm:renderCRM,
+    tokens:renderTokens,arch:renderArch,commander:renderCommander,simulator:renderSimulator,
+    org:renderOrgChart,attn:renderAttendanceStats,
+    acceptance:renderAcceptance,   // 舊路由（相容性）→ 轉到凌策自評
+    'lingce-acceptance':   renderLingceAcceptance,
+    'addwii-acceptance':   renderAddwiiAcceptance,
+    'microjet-acceptance': renderMicrojetAcceptance,
+    dataflow: renderDataflow,
+    compliance:renderCompliance,
+    'addwii-ws':renderAddwiiWorkspace,'microjet-ws':renderMicrojetWorkspace,
+    'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval
+  };
+  // 舊 acceptance 路由相容：預設導向凌策自評中心
+  if (page === 'acceptance') { page = 'lingce-acceptance'; }
   (renders[page]||renderDashboard)();
 }
 
@@ -561,14 +577,14 @@ function renderDashboard(){
         <div class="text-center text-[11px] text-slate-500 mt-2">⟷ 兩軌互補：凌策自己就是「AI 取代人力」的最佳案例，自用驗證後再授權給客戶 ⟷</div>
       </div>
 
-      <!-- 凌策體質指標 -->
+      <!-- 凌策公司營運指標（純 lingce 視角，不含 addwii/microjet KPI）-->
       <div>
-        <div class="text-xs text-slate-500 mb-2">📊 凌策公司體質</div>
+        <div class="text-xs text-slate-500 mb-2">📊 凌策公司營運指標（lingce CRM · 月訂閱 SaaS）</div>
         <div class="grid grid-cols-4 gap-4">
-          ${statCard('AI Agent 員工','10','BD/客服/提案/前端/後端/QA/財務/法務/文件/Orchestrator','from-blue-600 to-blue-800')}
-          ${statCard('已完成任務',totalTasks,'累計 AI 自動處理任務數','from-green-600 to-green-800')}
-          ${statCard('服務中客戶','3','addwii · microjet · 維明','from-cyan-600 to-cyan-800')}
-          ${statCard('Token 使用率',tokenPct+'%','<span id="token-total">'+(DATA.tokens.total/1e6).toFixed(2)+'M</span> / 10M','from-purple-600 to-purple-800')}
+          ${statCard('AI Agent 員工','10','10 位 AI Agent（無組織層級，全由 Orchestrator 統籌）','from-blue-600 to-blue-800')}
+          ${statCard('MRR 月經常收入','<span id="dash-mrr">NT$ --</span>','已成交 AI 模組訂閱月費總額','from-emerald-600 to-emerald-800')}
+          ${statCard('Pipeline 潛在營收','<span id="dash-pipeline">NT$ --</span>','進行中報價單（草稿 + 已送出）','from-amber-600 to-amber-800')}
+          ${statCard('成交率 Win Rate','<span id="dash-winrate">--%</span>','已接受報價 / 總報價數','from-purple-600 to-purple-800')}
         </div>
       </div>
 
@@ -666,6 +682,18 @@ async function updateDashboardOrgStats(){
       set('dash-microjet-count', mj ? mj.member_count : '--');
       set('dash-addwii-count',   ad ? ad.member_count : '--');
       set('dash-org-count2',     ((mj?.member_count||0) + (ad?.member_count||0)));
+
+      // 凌策自身 CRM KPI（MRR / Pipeline / Win Rate）
+      try {
+        const sr = await fetch(API_BASE + '/api/crm/summary?tenant=lingce', {signal: AbortSignal.timeout(5000)});
+        if (sr.ok) {
+          const s = await sr.json();
+          const fmt = n => 'NT$ ' + Number(n||0).toLocaleString();
+          set('dash-mrr',      fmt(s.mrr));
+          set('dash-pipeline', fmt(s.pipeline_value));
+          set('dash-winrate',  (s.win_rate_pct ?? 0) + '%');
+        }
+      } catch(e) { console.warn('lingce crm summary:', e); }
       return;
     }
     // Fallback to legacy path
@@ -6321,16 +6349,18 @@ function renderSimulator() {
   document.getElementById('main-content').innerHTML = `
     <div class="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 class="text-2xl font-bold">🎯 凌策客戶模擬器</h1>
-        <p class="text-slate-400 mt-1">模擬客戶上門詢問凌策 — AI Agent 團隊即時接單、派發、回覆；或跑完整導入部署流程</p>
+        <h1 class="text-2xl font-bold">🎯 客戶上門模擬器</h1>
+        <p class="text-slate-400 mt-1">模擬客戶上門詢問凌策 — <b class="text-cyan-300">AI 指揮官（Orchestrator）</b> 自動判讀需求並 dispatch 給 9 個 AI Agent 執行</p>
       </div>
-      <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-xl p-4 text-sm">
-        <div class="font-bold text-blue-300 mb-1">💡 凌策公司 · 1 位人類老闆 + 10 個 AI Agent</div>
-        <div class="text-slate-300 text-xs leading-relaxed">
-          凌策沒有傳統業務員。客戶直接對凌策提出需求 — AI Agent 團隊自動判斷是
-          <span class="text-cyan-400">具體業務詢問</span>（派至對應能力場景即時回覆）還是
-          <span class="text-rose-400">長期導入專案</span>（跑 8 階段部署流程）。
-          點擊下方任一客戶卡片，選擇需求或自訂提問。
+      <div class="bg-gradient-to-r from-blue-900/30 via-purple-900/30 to-cyan-900/30 border border-blue-500/30 rounded-xl p-4 text-sm">
+        <div class="font-bold text-blue-300 mb-2">⚠️ 重要架構說明：凌策 ≠ 傳統組織</div>
+        <div class="text-slate-300 text-xs leading-relaxed space-y-1.5">
+          <div>🏛️ 凌策 = <b class="text-amber-200">1 位人類老闆</b>（唯一實體員工）+ <b class="text-cyan-200">10 個 AI Agent</b>（無職等、無部門階層、無組織圖）</div>
+          <div>⚡ 客戶需求不走「業務 → 主管簽核 → 部門派工」傳統路徑，由 <b class="text-purple-200">AI 指揮官（Orchestrator Agent）</b>
+          依語意自動判讀：
+          <span class="text-cyan-400">具體業務詢問</span>（直接派對應能力場景）vs
+          <span class="text-rose-400">長期導入專案</span>（跑 8 階段部署）</div>
+          <div>👇 點下方客戶卡片，看 AI 指揮官如何 dispatch 任務給 10 個 Agent</div>
         </div>
       </div>
 
@@ -6618,7 +6648,7 @@ async function startSimulation(clientId, customRequest) {
             <div class="flex items-center gap-2">
               <span class="font-bold text-${phase.color}-400">${phase.phase}</span>
               <span class="text-xs text-slate-500">—</span>
-              <span class="text-xs text-slate-400">${phase.agent} (${phase.dept})</span>
+              <span class="text-xs text-slate-400">⚡ AI 指揮官 dispatch → ${phase.agent}</span>
             </div>
           </div>
           <div id="${phaseId}-status" class="flex items-center gap-1.5">
@@ -6813,15 +6843,20 @@ function generateResult(input, matched) {
 function renderCommander(){
   document.getElementById('main-content').innerHTML=`
     <div class="max-w-5xl mx-auto h-full flex flex-col">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-3">
         <div>
-          <h1 class="text-2xl font-bold">⚡ AI 指揮官 — 即時對話介面</h1>
-          <p class="text-slate-400 mt-1">用自然語言下達指令，Orchestrator 自動分析、分派、執行</p>
+          <h1 class="text-2xl font-bold">⚡ AI 指揮官 — Orchestrator Agent UI</h1>
+          <p class="text-slate-400 mt-1 text-sm">本頁 = Orchestrator Agent 的使用者介面。老闆在此用自然語言下指令，Orchestrator 依語意自動 dispatch 給其他 9 個 AI Agent 執行</p>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
           <span class="text-xs text-green-400">10 Agent 就緒</span>
         </div>
+      </div>
+      <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg p-3 mb-4 text-[11px] text-slate-300">
+        <b class="text-purple-300">🧠 架構說明：</b>
+        「AI 指揮官」是 UI 名稱，背後的決策引擎是 <b class="text-cyan-300">Orchestrator Agent</b>（10 個 AI Agent 中的首席指揮）。
+        Orchestrator 判讀意圖 → 路由到對應場景（驗收中心）或任務流（派工/客服/提案）。**全程無人類中介、無組織階層**。
       </div>
 
       <!-- Quick Commands：客戶 × 場景矩陣（點即派發驗收場景） -->
@@ -10462,6 +10497,267 @@ function showToast(msg, color='green') {
 setTimeout(checkOllamaAndPrompt, 3000);
 // 每 30 秒重新檢查（抓使用者手動裝好的狀態）
 setInterval(() => { if (!OLLAMA_POLL_TIMER) checkOllamaAndPrompt(); }, 30000);
+
+// ═══════════════════════════════════════════════════════════
+// 🏆 驗收中心 3 分頁（addwii / microjet / 凌策自評）
+// ═══════════════════════════════════════════════════════════
+
+// 共用：驗收頁 header
+function _acceptHeader(title, subtitle, weight, color='yellow') {
+  const colorMap = {
+    yellow: 'from-yellow-900/30 via-amber-900/30 to-yellow-900/30 border-yellow-500/30 text-yellow-300',
+    sky:    'from-sky-900/30 via-blue-900/30 to-sky-900/30 border-sky-500/30 text-sky-300',
+    amber:  'from-amber-900/30 via-orange-900/30 to-amber-900/30 border-amber-500/30 text-amber-300',
+    purple: 'from-purple-900/30 via-fuchsia-900/30 to-purple-900/30 border-purple-500/30 text-purple-300',
+  };
+  const cls = colorMap[color] || colorMap.yellow;
+  return `
+    <div class="bg-gradient-to-r ${cls.split(' text-')[0]} border rounded-xl p-5 mb-4 flex items-center gap-4">
+      <div class="text-3xl">🏆</div>
+      <div class="flex-1">
+        <div class="text-lg font-bold text-${color === 'yellow' ? 'yellow' : color}-200">${title}</div>
+        <div class="text-xs text-slate-400 mt-1">${subtitle}</div>
+      </div>
+      <div class="text-right">
+        <div class="text-2xl font-black text-${color === 'yellow' ? 'yellow' : color}-300">${weight}</div>
+        <div class="text-[10px] text-slate-500">滿分</div>
+      </div>
+    </div>`;
+}
+
+// ── addwii 驗收中心（5 構面 · 100 分）
+async function renderAddwiiAcceptance() {
+  CURRENT_TENANT = 'addwii';
+  const scenarios = [
+    {k:'qa',        t:'1️⃣ 產品知識 AI 化',       w:15, d:'Home Clean Room 場景問答 · HCR-100/200/300 規格', api:'/api/acceptance/product-qa'},
+    {k:'feedback',  t:'2️⃣ 客戶回饋自動分析',     w:25, d:'情緒分類 ≥ 85% · 優先度排序 · 當日摘要報告', api:'/api/acceptance/feedback'},
+    {k:'proposal',  t:'3️⃣ B2B 提案文件自動生成', w:20, d:'工程整合商 5 分鐘內提案 · CADR 規格自動填入', api:'/api/acceptance/proposal'},
+    {k:'content',   t:'4️⃣ 內容行銷自動化',       w:15, d:'官網/社群 300 字文案 + SEO 關鍵字自動植入', api:'/api/acceptance/content'},
+    {k:'csv',       t:'5️⃣ 系統安全與資料合規 ⚠️一票否決', w:25, d:'CSV Field Trial + PII 遮蔽 + 人審閘', api:'/api/compliance/csv-preview'},
+  ];
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-7xl mx-auto">
+      ${_acceptHeader('🏠 addwii 驗收中心 · 5 構面 / 100 分', '依據 addwii_驗收評比標準_含測試題目v3.docx 逐項對應 AI 能力', '100', 'sky')}
+      <div class="grid grid-cols-5 gap-2 mb-4">
+        ${scenarios.map((s,i) => `
+          <button onclick="ADDWII_ACC_TAB='${s.k}';renderAddwiiAcceptance()" class="bg-slate-800 hover:bg-slate-700 border ${(window.ADDWII_ACC_TAB||'qa')===s.k?'border-sky-500 text-sky-200':'border-slate-700 text-slate-300'} rounded-lg p-3 text-left">
+            <div class="text-xs">${s.t}</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">${s.w} 分</div>
+          </button>`).join('')}
+      </div>
+      <div id="addwii-acc-body"></div>
+    </div>`;
+  const tab = window.ADDWII_ACC_TAB || 'qa';
+  const sc = scenarios.find(s => s.k === tab);
+  document.getElementById('addwii-acc-body').innerHTML = _renderAcceptanceTabContent('addwii', sc);
+}
+
+// ── microjet 驗收中心（5 場景 · 100 分）
+async function renderMicrojetAcceptance() {
+  CURRENT_TENANT = 'microjet';
+  const scenarios = [
+    {k:'printer-qa', t:'A. 印表機客服',        w:25, d:'MJ-3200 錯誤碼 / 保固 / 墨水匣 / 韌體', api:'/api/acceptance/product-qa'},
+    {k:'tickets',    t:'B. 客訴工單分類',       w:20, d:'6 類分類 + 緊急度 + 重複偵測 + 回覆模板', api:'/api/microjet/classify-tickets'},
+    {k:'proposal',   t:'C. B2B 提案（8 段落）', w:20, d:'歷史回顧 / 市場分析 / ROI / SLA · 3 分鐘內', api:'/api/microjet/b2b-proposal-8sec'},
+    {k:'dashboard',  t:'D. 回饋日報 Dashboard', w:15, d:'Top3 抱怨/讚美 + 新興風險 + 改善建議', api:'/api/microjet/daily-dashboard'},
+    {k:'sec',        t:'E. 資安合規',           w:20, d:'存取異常 + 25 控制點 + 個資法通報', api:'/api/microjet/compliance-gaps'},
+  ];
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-7xl mx-auto">
+      ${_acceptHeader('🏭 microjet · CurieJet 驗收中心 · 5 場景 / 100 分', '依據 microjet_驗收標準_v0.3.docx 逐項對應 AI 能力', '100', 'amber')}
+      <div class="grid grid-cols-5 gap-2 mb-4">
+        ${scenarios.map(s => `
+          <button onclick="MJ_ACC_TAB='${s.k}';renderMicrojetAcceptance()" class="bg-slate-800 hover:bg-slate-700 border ${(window.MJ_ACC_TAB||'printer-qa')===s.k?'border-amber-500 text-amber-200':'border-slate-700 text-slate-300'} rounded-lg p-3 text-left">
+            <div class="text-xs">${s.t}</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">${s.w} 分</div>
+          </button>`).join('')}
+      </div>
+      <div id="mj-acc-body"></div>
+    </div>`;
+  const tab = window.MJ_ACC_TAB || 'printer-qa';
+  const sc = scenarios.find(s => s.k === tab);
+  document.getElementById('mj-acc-body').innerHTML = _renderAcceptanceTabContent('microjet', sc);
+}
+
+// ── 凌策自評中心（系統整體）
+async function renderLingceAcceptance() {
+  CURRENT_TENANT = 'lingce';
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-7xl mx-auto">
+      ${_acceptHeader('🏛️ 凌策自評中心 · 系統整體展示', '展示凌策公司作為 AI Agent 服務型組織的整體能力 — 架構深度 / 合規完整度 / 跨 tenant 協作', '綜合', 'yellow')}
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+          <div class="text-sm font-bold text-yellow-300 mb-2">📊 服務中客戶驗收分數</div>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center gap-2">
+              <span class="text-sky-300">🏠 addwii</span>
+              <span class="flex-1 text-slate-400">5 構面 · 100 分制</span>
+              <button onclick="setTenantAndPage('addwii','addwii-acceptance')" class="text-xs bg-sky-600 hover:bg-sky-500 rounded px-3 py-1">前往驗收 →</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-amber-300">🏭 microjet · CurieJet</span>
+              <span class="flex-1 text-slate-400">5 場景 · 100 分制</span>
+              <button onclick="setTenantAndPage('microjet','microjet-acceptance')" class="text-xs bg-amber-600 hover:bg-amber-500 rounded px-3 py-1">前往驗收 →</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400">📋 維明顧問</span>
+              <span class="flex-1 text-slate-500 text-xs">評估中 · 待提供評分標準</span>
+              <span class="text-xs text-slate-600 bg-slate-900 rounded px-3 py-1">待定</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+          <div class="text-sm font-bold text-yellow-300 mb-2">🏗️ 凌策架構指標</div>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div><div class="text-[10px] text-slate-500">多租戶隔離</div><div class="text-xl font-bold text-cyan-300">4 tenant</div></div>
+            <div><div class="text-[10px] text-slate-500">API Endpoints</div><div class="text-xl font-bold text-blue-300">139</div></div>
+            <div><div class="text-[10px] text-slate-500">AI Agent 員工</div><div class="text-xl font-bold text-purple-300">10</div></div>
+            <div><div class="text-[10px] text-slate-500">AI 模組商品</div><div class="text-xl font-bold text-emerald-300">14</div></div>
+            <div><div class="text-[10px] text-slate-500">PII 偵測類型</div><div class="text-xl font-bold text-rose-300">9</div></div>
+            <div><div class="text-[10px] text-slate-500">合規控制點</div><div class="text-xl font-bold text-amber-300">25</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+        <div class="text-sm font-bold text-yellow-300 mb-3">🎯 評審建議走訪動線</div>
+        <ol class="list-decimal list-inside space-y-1.5 text-sm text-slate-300">
+          <li>先讀 <code class="bg-slate-900 px-1.5 rounded">PROJECT_BRIEF.md</code>（根目錄 · 2 頁完整 briefing）</li>
+          <li>至「📐 資料流圖」理解 4 tenant 的金流/資料流關係</li>
+          <li>至「🛡️ 合規中心」驗證 C1~C4 四大控制項即時證據（跨 tenant）</li>
+          <li>至 addwii / microjet 各自驗收中心跑 5 題／5 場景</li>
+          <li>至「🎯 客戶上門模擬器」體驗自然語言派工（AI 指揮官 dispatch）</li>
+          <li>至「👤 陳先生 12 坪」看 B2B2C 真實跨公司服務鏈</li>
+        </ol>
+      </div>
+    </div>`;
+}
+
+// 共用：驗收分頁內容框架（載入 iframe-style 讓現有 acceptance/microjet 功能不重寫）
+function _renderAcceptanceTabContent(tenant, sc) {
+  if (!sc) return '<div class="text-slate-500 italic p-6">請選上方分頁</div>';
+  return `
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <div class="text-lg font-bold">${sc.t}</div>
+          <div class="text-xs text-slate-400 mt-0.5">${sc.d}</div>
+          <div class="text-[10px] text-slate-500 mt-1 font-mono">${sc.api}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-3xl font-black text-yellow-300">${sc.w}</div>
+          <div class="text-[10px] text-slate-500">分</div>
+        </div>
+      </div>
+      <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+        <div class="text-xs text-slate-400 mb-2">💡 此場景的完整功能頁在「客戶驗收中心」舊介面，此處將繼續整合。</div>
+        <button onclick="ACC_TAB='${sc.k === 'printer-qa' ? 'qa' : sc.k}'; renderAcceptance()" class="bg-slate-700 hover:bg-slate-600 rounded px-4 py-2 text-sm">前往完整功能 →</button>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 📐 資料流圖
+// ═══════════════════════════════════════════════════════════
+async function renderDataflow() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-6xl mx-auto space-y-4">
+      <div class="bg-gradient-to-r from-indigo-900/30 via-blue-900/30 to-cyan-900/30 border border-indigo-500/30 rounded-xl p-5">
+        <h1 class="text-2xl font-bold">📐 資料流圖 · 4 tenant 協作鏈</h1>
+        <p class="text-slate-400 text-sm mt-1">凌策是 AI SaaS 供應商；addwii / microjet 是客戶。他們之間有金流、資料流、服務流。</p>
+      </div>
+
+      <!-- B2B2C 鏈路圖 -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6">
+        <div class="text-sm font-bold text-indigo-300 mb-4">🔗 主要服務鏈（陳先生的 12 坪嬰兒無塵室案）</div>
+        <div class="grid grid-cols-5 gap-3 items-center">
+          <div class="bg-rose-900/30 border border-rose-500/40 rounded p-3 text-center">
+            <div class="text-2xl">👤</div><div class="font-bold text-rose-200 text-sm">陳先生</div><div class="text-[10px] text-slate-400">終端消費者</div>
+          </div>
+          <div class="text-center text-slate-500 text-xs">
+            💰 NT$168,000<br>→ 下單<br>🛒 商品
+          </div>
+          <div class="bg-sky-900/30 border border-sky-500/40 rounded p-3 text-center">
+            <div class="text-2xl">🏠</div><div class="font-bold text-sky-200 text-sm">addwii</div><div class="text-[10px] text-slate-400">B2C 品牌 · 6 人</div>
+          </div>
+          <div class="text-center text-slate-500 text-xs">
+            ↗ AI 客服 NT$8K/月<br>↘ 感測器採購 NT$8,800
+          </div>
+          <div class="space-y-2">
+            <div class="bg-blue-900/30 border border-blue-500/40 rounded p-2 text-center">
+              <div class="text-lg">🏛️</div><div class="font-bold text-blue-200 text-xs">凌策</div><div class="text-[10px] text-slate-400">AI 模組</div>
+            </div>
+            <div class="bg-amber-900/30 border border-amber-500/40 rounded p-2 text-center">
+              <div class="text-lg">🏭</div><div class="font-bold text-amber-200 text-xs">microjet · CurieJet</div><div class="text-[10px] text-slate-400">感測器</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 凌策 AI 模組授權鏈 -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6">
+        <div class="text-sm font-bold text-blue-300 mb-4">💼 凌策 AI 模組訂閱鏈</div>
+        <div class="space-y-3 text-sm">
+          <div class="flex items-center gap-3 bg-slate-900/60 rounded p-3">
+            <span class="text-2xl">🏠</span>
+            <span class="font-bold text-sky-200 w-24">addwii</span>
+            <span class="flex-1 text-slate-300">訂閱 AI 客服模組（cs）· NT$8,000/月</span>
+            <span class="text-emerald-300 text-xs">✅ 啟用中</span>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-900/60 rounded p-3">
+            <span class="text-2xl">🏭</span>
+            <span class="font-bold text-amber-200 w-24">microjet</span>
+            <span class="flex-1 text-slate-300">訂閱 AI 缺料預警 + 排程 + 品質分析 + 客服 · NT$29,000/月 · 4 項 9 折</span>
+            <span class="text-emerald-300 text-xs">✅ 啟用中</span>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-900/60 rounded p-3">
+            <span class="text-2xl">📋</span>
+            <span class="font-bold text-slate-400 w-24">維明顧問</span>
+            <span class="flex-1 text-slate-500">評估中 · 預計訂閱 AI 文件/會議/知識庫/客服</span>
+            <span class="text-slate-500 text-xs">⏳ 待定</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 資料隔離圖 -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6">
+        <div class="text-sm font-bold text-emerald-300 mb-4">🔒 資料隔離（每 tenant 獨立檔案）</div>
+        <div class="grid grid-cols-4 gap-3">
+          ${[
+            ['lingce','🏛️','1 人 + 10 AI','blue'],
+            ['microjet','🏭','134 人','amber'],
+            ['addwii','🏠','6 人','sky'],
+            ['weiming','📋','評估中','slate'],
+          ].map(([tid,ico,sub,c]) => `
+            <div class="bg-slate-900/60 border border-${c}-500/30 rounded p-3 text-xs">
+              <div class="text-lg mb-1">${ico}</div>
+              <div class="font-bold text-${c}-300">${tid}</div>
+              <div class="text-slate-500 text-[10px] mb-2">${sub}</div>
+              <div class="font-mono text-slate-400 text-[10px] space-y-0.5">
+                <div>└─ org.json</div>
+                <div>└─ crm.db</div>
+                <div>└─ audit/</div>
+                <div>└─ chat_rooms/</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- 合規跨 tenant -->
+      <div class="bg-slate-800 border border-emerald-600/30 rounded-xl p-6">
+        <div class="text-sm font-bold text-emerald-300 mb-3">🛡️ 合規層（Operator Level · 跨 tenant 共用）</div>
+        <div class="grid grid-cols-4 gap-3 text-xs">
+          <div class="bg-slate-900 border border-emerald-700/40 rounded p-3 text-center"><div class="text-emerald-200 font-bold">C1</div><div class="text-slate-400">本地 LLM</div></div>
+          <div class="bg-slate-900 border border-emerald-700/40 rounded p-3 text-center"><div class="text-emerald-200 font-bold">C2</div><div class="text-slate-400">PII 9 類遮蔽</div></div>
+          <div class="bg-slate-900 border border-emerald-700/40 rounded p-3 text-center"><div class="text-emerald-200 font-bold">C3</div><div class="text-slate-400">append-only 稽核</div></div>
+          <div class="bg-slate-900 border border-emerald-700/40 rounded p-3 text-center"><div class="text-emerald-200 font-bold">C4</div><div class="text-slate-400">人工審核閘</div></div>
+        </div>
+        <div class="mt-3 text-[11px] text-slate-500 text-center">4 層控制項同時保護 lingce / microjet / addwii / weiming 所有資料</div>
+      </div>
+    </div>`;
+}
 
 // ═══════════════════════════════════════════════════════════
 // 📋 維明顧問 評估進度頁

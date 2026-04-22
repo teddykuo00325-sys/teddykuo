@@ -378,15 +378,18 @@
 
     <div id="modules-grid" class="grid md:grid-cols-4 gap-4"></div>
 
-    <div class="mt-8 card p-5 flex items-center justify-between">
-      <div>
-        <div class="text-sm font-bold text-amber-300">💡 價格模擬</div>
-        <div class="text-xs text-slate-400 mt-1">在左側點選模組即可即時看到月費估算</div>
-      </div>
-      <div class="text-right">
-        <div class="text-xs text-slate-500">已選 <span id="mod-count" class="text-white font-mono font-bold">0</span> 個模組</div>
-        <div class="text-3xl font-black text-amber-300" id="mod-price">NT$ 0</div>
-        <div class="text-[11px] text-slate-500">/ 月 · <span id="mod-discount">無折扣</span></div>
+    <!-- 移除價格模擬：真實報價需評估客戶企業運作模式 / 規模 → 請 BD Agent 客製評估 -->
+    <div class="mt-8 card p-5 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-500/30">
+      <div class="flex items-center gap-4">
+        <div class="text-4xl">💬</div>
+        <div class="flex-1">
+          <div class="text-sm font-bold text-blue-300">需要正式報價？</div>
+          <div class="text-xs text-slate-400 mt-1 leading-relaxed">
+            實際報價需 BD Agent 評估貴公司的 <b class="text-blue-200">運作模式 · 員工規模 · 產業別 · 資料量</b>，再推薦最適合的模組組合。<br>
+            列表價僅供參考；實際折扣依客戶量身計算（量大客製可另行洽談）。
+          </div>
+        </div>
+        <a href="#inquiry" class="btn-primary text-sm">免費 BD Agent 評估 →</a>
       </div>
     </div>
   </div>
@@ -614,16 +617,8 @@ function toggleMod(id) {
 }
 
 function updatePrice() {
-  let total = 0;
-  for (const cat of Object.values(MODULES)) {
-    for (const m of cat) if (selectedMods.has(m.id)) total += m.price;
-  }
-  let disc = 1.0, discLabel = '無折扣';
-  if (selectedMods.size >= 7) { disc = 0.85; discLabel = '85 折（7 項以上）'; }
-  else if (selectedMods.size >= 4) { disc = 0.90; discLabel = '9 折（4 項以上）'; }
-  document.getElementById('mod-count').textContent = selectedMods.size;
-  document.getElementById('mod-price').textContent = 'NT$ ' + Math.round(total * disc).toLocaleString();
-  document.getElementById('mod-discount').textContent = discLabel;
+  // 價格模擬區塊已移除（真實報價由 BD Agent 依客戶規模客製）
+  // 保留函式避免其他呼叫者出錯
 }
 
 function updateFormMods() {
