@@ -12264,6 +12264,7 @@ async function renderWeimingProcurement() {
     window._wm_data = d;
 
     window.wmTab = function(k) {
+      window._wm_current_tab = k;  // 記住目前 tab，reload 後還原
       document.querySelectorAll('.wm-tab-btn').forEach(b => {
         b.classList.toggle('bg-slate-900', b.dataset.wmtab === k);
         b.classList.toggle('text-white', b.dataset.wmtab === k);
@@ -12280,7 +12281,8 @@ async function renderWeimingProcurement() {
       else if (k === 'chain') c.innerHTML = wmChainView(D.chain);
       else if (k === 'audit') c.innerHTML = wmAuditView(D.audit);
     };
-    window.wmTab('pr');
+    // 保留使用者當前 tab（reload 後不跳回 PR）
+    window.wmTab(window._wm_current_tab || 'pr');
 
     window.wmReload = reload;
     window.wmReset = async () => {
