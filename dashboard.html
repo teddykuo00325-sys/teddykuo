@@ -2248,6 +2248,19 @@ function renderOrgTree() {
   if (!CURRENT_CAN_SEE_ALL
       && ORG_VIEW_DEPT !== '__MY_FOCUS__'
       && ORG_VIEW_DEPT !== '__DEPT_FOCUS__') {
+    // 🔧 修 bug：若未選當前身分，不 force 到 __MY_FOCUS__（會顯示「身份未找到」）
+    //   改為提示使用者從上方「部門導覽」點選，或讓他們用訪客模式看組織
+    if (!ORG_CURRENT_USER_PERSONA) {
+      FOCUS_VISIBLE_IDS = null;
+      container.innerHTML = `
+        <div class="text-center py-12">
+          <div class="text-5xl mb-3">👆</div>
+          <div class="text-lg text-slate-300 mb-2">請從上方「部門導覽」選一個部門</div>
+          <div class="text-sm text-slate-500 mb-4">或下方下拉選一個「當前身分」查看自己的部門</div>
+          <div class="text-xs text-slate-600">💡 AI 評審無需登入即可瀏覽任一部門組織圖</div>
+        </div>`;
+      return;
+    }
     ORG_VIEW_DEPT = '__MY_FOCUS__';
   }
 
@@ -2310,9 +2323,15 @@ function renderOrgTree() {
   if (ORG_VIEW_DEPT === '__MY_FOCUS__') {
     const myNode = findNodeById(ORG_DATA, ORG_CURRENT_USER_PERSONA);
     if (!myNode) {
-      // fallback
+      // fallback：persona 無效 → 顯示友善訊息 + 部門導覽提示
       FOCUS_VISIBLE_IDS = null;
-      container.innerHTML = `<div class="text-center text-slate-500 py-12">身份未找到，請重新選擇</div>`;
+      container.innerHTML = `
+        <div class="text-center py-12">
+          <div class="text-5xl mb-3">👆</div>
+          <div class="text-lg text-slate-300 mb-2">請從上方「部門導覽」選一個部門</div>
+          <div class="text-sm text-slate-500 mb-4">或下方下拉選一個「當前身分」查看自己的部門</div>
+          <div class="text-xs text-slate-600">💡 未選身分時仍可瀏覽任一部門的組織圖</div>
+        </div>`;
       return;
     }
     const myDept = myNode.dept;
