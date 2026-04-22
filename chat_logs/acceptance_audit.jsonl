@@ -383,3 +383,55 @@
 {"ts": "2026-04-22T00:19:08", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-2C34166D", "client": "奇景光電", "elapsed_sec": 0.0}}
 {"ts": "2026-04-22T01:09:35", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
 {"ts": "2026-04-22T01:09:50", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 保固政策", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T13:43:34", "action": "content", "user": "commander", "detail": {"topic": "addwii 想在官網推六款無塵室的故事行銷，請凌策幫我們規劃 AI 內容行銷方", "channel": "IG", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-22T14:22:29", "action": "product_qa", "user": "sim-microjet", "detail": {"customer": "microjet", "q": "【場景 A · 印表機客服｜25 分】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？請給完整排除步驟。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:22:54", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-D4CD1F9E", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 4}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T14:24:17", "action": "product_qa", "user": "sim-microjet", "detail": {"customer": "microjet", "q": "【場景 A · 印表機客服｜25 分】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？請給完整排除步驟。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:26:28", "action": "product_qa", "user": "sim-addwii", "detail": {"customer": "addwii", "q": "【構面 1 · 產品知識 AI 化｜15 分】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:26:41", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-22T14:26:50", "action": "csv_analysis", "user": "guest", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-22T14:27:40", "action": "product_qa", "user": "sim-microjet", "detail": {"customer": "microjet", "q": "【場景 A · 印表機客服｜25 分】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？請給完整排除步驟。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:28:16", "action": "product_qa", "user": "sim-microjet", "detail": {"customer": "microjet", "q": "【場景 A · 印表機客服｜25 分】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？請給完整排除步驟。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:28:54", "action": "product_qa", "user": "sim-addwii", "detail": {"customer": "addwii", "q": "【構面 1 · 產品知識 AI 化｜15 分】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:31:02", "action": "product_qa", "user": "sim-addwii", "detail": {"customer": "addwii", "q": "【構面 1 · 產品知識 AI 化｜15 分】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:32:56", "action": "product_qa", "user": "sim-addwii", "detail": {"customer": "addwii", "q": "【構面 1 · 產品知識 AI 化｜15 分】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:41:46", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet CurieJet P760 規格", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:41:48", "action": "product_qa", "user": "commander", "detail": {"customer": "addwii", "q": "addwii 嬰兒無塵室適合誰", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:41:49", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "microjet CurieJet P760 規格", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:41:59", "action": "product_qa", "user": "commander", "detail": {"customer": "microjet", "q": "MJ-3200 產品規格", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:42:02", "action": "feedback_analysis", "user": "commander", "detail": {"task_id": "TASK-FEEDBACK-424BAAF4", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T14:42:04", "action": "proposal", "user": "commander", "detail": {"task_id": "TASK-PROPOSAL-BA05FD70", "customer": "microjet", "ind": "通用", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-22T14:42:04", "action": "content", "user": "commander", "detail": {"topic": "為 addwii 寫 FB 行銷文案 春季過敏", "channel": "FB", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-22T14:42:05", "action": "csv_analysis", "user": "commander", "detail": {"files": 0, "cached": true}}
+{"ts": "2026-04-22T14:42:05", "action": "pii_scan", "user": "commander", "detail": {"n": 3, "types": ["身分證字號", "手機", "Email"]}}
+{"ts": "2026-04-22T14:45:34", "action": "product_qa", "user": "sim-addwii", "detail": {"customer": "addwii", "q": "【構面 1 · 產品知識 AI 化｜15 分】我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:46:00", "action": "product_qa", "user": "sim-microjet", "detail": {"customer": "microjet", "q": "【場景 A · 印表機客服｜25 分】我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？請給完整排除步驟。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T14:46:22", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-E3359614", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T15:08:28", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-9201B1FF", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T15:33:15", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-0B6EA82F", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T15:35:09", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-DF0BC51A", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T15:49:22", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-59F40235", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 4}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T15:52:42", "action": "content", "user": "sim-addwii", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "website", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-22T16:21:32", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-F9E3176A", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:21:34", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-A7D939FA", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:21:36", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-DE4C07FE", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:21:37", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-1D8C961C", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:21:39", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-A1185A7D", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:22:39", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-A8FFDF2B", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:22:40", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-FC825A45", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:22:48", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-DEED2DBB", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T16:39:44", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "ComeTrue T10 是什麼", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T16:41:06", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "ComeTrue T10 是什麼", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:41:27", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "ComeTrue T10 是什麼", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:41:48", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "ComeTrue T10 是什麼", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:42:46", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "CurieJet P710 規格", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:42:49", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 墨水匣相容性", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:42:50", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 墨水匣相容性", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:43:56", "action": "product_qa", "user": "", "detail": {"customer": "addwii", "q": "浴室無塵室特色", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:45:31", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 墨水匣相容性", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:45:33", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 墨水匣相容性", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:46:23", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 墨水匣相容性", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:57:16", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "CurieJet P710 規格", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:57:30", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "CurieJet P710 規格", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:57:32", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "CurieJet P710 規格", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-22T16:57:42", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "ComeTrue M10 是什麼", "retrieval": "bigram", "use_ai": true}}

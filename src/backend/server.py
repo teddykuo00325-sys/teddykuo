@@ -172,7 +172,9 @@ def ollama_chat(messages, system_prompt=None, temperature=0.7):
     payload['messages'].extend(masked_messages)
 
     try:
-        resp = requests.post(f'{OLLAMA_URL}/api/chat', json=payload, timeout=300)
+        # ngrok-skip-browser-warning 讓免費 ngrok tunnel 不跳瀏覽器警告頁
+        headers = {'ngrok-skip-browser-warning': 'true'}
+        resp = requests.post(f'{OLLAMA_URL}/api/chat', json=payload, headers=headers, timeout=300)
         resp.raise_for_status()
         data = resp.json()
         return data.get('message', {}).get('content', '（無回應）')
@@ -315,9 +317,11 @@ def serve_dashboard():
 # ══════════════════════════════════════
 @app.route('/api/health')
 def health():
-    # Test Ollama connectivity
+    # Test Ollama connectivity（包含 ngrok tunnel 場景）
     try:
-        r = requests.get(f'{OLLAMA_URL}/api/tags', timeout=5)
+        r = requests.get(f'{OLLAMA_URL}/api/tags',
+                         headers={'ngrok-skip-browser-warning': 'true'},
+                         timeout=5)
         ollama_ok = r.status_code == 200
         models = [m['name'] for m in r.json().get('models', [])]
     except:

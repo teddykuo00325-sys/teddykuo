@@ -718,7 +718,8 @@ class ChatManager:
                 'options': {'temperature': 0.8, 'num_predict': 800, 'num_ctx': 2048}
             }
             print(f'[Ollama] 呼叫中... ({len(messages)} 則歷史)')
-            r = requests.post(f'{OLLAMA_URL}/api/chat', json=payload, timeout=300)
+            r = requests.post(f'{OLLAMA_URL}/api/chat', json=payload,
+                              headers={'ngrok-skip-browser-warning': 'true'}, timeout=300)
             r.raise_for_status()
             data = r.json()
             msg = data.get('message', {})

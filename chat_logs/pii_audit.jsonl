@@ -8,3 +8,9 @@
 {"ts": "2026-04-21T21:04:25", "context": "csv_preview", "detections_count": 4, "types": ["CN_NAME", "TW_ID"], "input_len": 270, "output_len": 280}
 {"ts": "2026-04-21T21:04:25", "context": "csv_gated_analysis", "detections_count": 4, "types": ["CN_NAME", "TW_ID"], "input_len": 270, "output_len": 280}
 {"ts": "2026-04-21T21:29:56", "context": "compliance_demo", "detections_count": 3, "types": ["CN_NAME", "TW_ID", "TW_PHONE"], "input_len": 27, "output_len": 31}
+{"ts": "2026-04-22T14:04:54", "context": "compliance_demo", "detections_count": 7, "types": ["CREDIT", "EMAIL", "EN_NAME", "ROOM_ID", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 156, "output_len": 133}
+{"ts": "2026-04-22T15:10:11", "context": "compliance_demo", "detections_count": 7, "types": ["CREDIT", "EMAIL", "EN_NAME", "ROOM_ID", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 156, "output_len": 133}
+{"ts": "2026-04-22T16:39:39", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}
+{"ts": "2026-04-22T16:39:40", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}
+{"ts": "2026-04-22T16:39:42", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}
+{"ts": "2026-04-22T16:54:42", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 498, "output_len": 506}

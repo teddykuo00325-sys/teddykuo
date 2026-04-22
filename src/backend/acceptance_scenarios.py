@@ -55,7 +55,9 @@ def _ollama_generate(prompt: str, system: str = '', temperature: float = 0.3,
     payload['messages'].append({'role': 'user', 'content': safe_prompt})
     t0 = time.time()
     try:
-        r = _requests.post(f'{url}/api/chat', json=payload, timeout=timeout)
+        # 加 ngrok-skip-browser-warning 支援 Render 雲端透過 ngrok 連本機 Ollama
+        r = _requests.post(f'{url}/api/chat', json=payload,
+                           headers={'ngrok-skip-browser-warning': 'true'}, timeout=timeout)
         r.raise_for_status()
         msg = r.json().get('message', {}) or {}
         text = (msg.get('content') or msg.get('thinking') or '').strip()

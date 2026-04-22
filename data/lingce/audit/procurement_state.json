@@ -29,8 +29,8 @@
     "date": "2026-04-16",
     "amount": 168000,
     "deposit": 84000,
-    "status": "運送中",
-    "current_milestone": "shipping"
+    "status": "已完工",
+    "current_milestone": "acceptance"
   },
   "milestones": [
     {
@@ -138,63 +138,72 @@
     "total": 8800,
     "expected_delivery": "2026-04-22",
     "status": "已出貨",
-    "shipped_at": "2026-04-21T22:44:46"
+    "shipped_at": "2026-04-22T13:29:29"
   },
   "sensor_serials": [
     {
-      "serial": "CJ-P760-20260421-0001",
+      "serial": "CJ-P760-20260422-0001",
       "sku": "CJ-P760",
-      "shipped_at": "2026-04-21T22:44:46",
+      "shipped_at": "2026-04-22T13:29:29",
       "bound_to_order": "ORD-2026-0028",
       "bound_to_customer": "陳先生",
       "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
-      "bound_at": "2026-04-21T22:44:46"
+      "bound_at": "2026-04-22T13:29:29"
     },
     {
-      "serial": "CJ-P760-20260421-0002",
+      "serial": "CJ-P760-20260422-0002",
       "sku": "CJ-P760",
-      "shipped_at": "2026-04-21T22:44:46",
+      "shipped_at": "2026-04-22T13:29:29",
       "bound_to_order": "ORD-2026-0028",
       "bound_to_customer": "陳先生",
       "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
-      "bound_at": "2026-04-21T22:44:46"
+      "bound_at": "2026-04-22T13:29:29"
     },
     {
-      "serial": "CJ-P710-20260421-0003",
+      "serial": "CJ-P710-20260422-0003",
       "sku": "CJ-P710",
-      "shipped_at": "2026-04-21T22:44:46",
+      "shipped_at": "2026-04-22T13:29:29",
       "bound_to_order": "ORD-2026-0028",
       "bound_to_customer": "陳先生",
       "bound_address": "台北市大安區和平東路二段 xxx 號 5F",
-      "bound_at": "2026-04-21T22:44:46"
+      "bound_at": "2026-04-22T13:29:29"
     }
   ],
   "audit": [
     {
-      "ts": "2026-04-21T22:44:30",
+      "ts": "2026-04-22T13:29:19",
       "action": "reset",
       "detail": {}
     },
     {
-      "ts": "2026-04-21T22:44:40",
-      "action": "advance_order",
-      "detail": {
-        "order_id": "ORD-2026-0028",
-        "from": "manufacture",
-        "to": "shipping"
-      }
-    },
-    {
-      "ts": "2026-04-21T22:44:46",
+      "ts": "2026-04-22T13:29:29",
       "action": "ship_po",
       "detail": {
         "po_id": "PO-ADW-2026-0117",
         "serials_generated": [
-          "CJ-P760-20260421-0001",
-          "CJ-P760-20260421-0002",
-          "CJ-P710-20260421-0003"
+          "CJ-P760-20260422-0001",
+          "CJ-P760-20260422-0002",
+          "CJ-P710-20260422-0003"
         ],
         "bound_order": "ORD-2026-0028"
+      }
+    },
+    {
+      "ts": "2026-04-22T13:29:33",
+      "action": "advance_order",
+      "detail": {
+        "order_id": "ORD-2026-0028",
+        "from": "shipping",
+        "to": "install"
+      }
+    },
+    {
+      "ts": "2026-04-22T13:29:42",
+      "action": "advance_order",
+      "detail": {
+        "order_id": "ORD-2026-0028",
+        "from": "install",
+        "to": "acceptance"
       }
     }
   ]
