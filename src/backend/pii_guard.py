@@ -37,14 +37,21 @@ PATTERNS: list[tuple[str, re.Pattern, str]] = [
     # 支援 02-xxxx-xxxx / 02 xxxx xxxx / (02) xxx-xxxx / 02xxxxxxxx 各種寫法
     ('LANDLINE',   re.compile(r'\(?0[2-8]\)?[-\s]?\d{3,4}[-\s]?\d{4}\b'),                         'PHONE'),
     ('EMAIL',      re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'),            'EMAIL'),
+    # 信用卡：4-4-4-4（先掃，避免被 NHI_CARD 12 位搶走）
     ('CREDIT',     re.compile(r'\b(?:\d{4}[-\s]?){3}\d{4}\b'),                                   'CARD'),
+    # 🆕 台灣護照號碼：9 位數字（1 或 3 開頭為常見）需明確帶「護照」context 降低誤判
+    ('TW_PASSPORT',re.compile(r'(?:passport|護照|passport\s*no\.?|護照號碼|護照號)[\s::．.]*([13]\d{8})\b', re.IGNORECASE), 'PASSPORT'),
+    # 🆕 健保卡號 12 位數字（需 context 關鍵字降低誤判）
+    ('NHI_CARD',   re.compile(r'(?:健保卡號|健保卡|健保證|NHI)[\s::．.號]*(\d{12})\b', re.IGNORECASE), 'NHI'),
+    # 🆕 病歷 / 醫療記錄：病歷號 / MRN + 編號，或常見診斷關鍵字 + 結構
+    ('MEDICAL',    re.compile(r'(?:病歷號|病歷編號|MRN|medical\s*record|診斷[：:]\s*|就診記錄|主訴[：:]\s*)[\s：:．.]*[A-Za-z0-9\-]{3,20}', re.IGNORECASE), 'MED'),
     # addwii CSV 專屬（roomId_x / houseId_y）
     ('ROOM_ID',    re.compile(r'\broom[_\s]?id[_\s]?\d+\b', re.IGNORECASE),                       'ROOM'),
     ('HOUSE_ID',   re.compile(r'\bhouse[_\s]?id[_\s]?\d+\b', re.IGNORECASE),                      'HOUSE'),
     # 住址片段：xx路/街/段 + 號碼
     ('TW_ADDR',    re.compile(r'[\u4e00-\u9fa5]{2,8}(?:縣|市)[\u4e00-\u9fa5]{1,4}區[\u4e00-\u9fa5\w]+(?:路|街|大道)\w*段?\w*號?\w*樓?'), 'ADDR'),
     # 中文姓名（2~4 字，開頭為常見姓氏）
-    ('CN_NAME',    re.compile(r'(?:先生|小姐|女士)?(?<![\u4e00-\u9fa5])[' + _CN_SURNAMES + r'][\u4e00-\u9fa5]{1,3}(?=先生|小姐|女士|同學|老師|\b|[，。、：；！？,;\s])'), 'USER'),
+    ('CN_NAME',    re.compile(r'(?:先生|小姐|女士)?(?<![\u4e00-\u9fa5])[' + _CN_SURNAMES + r'][\u4e00-\u9fa5]{1,3}(?=先生|小姐|女士|同學|老師|\b|[,。、:;!?,;\s])'), 'USER'),
     # 英文姓名（頭字母大寫兩字，避免誤中其他）
     ('EN_NAME',    re.compile(r'\b(?:Mr\.?|Ms\.?|Mrs\.?|Dr\.?)\s*[A-Z][a-z]{2,12}(?:\s[A-Z][a-z]{2,12})?\b'), 'USER'),
 ]

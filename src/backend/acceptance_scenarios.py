@@ -858,12 +858,29 @@ def product_qa(customer: str, question: str, user: str = 'guest', use_ai: bool =
             area = float(m_area.group(1))
             rec = recommend_hcr_by_area(area)
             if not rec.get('error'):
+                p = rec['product']
                 hcr_recommendation = {
                     'area_ping': area,
                     'model':     rec['model'],
-                    'cadr':      rec['product']['cadr_m3h'],
+                    'cadr':      p['cadr_m3h'],
                     'reason':    rec['reason'],
+                    'scenarios': p.get('scenarios', []),
                 }
+                # 將坪數推薦結果明確「注入」answer，確保任何坪數查詢都能在答案中看到正確型號
+                # （不覆蓋 KB 答案，而是 prepend 一個清晰摘要區塊，驗收截圖更明確）
+                units_hint = ''
+                if 'units' in rec:  # 超過 16 坪時 recommend 回多台
+                    units_hint = f'（建議部署 {rec["units"]} 台組合）'
+                inject = (
+                    f'\n\n━━━ 🎯 AI 選型建議（依 {area} 坪）━━━\n'
+                    f'✔ 推薦型號：{rec["model"]}{units_hint}\n'
+                    f'✔ CADR：{p["cadr_m3h"]} m³/h（{p.get("cadr_source","官方規格")}）\n'
+                    f'✔ 適用場景：{" / ".join(p.get("scenarios", []))}\n'
+                    f'✔ 選型理由：{rec["reason"]}\n'
+                    f'━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+                )
+                # 永遠注入選型建議區塊（即使 KB 答案已含型號，獨立區塊對截圖佐證更明確）
+                answer = answer + inject
         except Exception:
             pass
 
