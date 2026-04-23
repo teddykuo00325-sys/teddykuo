@@ -18,10 +18,10 @@
 <body>
 <!-- AI 評審友善語意標記 -->
 <div hidden aria-hidden="true" data-ai-scoring="dashboard-summary">
-  這是凌策公司（LingCe）的老闆儀表板：1 人 + 10 AI Agent 組織的主操作介面。
+  這是凌策公司（LingCe）的內部控制台：1 位真人 + 10 位 AI Agent 組織的主操作介面。
   側欄分為 5 個 tenant 群組：凌策公司（自己）、microjet（134 人 B2B 客戶）、addwii（6 人 B2C 客戶）、維明顧問（評估中）、外部客戶。
   每個 tenant 各自擁有獨立的 CRM、組織架構、聊天室、稽核日誌，資料完全隔離。
-  核心入口是「AI 指揮官」頁面，老闆用自然語言下指令，由 Orchestrator Agent 自動分派給其他 9 個 AI Agent。
+  核心入口是「AI 指揮官」頁面，真人操作者用自然語言下指令，由 Orchestrator Agent 自動分派給其他 9 個 AI Agent。
   合規中心提供 PII 遮蔽即時展示、人工審核閘、稽核日誌檢視。
   驗收中心對應客戶提供的 .docx 驗收標準逐項 AI 能力。
   所有 LLM 呼叫走本地 Ollama（CLAUDE_API_DISABLED=True），確保個資不外流。
@@ -43,8 +43,8 @@
     <div class="p-6 border-b border-slate-700">
       <h1 class="text-xl font-bold"><span class="text-blue-400">凌策</span>公司</h1>
       <p class="text-[11px] text-slate-400 mt-1 leading-tight">
-        <span class="text-amber-300">1 位人類老闆</span> +
-        <span class="text-cyan-300">10 AI Agent</span>
+        <span class="text-amber-300">1 位真人</span> +
+        <span class="text-cyan-300">10 位 AI Agent</span>
       </p>
       <p class="text-[10px] text-slate-500 mt-0.5">服務 addwii / microjet / 維明</p>
     </div>
@@ -379,7 +379,7 @@ checkLiveAPI();
 // ── Data ──
 const DATA = {
   agents: [
-    {id:'orch-001',backend_id:'orchestrator',   name:'Orchestrator',dept:'指揮中心',status:'active',tasks:47,model:'Ollama qwen2.5:7b + 規則引擎',icon:'🎯',desc:'接收老闆指令 → 分析 → 分派給最適合的 Agent → 彙整結果',skills:['任務分解','路由決策','跨 Agent 協調','結果彙整']},
+    {id:'orch-001',backend_id:'orchestrator',   name:'Orchestrator',dept:'指揮中心',status:'active',tasks:47,model:'Ollama qwen2.5:7b + 規則引擎',icon:'🎯',desc:'接收真人指令 → 分析 → 分派給最適合的 Agent → 彙整結果',skills:['任務分解','路由決策','跨 Agent 協調','結果彙整']},
     {id:'bd-001',  backend_id:'bd',             name:'BD Agent',dept:'業務開發',status:'active',tasks:23,model:'Ollama qwen2.5:7b',icon:'💼',desc:'客戶需求分析、市場調研、提案策略',skills:['客戶訪談摘要','競品分析','提案大綱','商機評估']},
     {id:'cs-001',  backend_id:'customer-service',name:'客服 Agent',dept:'業務開發',status:'active',tasks:18,model:'Ollama qwen2.5:7b',icon:'🎧',desc:'客戶溝通、技術問題解答、滿意度追蹤',skills:['工單分類','情緒判讀','FAQ 秒回','主管升級判斷']},
     {id:'prop-001',backend_id:'proposal',       name:'提案 Agent',dept:'業務開發',status:'active',tasks:12,model:'Ollama qwen2.5:7b',icon:'📝',desc:'商業企劃書、技術提案、方案設計',skills:['B2B 提案產生','ROI 計算','報價框架','規格對照']},
@@ -401,7 +401,7 @@ const DATA = {
     {day:3,date:'04/15',title:'核心模組部署',status:'done',items:['階級感知聊天系統','跨部門協作審批','任務層層派工']},
     {day:4,date:'04/16',title:'驗收中心整合',status:'done',items:['對應 addwii 驗收 docx 5 構面','對應 microjet 驗收 docx 5 場景','AI Agent Workflow 視覺化']},
     {day:5,date:'04/17',title:'AI 指揮官整合',status:'done',items:['自然語言派發 6 大場景','規則引擎秒回','非同步稽核 log']},
-    {day:6,date:'04/18',title:'全面定位對齊',status:'active',items:['1 人老闆 + 10 AI Agent 心智模型','兩家客戶獨立呈現','真實技術堆疊揭露']},
+    {day:6,date:'04/18',title:'全面定位對齊',status:'active',items:['1 位真人 + 10 AI Agent 心智模型','兩家客戶獨立呈現','真實技術堆疊揭露']},
     {day:7,date:'04/19',title:'評審準備',status:'pending',items:['QA 回歸','文件交付','成本報告']},
   ],
   // 本地 Ollama 與規則引擎為主力；Claude API 預留備援未啟用
@@ -626,7 +626,7 @@ function renderDashboard(){
           <div class="flex-1">
             <h1 class="text-2xl font-bold">凌策公司 — AI Agent 服務型組織</h1>
             <p class="text-slate-300 mt-1 text-sm">
-              <span class="text-amber-300 font-bold">1 位人類老闆</span> +
+              <span class="text-amber-300 font-bold">1 位真人</span> +
               <span class="text-cyan-300 font-bold">10 個 AI Agent 員工</span> · 用 AI 取代傳統人力，為客戶交付 AI 驅動解決方案
             </p>
           </div>
@@ -688,7 +688,7 @@ function renderDashboard(){
         <div class="col-span-2 bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
           <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center">
             <h2 class="text-lg font-bold">🤖 凌策 10 位 AI Agent 員工</h2>
-            <span class="text-xs text-slate-500">自然語言由人類老闆透過 AI 指揮官派發</span>
+            <span class="text-xs text-slate-500">自然語言由真人操作者透過 AI 指揮官派發</span>
           </div>
           <table class="w-full"><thead><tr class="text-xs text-slate-500 border-b border-slate-700">
             <th class="py-2 px-4 text-left">Agent</th><th class="py-2 px-4 text-left">職能部門</th><th class="py-2 px-4 text-left">使用模型</th><th class="py-2 px-4 text-right">已處理任務</th>
@@ -697,7 +697,7 @@ function renderDashboard(){
           </tbody></table>
         </div>
         <div class="space-y-4">
-          <h2 class="text-lg font-bold">⚡ 老闆的入口</h2>
+          <h2 class="text-lg font-bold">⚡ 主要入口</h2>
           <div class="bg-gradient-to-br from-blue-900/50 to-purple-900/50 rounded-xl p-5 border border-blue-500/40 cursor-pointer hover:border-blue-300 transition" onclick="showPage('commander')">
             <div class="text-2xl mb-2">⚡</div>
             <h3 class="font-bold">AI 指揮官</h3>
@@ -711,7 +711,7 @@ function renderDashboard(){
           <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 cursor-pointer hover:border-yellow-500 transition" onclick="ACC_TAB='overview';showPage('acceptance')">
             <div class="text-2xl mb-2">🏆</div>
             <h3 class="font-bold">客戶驗收中心</h3>
-            <p class="text-xs text-slate-400 mt-1">依客戶老闆 docx 驗收標準對應之 AI 能力</p>
+            <p class="text-xs text-slate-400 mt-1">依客戶方 docx 驗收標準對應之 AI 能力</p>
           </div>
         </div>
       </div>
@@ -779,15 +779,15 @@ function renderAgents(){
   document.getElementById('main-content').innerHTML=`
     <div class="max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 class="text-2xl font-bold">凌策員工總覽 — 1 位人類老闆 + 10 位 AI Agent</h1>
-        <p class="text-slate-400 mt-1">凌策公司全體員工：一位人類老闆身兼監管/決策/風控；其餘 10 位均為 AI Agent</p>
+        <h1 class="text-2xl font-bold">凌策組織總覽 — 1 位真人 + 10 位 AI Agent</h1>
+        <p class="text-slate-400 mt-1">凌策公司：1 位真人身兼監管/決策/風控/簽核；另 10 位均為 AI Agent</p>
       </div>
       <div class="bg-slate-800 rounded-xl border border-slate-700 p-5">
         <h2 class="text-lg font-bold mb-3">組織架構</h2>
         <div class="text-center space-y-3">
           <div class="bg-gradient-to-br from-amber-900/50 to-orange-900/50 rounded-lg p-4 border border-amber-500/50 max-w-md mx-auto">
             <div class="text-3xl">👤</div>
-            <div class="text-amber-300 font-bold mt-1">人類老闆（唯一實體員工）</div>
+            <div class="text-amber-300 font-bold mt-1">1 位真人（唯一實體成員）</div>
             <div class="text-xs text-slate-400 mt-1">監管 · 決策 · 風控 · 簽核</div>
           </div>
           <div class="text-lg">↓ 透過 AI 指揮官下達指令</div>
@@ -925,7 +925,7 @@ function _renderAgentChatTab(body) {
           hist.map(m => `
             <div class="${m.role==='user'?'text-right':''}">
               <div class="inline-block max-w-[85%] rounded-lg px-3 py-2 text-sm ${m.role==='user'?'bg-blue-700 text-white':'bg-slate-800 text-slate-200 border border-slate-700'}">
-                <div class="text-[10px] opacity-60 mb-0.5">${m.role==='user'?'老闆':(a.name)}${m.source?` · ${escapeHtml(m.source)}`:''}${m.elapsed?` · ${m.elapsed}s`:''}</div>
+                <div class="text-[10px] opacity-60 mb-0.5">${m.role==='user'?'真人操作者':(a.name)}${m.source?` · ${escapeHtml(m.source)}`:''}${m.elapsed?` · ${m.elapsed}s`:''}</div>
                 <div class="whitespace-pre-wrap break-words">${escapeHtml(m.content)}</div>
               </div>
             </div>`).join('')
@@ -2247,7 +2247,7 @@ function renderOrgChart() {
       </div>
       <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-2 text-[11px] text-slate-400 flex items-center gap-2">
         <span>ℹ️</span>
-        <span>本頁為**客戶組織現場**資料（凌策為兩家客戶分別部署的智慧組織管理系統）— <b class="text-slate-300">非凌策內部 HR</b>；凌策自己只有 1 位人類老闆 + 10 個 AI Agent。</span>
+        <span>本頁為**客戶組織現場**資料（凌策為兩家客戶分別部署的智慧組織管理系統）— <b class="text-slate-300">非凌策內部 HR</b>；凌策自己只有 1 位真人 + 10 個 AI Agent。</span>
       </div>
 
       <div class="flex justify-between items-start">
@@ -6665,7 +6665,7 @@ const SIM_SCENARIOS = [
           '產出 PDF 提案（凌策浮水印 + 稽核 ID）',
           '附 addwii 同業案例對照（可省略 40% 客服人力）',
         ],
-        output: '✅ 提案書 PROP-ADDWII-2026-0001 產出。PDF 可下載，人類老闆可簽核。' },
+        output: '✅ 提案書 PROP-ADDWII-2026-0001 產出。PDF 可下載，真人可簽核。' },
       { phase: '4. 報價試算 + ROI', agent: '財務 Agent', icon: '💰', color: 'emerald',
         steps: [
           '計算月費：cs NT$8,000 + mkt NT$4,500 + cust NT$5,500',
@@ -6674,14 +6674,14 @@ const SIM_SCENARIOS = [
           '附款條件：月繳 / 前 30 天滿意保證',
         ],
         output: '✅ 月費 NT$16,200（3 項 9 折）· ROI 1 個月回本 · 無綁約。' },
-      { phase: '5. 👤 人類老闆簽核', agent: '凌策老闆（唯一實體員工）', icon: '👤', color: 'rose', is_human: true,
+      { phase: '5. 👤 真人簽核', agent: '真人操作者（唯一實體成員）', icon: '👤', color: 'rose', is_human: true,
         steps: [
           '審閱 Proposal Agent 產出的提案書',
           '確認 Finance Agent 的 ROI 試算合理',
           '核准預算上限 / 拒絕超預算 / 退回要求修改',
           '簽核後寫入 human_gate.jsonl（不可刪改稽核）',
         ],
-        output: '✅ 老闆簽核通過。此為唯一人類把關點 — 風控 / 合規 / 策略決策。' },
+        output: '✅ 真人簽核通過。此為唯一人類把關點 — 風控 / 合規 / 策略決策。' },
       { phase: '6. 合約 & DPA 起草', agent: '法務 Agent', icon: '⚖️', color: 'amber',
         steps: [
           '套用凌策 SaaS 標準合約範本',
@@ -6788,14 +6788,14 @@ const SIM_SCENARIOS = [
           'ROI：人工稽核減少 60h/月 → 回收期 3 個月',
         ],
         output: '✅ 月費 NT$22,100（6 項 85 折）· ROI 3 個月回本。' },
-      { phase: '5. 👤 人類老闆簽核', agent: '凌策老闆（唯一實體員工）', icon: '👤', color: 'rose', is_human: true,
+      { phase: '5. 👤 真人簽核', agent: '真人操作者（唯一實體成員）', icon: '👤', color: 'rose', is_human: true,
         steps: [
           '審閱提案書 + 財務 ROI',
           'B2B 案件風控檢查（合約金額 > NT$200K 必簽）',
           '核准預算 / 拒絕超支 / 退回要求改',
           '簽核寫入 human_gate.jsonl（append-only）',
         ],
-        output: '✅ 老闆簽核通過。B2B 案金額大 → 此處是風控關鍵。' },
+        output: '✅ 真人簽核通過。B2B 案金額大 → 此處是風控關鍵。' },
       { phase: '6. 合約 & DPA 起草', agent: '法務 Agent', icon: '⚖️', color: 'amber',
         steps: [
           '套用 B2B SaaS 標準合約（含 SLA 24h 到場）',
@@ -6897,14 +6897,14 @@ const SIM_SCENARIOS = [
           '顧問業方案：量大 PM 使用可再談客製折扣',
         ],
         output: '✅ 月費 NT$18,450（4 項 9 折）· ROI 1.2 個月回本。' },
-      { phase: '5. 👤 人類老闆簽核', agent: '凌策老闆（唯一實體員工）', icon: '👤', color: 'rose', is_human: true,
+      { phase: '5. 👤 真人簽核', agent: '真人操作者（唯一實體成員）', icon: '👤', color: 'rose', is_human: true,
         steps: [
           '審閱提案 + 財務試算',
           '顧問業 DPA 特別檢查（客戶機密資料處理）',
           '核准 / 退回 / 附加條款',
           '簽核寫入 human_gate.jsonl',
         ],
-        output: '✅ 老闆簽核通過。顧問業處理多方客戶資料 → 此處 DPA 風控關鍵。' },
+        output: '✅ 真人簽核通過。顧問業處理多方客戶資料 → 此處 DPA 風控關鍵。' },
       { phase: '6. 合約 & DPA 起草', agent: '法務 Agent', icon: '⚖️', color: 'amber',
         steps: [
           'B2B SaaS 合約 + 顧問業強化 DPA',
@@ -6970,7 +6970,7 @@ function renderSimulator() {
       <div class="bg-gradient-to-r from-blue-900/30 via-purple-900/30 to-cyan-900/30 border border-blue-500/30 rounded-xl p-4 text-sm">
         <div class="font-bold text-blue-300 mb-2">⚠️ 重要架構說明：凌策 ≠ 傳統組織</div>
         <div class="text-slate-300 text-xs leading-relaxed space-y-1.5">
-          <div>🏛️ 凌策 = <b class="text-amber-200">1 位人類老闆</b>（唯一實體員工）+ <b class="text-cyan-200">10 個 AI Agent</b>（無職等、無部門階層、無組織圖）</div>
+          <div>🏛️ 凌策 = <b class="text-amber-200">1 位真人</b>（唯一實體成員）+ <b class="text-cyan-200">10 個 AI Agent</b>（無職等、無部門階層、無組織圖）</div>
           <div>⚡ 客戶需求不走「業務 → 主管簽核 → 部門派工」傳統路徑，由 <b class="text-purple-200">AI 指揮官（Orchestrator Agent）</b>
           依語意自動判讀：
           <span class="text-cyan-400">具體業務詢問</span>（直接派對應能力場景）vs
@@ -7577,7 +7577,7 @@ async function startSimulation(clientId, customRequest) {
           </div>
           <div id="${phaseId}-status" class="flex items-center gap-1.5">
             <span class="inline-block w-3 h-3 border-2 border-${phase.color}-400 border-t-transparent rounded-full animate-spin"></span>
-            <span class="text-xs text-${phase.color}-400">${isHuman ? '等候老闆簽核' : '執行中'}</span>
+            <span class="text-xs text-${phase.color}-400">${isHuman ? '等候真人簽核' : '執行中'}</span>
           </div>
         </div>
         <div class="px-4 py-3 space-y-2" id="${phaseId}-steps"></div>
@@ -7770,7 +7770,7 @@ function renderCommander(){
       <div class="flex justify-between items-center mb-3">
         <div>
           <h1 class="text-2xl font-bold">⚡ AI 指揮官 — Orchestrator Agent UI</h1>
-          <p class="text-slate-400 mt-1 text-sm">本頁 = Orchestrator Agent 的使用者介面。老闆在此用自然語言下指令，Orchestrator 依語意自動 dispatch 給其他 9 個 AI Agent 執行</p>
+          <p class="text-slate-400 mt-1 text-sm">本頁 = Orchestrator Agent 的使用者介面。真人操作者在此用自然語言下指令，Orchestrator 依語意自動 dispatch 給其他 9 個 AI Agent 執行</p>
         </div>
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -7857,7 +7857,7 @@ function renderCommander(){
             <div class="bg-slate-700/50 rounded-xl rounded-tl-none p-4 max-w-2xl">
               <div class="text-xs text-purple-400 mb-1">Orchestrator Agent</div>
               <div class="text-sm text-slate-200">
-                老闆您好，我是 Orchestrator — 凌策唯一的 AI 指揮官，負責協調您旗下 10 位 AI Agent 員工（BD / 客服 / 提案 / 前端 / 後端 / QA / 財務 / 法務 / 文件 / 我自己）。
+                您好，我是 Orchestrator — 凌策唯一的 AI 指揮官，負責協調 10 位 AI Agent（BD / 客服 / 提案 / 前端 / 後端 / QA / 財務 / 法務 / 文件 / 我自己）。
                 <br><br>您可以用自然語言下達任何指令，我會自動路由到：
                 <br>🎯 <b class="text-cyan-300">客戶能力場景</b>（當指令涉及具體客戶）— 例如：
                 <br>　 • 「幫 microjet 回答 CurieJet P760 規格」<br>　 • 「為 addwii 寫 FB 春季過敏文案」<br>　 • 「跑全部感測器 CSV 洞察」
@@ -8216,7 +8216,7 @@ function renderAcceptance(){
       <div class="bg-gradient-to-r from-yellow-900/30 via-amber-900/30 to-yellow-900/30 border border-yellow-500/30 rounded-xl p-4 flex items-center gap-3">
         <div class="text-3xl">📋</div>
         <div class="flex-1">
-          <div class="text-sm font-bold text-yellow-300">客戶老闆提供驗收標準 → 凌策 AI 生成對應系統</div>
+          <div class="text-sm font-bold text-yellow-300">客戶方提供驗收標準 → 凌策 AI 生成對應系統</div>
           <div class="text-xs text-slate-400 mt-0.5">
             依據 <code class="bg-slate-800 px-1.5 rounded">addwii_驗收評比標準_含測試題目v3.docx</code> 與 <code class="bg-slate-800 px-1.5 rounded">microjet_驗收標準_v0.3_1.docx</code> 逐項對應 AI 能力場景
           </div>
@@ -10413,7 +10413,7 @@ async function _attnRenderAudit(){
 // ─────────────────────────────────────────
 // 🎭 客戶視角（Phase 1 骨架）
 // 模擬 addwii / microjet / 終端客戶三種身份進入系統
-// 凌策老闆視角 = 既有所有頁面；此處為「客戶視角」獨立入口
+// 凌策內部視角 = 既有所有頁面；此處為「客戶視角」獨立入口
 // ─────────────────────────────────────────
 
 function perspectiveBanner(role, subtitle, colorCls) {
@@ -10426,7 +10426,7 @@ function perspectiveBanner(role, subtitle, colorCls) {
         <div class="text-xs text-slate-300 mt-0.5">${subtitle}</div>
       </div>
       <div class="text-right flex flex-col gap-1 items-end">
-        <button onclick="showPage('dashboard')" class="text-[11px] bg-slate-800/60 hover:bg-slate-700 border border-slate-600 rounded-full px-3 py-1">← 回凌策老闆視角</button>
+        <button onclick="showPage('dashboard')" class="text-[11px] bg-slate-800/60 hover:bg-slate-700 border border-slate-600 rounded-full px-3 py-1">← 回凌策內部視角</button>
         <button onclick="actionResetScenario(this)" class="text-[10px] bg-red-900/40 hover:bg-red-800/60 border border-red-700/40 rounded-full px-2 py-0.5 text-red-200">🔄 重置 12 坪情境</button>
       </div>
     </div>`;
@@ -11360,7 +11360,7 @@ function showOllamaBanner(status) {
     'install': '🚀 一鍵完整安裝（Ollama + 模型，自動串接）',
     'start':   '📖 啟動 Ollama 服務',
     'pull':    '⬇️ 下載 Qwen 2.5 7B 模型（自動完成）',
-    'pull_remote': '⚠️ 請於凌策老闆端執行 ollama pull qwen2.5:7b',
+    'pull_remote': '⚠️ 請於凌策管理端執行 ollama pull qwen2.5:7b',
     'tunnel_down': '🔄 重新檢查（tunnel 可能已斷）',
     'ready':   '✓ 已就緒',
   }[status.next_action] || '檢查狀態';

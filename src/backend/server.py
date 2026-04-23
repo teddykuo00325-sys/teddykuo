@@ -569,7 +569,7 @@ def _commander_rule_reply(message: str) -> str:
     # fallback：通用引導
     return (f'**🧠 Orchestrator 接收指令**\n「{message}」\n\n'
             '根據指令內容，建議由對應 Agent 接手。您可以：\n'
-            '• 使用上方「📤 派發新專案到全組織」一鍵分派到 28 人團隊\n'
+            '• 使用上方「📤 派發新專案」一鍵分派給 10 位 AI Agent\n'
             '• 或嘗試以下快捷指令：客戶進度 / Token 成本 / 進度報告 / QA 測試 / 合規審查 / 提案狀態')
 
 
