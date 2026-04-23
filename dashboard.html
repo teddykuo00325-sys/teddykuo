@@ -878,6 +878,8 @@ async function openAgentDrawer(agentFrontendId) {
     </style>`;
 
   document.getElementById('__agent_drawer_backdrop').addEventListener('click', closeAgentDrawer);
+  // 先 remove 一次再 add，避免多次開啟累積 listener（按 ESC 會觸發多次）
+  document.removeEventListener('keydown', _agentDrawerEsc);
   document.addEventListener('keydown', _agentDrawerEsc);
   switchAgentDrawerTab('chat');
 }
@@ -12658,8 +12660,11 @@ async function renderWeimingProcurement() {
       else if (k === 'chain') c.innerHTML = wmChainView(D.chain);
       else if (k === 'audit') c.innerHTML = wmAuditView(D.audit);
     };
-    // 保留使用者當前 tab（reload 後不跳回 PR）
-    window.wmTab(window._wm_current_tab || 'pr');
+    // 保留使用者當前 tab（reload 後不跳回 PR）· 白名單過濾防止誤改 state 塞無效 key
+    const _WM_VALID_TABS = ['pr','cs','po','inv','sup','wallet','chain','audit'];
+    const _wmResume = _WM_VALID_TABS.includes(window._wm_current_tab)
+                      ? window._wm_current_tab : 'pr';
+    window.wmTab(_wmResume);
 
     window.wmReload = reload;
     window.wmReset = async () => {
@@ -12894,7 +12899,7 @@ async function renderWeimingProcurement() {
           </div>
         </div>
         <div class="text-[11px] text-slate-300 mt-2 bg-slate-950/50 rounded p-2">
-          <div>🛡️ 單筆上限：${fmtUsd(w.policy.per_tx_cap_usd)} · 需 <b class="text-white">${w.policy.required_signers}</b> 位多簽（${(w.policy.signer_roles||[]).join(' / ')}）${w.policy.timelock_hr>0 ? ` · 🕐 ${w.policy.timelock_hr}h timelock` : ''}</div>
+          <div>🛡️ 單筆上限：${fmtUsd(w.policy.per_tx_cap_usd)} · 需 <b class="text-white">${w.policy.required_signers}</b> 位多簽（${escapeHtml((Array.isArray(w.policy.signer_roles) ? w.policy.signer_roles : []).map(String).join(' / '))}）${w.policy.timelock_hr>0 ? ` · 🕐 ${w.policy.timelock_hr}h timelock` : ''}</div>
           <div class="text-slate-400 mt-1">${escapeHtml(w.note || '')}</div>
         </div>
         <div class="flex gap-2 mt-2">
@@ -13038,7 +13043,12 @@ async function renderWeimingProcurement() {
 })();
 
 // 切頁時同步 URL hash（利於分享 / 重整 / 書籤）
+// 防重入：setTenantAndPage 內部呼叫 replaceState 本不會觸發 hashchange（MDN 規範），
+// 但為了防呆（例如未來改成 pushState），比對 last-applied hash 避免重複 dispatch。
+let __lastAppliedHash = location.hash;
 window.addEventListener('hashchange', () => {
+  if (location.hash === __lastAppliedHash) return;
+  __lastAppliedHash = location.hash;
   const params = Object.fromEntries(new URLSearchParams(location.hash.replace(/^#/, '')));
   if (params.page) showPage(params.page, params.tenant || CURRENT_TENANT);
 });

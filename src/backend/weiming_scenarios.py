@@ -191,37 +191,48 @@ _STATE = None
 
 
 def _init():
+    """初始化 _STATE。整段必須在 _STATE_LOCK 保護下，避免多執行緒同時 seed 或 migrate。"""
     global _STATE
-    fp = _p('state.json')
-    if os.path.exists(fp):
-        try:
-            with open(fp, 'r', encoding='utf-8') as f:
-                _STATE = json.load(f)
-            # Schema migration：舊 state.json 沒有錢包欄位時補上
-            if 'wallets' not in _STATE:
-                _STATE['wallets'] = list(_DEMO_WALLETS)
-            if 'wallet_txs' not in _STATE:
-                _STATE['wallet_txs'] = []
-            return
-        except Exception:
-            pass
-    _STATE = {
-        'suppliers': list(_DEMO_SUPPLIERS),
-        'prs': list(_DEMO_PRS),
-        'history_pos': list(_DEMO_HISTORY_POS),
-        'change_sets': [],      # AI 產出的建議
-        'pos': [],              # 正式 PO
-        'grns': [],             # 收貨單
-        'invoices': [],         # 發票
-        'kpi_settlements': [],  # 月度 KPI 結算（含上鏈）
-        'chain_blocks': [],     # 區塊鏈（hash chain）模擬
-        'audit_log': [],        # 所有關鍵動作
-        'rule_hits': [],        # 規則觸發紀錄
-        # ── 冷熱錢包管理（Treasury / Cold-Hot Wallet）──
-        'wallets':      list(_DEMO_WALLETS),
-        'wallet_txs':   [],     # 錢包交易（草案 → 多簽 → 執行 → 上鏈）
-    }
-    _save()
+    with _STATE_LOCK:
+        if _STATE is not None:
+            return   # 其他 thread 已搶先初始化，直接回
+        fp = _p('state.json')
+        migrated = False
+        if os.path.exists(fp):
+            try:
+                with open(fp, 'r', encoding='utf-8') as f:
+                    _STATE = json.load(f)
+                # Schema migration：舊 state.json 沒有錢包欄位時補上
+                if 'wallets' not in _STATE:
+                    _STATE['wallets'] = list(_DEMO_WALLETS); migrated = True
+                if 'wallet_txs' not in _STATE:
+                    _STATE['wallet_txs'] = []; migrated = True
+                if migrated:
+                    _save()   # migration 後立即持久化，避免半路狀態
+                return
+            except Exception as e:
+                import sys as _sys
+                print(f'[weiming_scenarios] 無法載入 {fp}，將用 demo 重建：{e}',
+                      file=_sys.stderr)
+                _STATE = None   # 防呆：若 json.load 部分成功再失敗，清掉殘留
+        # ─ 走到這裡：檔案不存在或讀取失敗 → seed demo data ─
+        _STATE = {
+            'suppliers': list(_DEMO_SUPPLIERS),
+            'prs': list(_DEMO_PRS),
+            'history_pos': list(_DEMO_HISTORY_POS),
+            'change_sets': [],      # AI 產出的建議
+            'pos': [],              # 正式 PO
+            'grns': [],             # 收貨單
+            'invoices': [],         # 發票
+            'kpi_settlements': [],  # 月度 KPI 結算（含上鏈）
+            'chain_blocks': [],     # 區塊鏈（hash chain）模擬
+            'audit_log': [],        # 所有關鍵動作
+            'rule_hits': [],        # 規則觸發紀錄
+            # ── 冷熱錢包管理（Treasury / Cold-Hot Wallet）──
+            'wallets':      list(_DEMO_WALLETS),
+            'wallet_txs':   [],     # 錢包交易（草案 → 多簽 → 執行 → 上鏈）
+        }
+        _save()
 
 
 # ══════════════════════════════════════════════════════════════
@@ -782,13 +793,19 @@ def _rebalance_snapshot():
     cold = sum(w['balance_usd'] for w in _STATE['wallets'] if w['type'] == 'cold')
     total = hot + cold
     hot_ratio = (hot / total * 100) if total else 0
-    healthy = hot_ratio <= 10.0
+    # healthy 必須同時滿足：有資金 + 熱錢包比例 ≤ 10%
+    healthy = total > 0 and hot_ratio <= 10.0
+    if total <= 0:
+        advice = '⚠️ 所有錢包餘額為 0，流動性不足'
+    elif hot_ratio <= 10.0:
+        advice = '熱錢包比例正常（≤ 10%）'
+    else:
+        advice = f'⚠️ 熱錢包比例 {hot_ratio:.1f}% 過高，建議移轉至冷錢包'
     return {
         'total_usd': total, 'hot_usd': hot, 'cold_usd': cold,
         'hot_ratio_pct': round(hot_ratio, 2),
         'threshold_pct': 10.0, 'healthy': healthy,
-        'advice': '熱錢包比例正常（≤ 10%）' if healthy
-                  else f'⚠️ 熱錢包比例 {hot_ratio:.1f}% 過高，建議移轉至冷錢包',
+        'advice': advice,
     }
 
 
@@ -933,10 +950,15 @@ def execute_wallet_tx(tx_id: str, executor: str = 'system', skip_timelock: bool 
             'new_balance_usd': w['balance_usd']}
 
 
-def list_wallets():         _init(); return _STATE['wallets']
+@_locked
+def list_wallets():         _init(); return list(_STATE['wallets'])   # 回傳 copy 避免外部修改
+@_locked
 def list_wallet_txs(limit=100):  _init(); return list(reversed(_STATE['wallet_txs']))[:limit]
+@_locked
 def get_wallet_tx(tx_id):   _init(); return next((t for t in _STATE['wallet_txs'] if t['tx_id'] == tx_id), None)
+@_locked
 def wallet_rebalance():     _init(); return _rebalance_snapshot()
+@_locked
 def recommend_wallet_for_amount(amount_usd: float):
     _init(); return _recommend_wallet(amount_usd)
 
