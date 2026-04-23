@@ -379,16 +379,16 @@ checkLiveAPI();
 // ── Data ──
 const DATA = {
   agents: [
-    {id:'orch-001',name:'Orchestrator',dept:'指揮中心',status:'active',tasks:47,model:'Ollama qwen2.5:7b + 規則引擎'},
-    {id:'bd-001',name:'BD Agent',dept:'業務開發',status:'active',tasks:23,model:'Ollama qwen2.5:7b'},
-    {id:'cs-001',name:'客服 Agent',dept:'業務開發',status:'active',tasks:18,model:'Ollama qwen2.5:7b'},
-    {id:'prop-001',name:'提案 Agent',dept:'業務開發',status:'active',tasks:12,model:'Ollama qwen2.5:7b'},
-    {id:'fe-001',name:'前端 Agent',dept:'技術研發',status:'active',tasks:35,model:'Ollama qwen2.5:7b'},
-    {id:'be-001',name:'後端 Agent',dept:'技術研發',status:'active',tasks:41,model:'Ollama qwen2.5:7b'},
-    {id:'qa-001',name:'QA Agent',dept:'技術研發',status:'active',tasks:29,model:'Ollama qwen2.5:7b + 規則'},
-    {id:'fin-001',name:'財務 Agent',dept:'營運管理',status:'active',tasks:15,model:'Ollama qwen2.5:7b'},
-    {id:'legal-001',name:'法務 Agent',dept:'營運管理',status:'active',tasks:11,model:'Ollama qwen2.5:7b'},
-    {id:'doc-001',name:'文件 Agent',dept:'營運管理',status:'active',tasks:20,model:'Ollama qwen2.5:7b'},
+    {id:'orch-001',backend_id:'orchestrator',   name:'Orchestrator',dept:'指揮中心',status:'active',tasks:47,model:'Ollama qwen2.5:7b + 規則引擎',icon:'🎯',desc:'接收老闆指令 → 分析 → 分派給最適合的 Agent → 彙整結果',skills:['任務分解','路由決策','跨 Agent 協調','結果彙整']},
+    {id:'bd-001',  backend_id:'bd',             name:'BD Agent',dept:'業務開發',status:'active',tasks:23,model:'Ollama qwen2.5:7b',icon:'💼',desc:'客戶需求分析、市場調研、提案策略',skills:['客戶訪談摘要','競品分析','提案大綱','商機評估']},
+    {id:'cs-001',  backend_id:'customer-service',name:'客服 Agent',dept:'業務開發',status:'active',tasks:18,model:'Ollama qwen2.5:7b',icon:'🎧',desc:'客戶溝通、技術問題解答、滿意度追蹤',skills:['工單分類','情緒判讀','FAQ 秒回','主管升級判斷']},
+    {id:'prop-001',backend_id:'proposal',       name:'提案 Agent',dept:'業務開發',status:'active',tasks:12,model:'Ollama qwen2.5:7b',icon:'📝',desc:'商業企劃書、技術提案、方案設計',skills:['B2B 提案產生','ROI 計算','報價框架','規格對照']},
+    {id:'fe-001',  backend_id:'frontend',       name:'前端 Agent',dept:'技術研發',status:'active',tasks:35,model:'Ollama qwen2.5:7b',icon:'🎨',desc:'Web UI、Dashboard、介面設計',skills:['HTML/CSS/JS','Tailwind','互動動效','RWD']},
+    {id:'be-001',  backend_id:'backend',        name:'後端 Agent',dept:'技術研發',status:'active',tasks:41,model:'Ollama qwen2.5:7b',icon:'⚙️',desc:'API 開發、資料庫設計、核心業務邏輯',skills:['Flask / REST','SQLite','多租戶','稽核 Log']},
+    {id:'qa-001',  backend_id:'qa',             name:'QA Agent',dept:'技術研發',status:'active',tasks:29,model:'Ollama qwen2.5:7b + 規則',icon:'🧪',desc:'自動化測試、程式碼審查、品質保證',skills:['benchmark runner','F1 計算','PII recall','回歸測試']},
+    {id:'fin-001', backend_id:'finance',        name:'財務 Agent',dept:'營運管理',status:'active',tasks:15,model:'Ollama qwen2.5:7b',icon:'💰',desc:'成本追蹤、預算管控、Token 用量分析',skills:['P&L','Token 成本拆解','冷熱錢包','KPI 月結']},
+    {id:'legal-001',backend_id:'legal',         name:'法務 Agent',dept:'營運管理',status:'active',tasks:11,model:'Ollama qwen2.5:7b',icon:'⚖️',desc:'合規審查、合約審核、法律風險評估',skills:['個資法','營業秘密法','PII 攔截','人審閘']},
+    {id:'doc-001', backend_id:'docs',           name:'文件 Agent',dept:'營運管理',status:'active',tasks:20,model:'Ollama qwen2.5:7b',icon:'📄',desc:'技術文件、使用手冊、API 文檔',skills:['API Doc','Changelog','README','驗收報告']},
   ],
   clients: [
     {name:'addwii',progress:82,proposal:true,industry:'B2C 場域無塵室（嬰兒/廚房/浴室/客廳/臥室/餐廳 六款）',solution:'智慧組織管理系統 + AI 內容行銷 + 客訴情緒分析',steps:[1,1,1,1,0]},
@@ -849,20 +849,353 @@ function renderAgents(){
       </div>
       ${depts.map(d=>`
         <div><h2 class="text-lg font-bold mb-3 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-${deptColors[d]}-500"></span>${d}</h2>
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           ${DATA.agents.filter(a=>a.dept===d).map(a=>`
-            <div class="bg-${deptColors[d]}-900/20 border border-${deptColors[d]}-500/40 rounded-xl p-5 hover:scale-[1.02] transition-transform">
+            <div onclick="openAgentDrawer('${a.id}')" class="cursor-pointer bg-${deptColors[d]}-900/20 border border-${deptColors[d]}-500/40 rounded-xl p-5 hover:bg-${deptColors[d]}-900/40 hover:border-${deptColors[d]}-400 hover:scale-[1.02] hover:shadow-lg hover:shadow-${deptColors[d]}-500/30 transition-all">
               <div class="flex justify-between items-start mb-3">
-                <div><h3 class="text-lg font-bold">${a.name}</h3><span class="text-xs px-2 py-0.5 rounded-full bg-${deptColors[d]}-700 text-white">${a.dept}</span></div>
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">${a.icon||'🤖'}</span>
+                  <div><h3 class="text-lg font-bold">${a.name}</h3><span class="text-xs px-2 py-0.5 rounded-full bg-${deptColors[d]}-700 text-white">${a.dept}</span></div>
+                </div>
                 <span class="flex items-center gap-1 text-xs text-green-400"><span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>運行中</span>
               </div>
-              <div class="space-y-2 mt-4">
-                <div class="flex justify-between text-sm"><span class="text-slate-400">使用模型</span><span class="text-slate-200 font-mono text-xs">${a.model}</span></div>
+              ${a.desc ? `<div class="text-xs text-slate-300 mb-2 leading-relaxed">${escapeHtml(a.desc)}</div>` : ''}
+              <div class="space-y-2 mt-3">
+                <div class="flex justify-between text-sm"><span class="text-slate-400">使用模型</span><span class="text-slate-200 font-mono text-[11px]">${a.model}</span></div>
                 <div class="flex justify-between text-sm"><span class="text-slate-400">已完成任務</span><span class="font-bold">${a.tasks}</span></div>
                 <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2"><div class="bg-blue-500 h-1.5 rounded-full" style="width:${Math.min(a.tasks*2,100)}%"></div></div>
               </div>
+              <div class="mt-3 pt-3 border-t border-slate-700/50 text-[11px] text-${deptColors[d]}-300 flex items-center gap-1">
+                <span>💬 點擊卡片開啟詳情 · 聊天 / 任務 / 狀態 / Token</span>
+              </div>
             </div>`).join('')}
         </div></div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🤖 Agent 詳情 Drawer（聊天 / 任務 / 狀態 / Token）
+// ═══════════════════════════════════════════════════════════
+window._AGENT_DRAWER_STATE = { agent: null, tab: 'chat', chatHistory: [] };
+
+async function openAgentDrawer(agentFrontendId) {
+  const a = DATA.agents.find(x => x.id === agentFrontendId);
+  if (!a) return;
+  window._AGENT_DRAWER_STATE.agent = a;
+  window._AGENT_DRAWER_STATE.tab = 'chat';
+  if (!Array.isArray(window._AGENT_DRAWER_STATE.chatHistory)) window._AGENT_DRAWER_STATE.chatHistory = [];
+
+  // Build drawer DOM
+  let root = document.getElementById('__agent_drawer');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = '__agent_drawer';
+    document.body.appendChild(root);
+  }
+  root.innerHTML = `
+    <div id="__agent_drawer_backdrop" class="fixed inset-0 z-[9997] bg-black/60 backdrop-blur-sm"></div>
+    <div class="fixed top-0 right-0 z-[9998] h-full w-full md:w-[640px] bg-slate-900 border-l border-slate-600 shadow-2xl flex flex-col animate-[slideInRight_0.2s_ease-out]">
+      <!-- Header -->
+      <div class="flex items-center gap-3 p-4 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
+        <div class="text-3xl">${a.icon||'🤖'}</div>
+        <div class="flex-1">
+          <div class="text-lg font-bold text-white">${escapeHtml(a.name)}</div>
+          <div class="text-xs text-slate-400">${escapeHtml(a.dept)} · ${escapeHtml(a.model)} · <span class="text-green-400">● 運行中</span></div>
+          <div class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(a.desc||'')}</div>
+        </div>
+        <button onclick="closeAgentDrawer()" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-700">✕</button>
+      </div>
+      <!-- Tabs -->
+      <div class="flex gap-1 px-3 pt-3 border-b border-slate-700 bg-slate-950/50">
+        ${[
+          ['chat','💬 聊天互動'],['tasks','📋 任務執行'],
+          ['status','📊 執行狀態'],['tokens','💰 Token 消耗'],
+        ].map(([k,l]) => `
+          <button onclick="switchAgentDrawerTab('${k}')" data-agtab="${k}"
+            class="agtab-btn text-xs px-3 py-2 rounded-t transition-colors">
+            ${l}
+          </button>`).join('')}
+      </div>
+      <!-- Body -->
+      <div id="__agent_drawer_body" class="flex-1 overflow-y-auto p-4"></div>
+    </div>
+    <style>
+      @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    </style>`;
+
+  document.getElementById('__agent_drawer_backdrop').addEventListener('click', closeAgentDrawer);
+  document.addEventListener('keydown', _agentDrawerEsc);
+  switchAgentDrawerTab('chat');
+}
+
+function _agentDrawerEsc(e) { if (e.key === 'Escape') closeAgentDrawer(); }
+
+function closeAgentDrawer() {
+  const r = document.getElementById('__agent_drawer');
+  if (r) r.remove();
+  document.removeEventListener('keydown', _agentDrawerEsc);
+}
+
+function switchAgentDrawerTab(k) {
+  window._AGENT_DRAWER_STATE.tab = k;
+  document.querySelectorAll('.agtab-btn').forEach(b => {
+    const active = b.dataset.agtab === k;
+    b.classList.toggle('bg-slate-800', active);
+    b.classList.toggle('text-white', active);
+    b.classList.toggle('border', active);
+    b.classList.toggle('border-slate-600', active);
+    b.classList.toggle('border-b-slate-800', active);
+    b.classList.toggle('text-slate-400', !active);
+    b.classList.toggle('hover:text-white', !active);
+  });
+  const body = document.getElementById('__agent_drawer_body');
+  if (!body) return;
+  if (k === 'chat')   return _renderAgentChatTab(body);
+  if (k === 'tasks')  return _renderAgentTasksTab(body);
+  if (k === 'status') return _renderAgentStatusTab(body);
+  if (k === 'tokens') return _renderAgentTokensTab(body);
+}
+
+// ── 💬 聊天 tab ───────────────────────────────
+function _renderAgentChatTab(body) {
+  const a = window._AGENT_DRAWER_STATE.agent;
+  const hist = window._AGENT_DRAWER_STATE.chatHistory;
+  body.innerHTML = `
+    <div class="flex flex-col h-full">
+      <div id="__ag_chat_log" class="flex-1 overflow-y-auto space-y-2 pr-1 mb-3">
+        ${hist.length === 0 ? `
+          <div class="text-slate-500 text-xs text-center py-6">
+            💬 與 <b class="text-white">${escapeHtml(a.name)}</b> 對話<br>
+            <span class="text-[11px] opacity-70">可試問：${(a.skills||['你好']).slice(0,2).map(s=>`「${s}」`).join(' / ')}</span>
+          </div>` :
+          hist.map(m => `
+            <div class="${m.role==='user'?'text-right':''}">
+              <div class="inline-block max-w-[85%] rounded-lg px-3 py-2 text-sm ${m.role==='user'?'bg-blue-700 text-white':'bg-slate-800 text-slate-200 border border-slate-700'}">
+                <div class="text-[10px] opacity-60 mb-0.5">${m.role==='user'?'老闆':(a.name)}${m.source?` · ${escapeHtml(m.source)}`:''}${m.elapsed?` · ${m.elapsed}s`:''}</div>
+                <div class="whitespace-pre-wrap break-words">${escapeHtml(m.content)}</div>
+              </div>
+            </div>`).join('')
+        }
+      </div>
+      <div class="border-t border-slate-700 pt-3 space-y-2">
+        <div class="flex gap-2">
+          <input id="__ag_chat_input" type="text" placeholder="輸入訊息，按 Enter 送出..."
+            class="flex-1 bg-slate-950 border border-slate-600 rounded px-3 py-2 text-sm focus:border-blue-500 outline-none"
+            onkeydown="if(event.key==='Enter')sendAgentChat()"/>
+          <button onclick="sendAgentChat()" class="bg-blue-600 hover:bg-blue-500 rounded px-4 text-sm font-bold text-white">送出</button>
+        </div>
+        <label class="flex items-center gap-2 text-[11px] text-slate-400">
+          <input type="checkbox" id="__ag_chat_useai" class="rounded">
+          <span>啟用 AI 深化（Ollama Qwen 2.5 7B，約 20~40 秒 · 不勾即使用規則引擎秒回）</span>
+        </label>
+      </div>
+    </div>`;
+  const logEl = document.getElementById('__ag_chat_log');
+  if (logEl) logEl.scrollTop = logEl.scrollHeight;
+  setTimeout(() => { const i = document.getElementById('__ag_chat_input'); if (i) i.focus(); }, 50);
+}
+
+async function sendAgentChat() {
+  const a = window._AGENT_DRAWER_STATE.agent;
+  const input = document.getElementById('__ag_chat_input');
+  const useAi = document.getElementById('__ag_chat_useai')?.checked;
+  if (!a || !input) return;
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  window._AGENT_DRAWER_STATE.chatHistory.push({ role:'user', content: msg });
+  window._AGENT_DRAWER_STATE.chatHistory.push({ role:'agent', content: useAi ? '🧠 AI 深化中...（本地 LLM，約 20~40 秒）' : '⏳ 規則引擎處理中...', source:'loading' });
+  _renderAgentChatTab(document.getElementById('__agent_drawer_body'));
+
+  const r = await safeFetch(API_BASE + '/api/chat', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ agent: a.backend_id, message: msg, use_ai: !!useAi }),
+    timeoutMs: useAi ? 75000 : 15000,
+  });
+  // Pop loading placeholder
+  const hist = window._AGENT_DRAWER_STATE.chatHistory;
+  if (hist.length && hist[hist.length-1].source === 'loading') hist.pop();
+
+  if (!r.ok) {
+    hist.push({ role:'agent', content: '❌ ' + (r.error || '連線失敗'), source:'error' });
+  } else {
+    const d = r.data || {};
+    hist.push({
+      role:'agent',
+      content: d.response || d.answer || '(無內容)',
+      source: d.source || 'rule',
+      elapsed: d.elapsed ?? null,
+    });
+  }
+  _renderAgentChatTab(document.getElementById('__agent_drawer_body'));
+}
+
+// ── 📋 任務 tab ───────────────────────────────
+async function _renderAgentTasksTab(body) {
+  const a = window._AGENT_DRAWER_STATE.agent;
+  body.innerHTML = loadingHTML('讀取任務歷史...');
+  const r = await safeFetch(API_BASE + '/api/tasks');
+  if (!r.ok) { body.innerHTML = errorHTML(r); return; }
+  const all = r.data || [];
+  // Filter by this agent's backend id
+  const mine = all.filter(t => t.agent_id === a.backend_id).reverse();
+  if (!mine.length) {
+    body.innerHTML = `
+      <div class="text-center py-10">
+        <div class="text-4xl mb-3">📭</div>
+        <div class="text-slate-400 text-sm">此 Agent 尚無任務紀錄</div>
+        <div class="text-[11px] text-slate-500 mt-1">切到「💬 聊天」發幾個訊息試試</div>
+      </div>`;
+    return;
+  }
+  body.innerHTML = `
+    <div class="mb-3 text-xs text-slate-400">共 <b class="text-white">${mine.length}</b> 筆任務 · 最新在前</div>
+    <div class="space-y-2">
+      ${mine.map(t => `
+        <div class="bg-slate-800 border border-slate-700 rounded-lg p-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-mono text-[11px] text-indigo-300">${escapeHtml(t.id || '')}</span>
+            <span class="text-[11px] text-slate-500">${escapeHtml(t.timestamp||'')}</span>
+            ${t.elapsed_seconds != null ? `<span class="ml-auto text-[11px] text-emerald-300">${t.elapsed_seconds}s</span>` : ''}
+          </div>
+          <div class="text-xs text-blue-300 mb-1">輸入：</div>
+          <div class="text-sm text-slate-200 bg-slate-950/60 rounded p-2 mb-2">${escapeHtml((t.input||'').slice(0,160))}${(t.input||'').length>160?'…':''}</div>
+          <div class="text-xs text-green-300 mb-1">輸出：</div>
+          <div class="text-sm text-slate-300 bg-slate-950/60 rounded p-2">${escapeHtml((t.output||'').slice(0,200))}${(t.output||'').length>200?'…':''}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── 📊 狀態 tab ───────────────────────────────
+async function _renderAgentStatusTab(body) {
+  const a = window._AGENT_DRAWER_STATE.agent;
+  body.innerHTML = loadingHTML('讀取 Agent 狀態...');
+  const [agsR, tasksR] = await Promise.all([
+    safeFetch(API_BASE + '/api/agents'),
+    safeFetch(API_BASE + '/api/tasks'),
+  ]);
+  if (!agsR.ok) { body.innerHTML = errorHTML(agsR); return; }
+  const allAgents = agsR.data || [];
+  const backend = allAgents.find(x => x.id === a.backend_id) || {};
+  const tasks = (tasksR.ok ? (tasksR.data || []) : []).filter(t => t.agent_id === a.backend_id);
+  const lastTask = tasks[tasks.length - 1];
+  const avgElapsed = tasks.length
+    ? (tasks.map(t => Number(t.elapsed_seconds)||0).reduce((s,v)=>s+v,0) / tasks.length).toFixed(2)
+    : '—';
+  body.innerHTML = `
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="bg-slate-800 border border-green-500/40 rounded-lg p-3">
+        <div class="text-[11px] text-green-300">目前狀態</div>
+        <div class="text-xl font-bold text-white mt-1">● ${escapeHtml(backend.status || 'active')}</div>
+      </div>
+      <div class="bg-slate-800 border border-blue-500/40 rounded-lg p-3">
+        <div class="text-[11px] text-blue-300">已完成任務</div>
+        <div class="text-xl font-bold text-white mt-1">${backend.tasksCompleted ?? tasks.length}</div>
+      </div>
+      <div class="bg-slate-800 border border-amber-500/40 rounded-lg p-3">
+        <div class="text-[11px] text-amber-300">平均耗時</div>
+        <div class="text-xl font-bold text-white mt-1">${avgElapsed}<span class="text-xs text-slate-400 ml-1">s</span></div>
+      </div>
+      <div class="bg-slate-800 border border-purple-500/40 rounded-lg p-3">
+        <div class="text-[11px] text-purple-300">部門</div>
+        <div class="text-xl font-bold text-white mt-1">${escapeHtml(a.dept)}</div>
+      </div>
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-3 mb-4">
+      <div class="text-sm font-bold text-slate-200 mb-2">🎯 專長能力</div>
+      <div class="flex flex-wrap gap-1.5">
+        ${(a.skills||[]).map(s => `<span class="text-[11px] bg-slate-700 text-slate-200 rounded-full px-2 py-0.5">${escapeHtml(s)}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-3 mb-4">
+      <div class="text-sm font-bold text-slate-200 mb-2">🕒 最近活動</div>
+      ${lastTask ? `
+        <div class="text-[11px] text-slate-400 mb-1">${escapeHtml(lastTask.timestamp || '')}</div>
+        <div class="text-sm text-slate-300">${escapeHtml((lastTask.input||'').slice(0,120))}</div>
+      ` : '<div class="text-xs text-slate-500">尚無活動紀錄</div>'}
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-3">
+      <div class="text-sm font-bold text-slate-200 mb-2">🔧 技術堆疊</div>
+      <div class="text-xs text-slate-400 space-y-1">
+        <div>模型：<span class="text-slate-200 font-mono">${escapeHtml(a.model)}</span></div>
+        <div>執行環境：<span class="text-emerald-300">本地推論 · 零雲端 API</span></div>
+        <div>合規控制：<span class="text-emerald-300">PII Guard ✓ · 稽核 Log ✓ · 人審閘 ✓</span></div>
+      </div>
+    </div>`;
+}
+
+// ── 💰 Token tab ──────────────────────────────
+async function _renderAgentTokensTab(body) {
+  const a = window._AGENT_DRAWER_STATE.agent;
+  body.innerHTML = loadingHTML('讀取 Token 使用量...');
+  const [tokR, tasksR] = await Promise.all([
+    safeFetch(API_BASE + '/api/tokens'),
+    safeFetch(API_BASE + '/api/tasks'),
+  ]);
+  if (!tokR.ok) { body.innerHTML = errorHTML(tokR); return; }
+  const tok = tokR.data || {};
+  const allTasks = tasksR.ok ? (tasksR.data || []) : [];
+  const mine = allTasks.filter(t => t.agent_id === a.backend_id);
+  // Approx tokens by string length (backend counts chars as proxy)
+  const myChars = mine.reduce((s,t) => s + (t.input?.length||0) + (t.output?.length||0), 0);
+  const totalChars = tok.total || 0;
+  const pct = totalChars ? (myChars / totalChars * 100) : 0;
+  body.innerHTML = `
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="bg-gradient-to-br from-emerald-900/50 to-slate-800 border border-emerald-500/40 rounded-lg p-3">
+        <div class="text-[11px] text-emerald-300">本 Agent 累積用量</div>
+        <div class="text-2xl font-bold text-white mt-1">${myChars.toLocaleString()}</div>
+        <div class="text-[11px] text-slate-400 mt-1">約等於 chars；免費（本地 Ollama）</div>
+      </div>
+      <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600 rounded-lg p-3">
+        <div class="text-[11px] text-slate-300">全公司累積</div>
+        <div class="text-2xl font-bold text-white mt-1">${totalChars.toLocaleString()}</div>
+        <div class="text-[11px] text-slate-400 mt-1">佔比 ${pct.toFixed(1)}%</div>
+      </div>
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-3 mb-4">
+      <div class="text-sm font-bold text-slate-200 mb-2">💸 成本換算（對照雲端 API）</div>
+      <table class="w-full text-xs">
+        <thead class="text-slate-400">
+          <tr><th class="text-left py-1">供應商 / 模型</th><th class="text-right">若付費需</th><th class="text-right">實際支出</th></tr>
+        </thead>
+        <tbody class="text-slate-200">
+          <tr class="border-t border-slate-700">
+            <td class="py-1.5">Claude Sonnet 4 ($3 / $15 per MTok)</td>
+            <td class="text-right">$${(myChars/1_000_000*9).toFixed(4)}</td>
+            <td class="text-right text-emerald-300">$0.00</td>
+          </tr>
+          <tr class="border-t border-slate-700">
+            <td class="py-1.5">GPT-4o ($2.5 / $10 per MTok)</td>
+            <td class="text-right">$${(myChars/1_000_000*6.25).toFixed(4)}</td>
+            <td class="text-right text-emerald-300">$0.00</td>
+          </tr>
+          <tr class="border-t border-slate-700">
+            <td class="py-1.5">Ollama Qwen 2.5 7B 本地</td>
+            <td class="text-right text-emerald-300">$0.00</td>
+            <td class="text-right text-emerald-300 font-bold">$0.00 ✓</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="text-[11px] text-slate-500 mt-2">※ 凌策全部 Agent 走本地 Ollama，零雲端 API 費用</div>
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-3">
+      <div class="text-sm font-bold text-slate-200 mb-2">📊 按模型分佈（全公司）</div>
+      <div class="space-y-1.5 text-xs">
+        ${Object.entries(tok.by_model || {}).map(([k,v]) => `
+          <div class="flex items-center gap-2">
+            <span class="w-24 text-slate-400">${escapeHtml(k)}</span>
+            <div class="flex-1 h-2 bg-slate-950 rounded-full overflow-hidden">
+              <div class="h-full bg-emerald-500" style="width:${totalChars?Math.min((v/totalChars*100),100):0}%"></div>
+            </div>
+            <span class="font-mono text-slate-300">${Number(v).toLocaleString()}</span>
+          </div>`).join('') || '<div class="text-slate-500">尚無資料</div>'}
+      </div>
     </div>`;
 }
 
