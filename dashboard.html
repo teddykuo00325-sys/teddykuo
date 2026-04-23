@@ -9314,17 +9314,51 @@ async function accDoFeedback(custom){
 
 // ── 3. B2B 提案 ──
 function accRenderProposal(){
+  // 依當前 tenant 預填不同 preset（對應各 docx 驗收測試題）
+  const tenant = (typeof CURRENT_TENANT !== 'undefined' ? CURRENT_TENANT : 'addwii');
+  const addwiiPresets = [
+    {label:'📌 驗收題：工程整合商 20 坪 PM2.5+VOC',
+     industry:'工程整合商', scale:'20 坪辦公空間', budget:'NT$ 200,000 以內',
+     pain:'需同時淨化 PM2.5 與 VOC，空間 20 坪', area_ping:20},
+    {label:'嬰幼兒場域（8 坪）',
+     industry:'月子中心 / 嬰兒房代工', scale:'8 坪 × 12 房', budget:'NT$ 80,000 / 間',
+     pain:'嬰兒 PM2.5 ≤ 5 μg/m³ 要求 + 夜間靜音 ≤ 40 dB', area_ping:8},
+    {label:'健身房連鎖（30 坪 / 店）',
+     industry:'健身連鎖', scale:'30 坪 × 10 店', budget:'NT$ 150,000 / 店',
+     pain:'汗味 + CO₂ 超標 + VOC 清潔劑殘留', area_ping:30},
+  ];
+  const mjPresets = [
+    {label:'製造廠 B2B 整合需求',
+     industry:'食品製造', scale:'300 人', budget:'NT$ 500 萬',
+     pain:'人工貼標出錯率 2%，追溯困難', area_ping:''},
+  ];
+  const presets = tenant === 'addwii' ? addwiiPresets : mjPresets;
+  const p0 = presets[0];
+  const showArea = tenant === 'addwii';
+  const defaultCustomer = tenant === 'addwii' ? 'addwii' : (tenant === 'microjet' ? 'microjet' : 'addwii');
+
   document.getElementById('acc-body').innerHTML = `
     <div class="bg-slate-800 rounded-xl p-5 space-y-3">
+      ${tenant === 'addwii' ? `
+        <div class="bg-sky-900/30 border border-sky-500/40 rounded p-3 text-xs text-sky-200 mb-2">
+          <b>🏠 addwii 驗收構面 3（20 分）</b>：B2B 提案文件自動生成 · 驗收題為「工程整合商 20 坪 PM2.5+VOC · 預算 NT$200K」·
+          5 分鐘內產出，CADR / 規格 / 報價自動填入。
+        </div>
+        <div class="flex gap-1 flex-wrap mb-1">
+          ${presets.map((p,i)=>`<button onclick="accFillProposalPreset(${i})" class="text-[11px] bg-slate-700 hover:bg-sky-600 rounded px-2 py-1">${escapeHtml(p.label)}</button>`).join('')}
+        </div>` : ''}
       <div class="grid grid-cols-2 gap-2">
         <select id="pp-customer" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
-          <option value="addwii">addwii — Home Clean Room</option>
-          <option value="microjet">microjet — MJ-3200</option>
+          <option value="addwii" ${defaultCustomer==='addwii'?'selected':''}>addwii — Home Clean Room</option>
+          <option value="microjet" ${defaultCustomer==='microjet'?'selected':''}>microjet — MJ-3200</option>
         </select>
-        <input id="pp-ind" placeholder="客戶產業 (如：食品製造)" value="食品製造" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
-        <input id="pp-scale" placeholder="規模" value="300 人" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
-        <input id="pp-budget" placeholder="預算" value="NT$ 500 萬" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
-        <input id="pp-pain" placeholder="痛點描述" value="人工貼標出錯率 2%，追溯困難" class="col-span-2 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="pp-ind" placeholder="客戶產業" value="${escapeHtml(p0.industry)}" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="pp-scale" placeholder="規模" value="${escapeHtml(p0.scale)}" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="pp-budget" placeholder="預算" value="${escapeHtml(p0.budget)}" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="pp-pain" placeholder="痛點描述" value="${escapeHtml(p0.pain)}" class="col-span-2 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        ${showArea ? `
+          <input id="pp-area" type="number" min="1" placeholder="坪數（addwii 必填 → 觸發 HCR 型號 + CADR 自動配對）" value="${p0.area_ping||''}" class="col-span-2 bg-slate-900 border border-sky-600 rounded px-3 py-2 text-sm">
+        ` : `<input type="hidden" id="pp-area" value="">`}
       </div>
       <div class="flex items-center gap-3 flex-wrap">
         <button onclick="accDoProposal()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded text-sm">🚀 生成提案</button>
@@ -9336,16 +9370,29 @@ function accRenderProposal(){
       </div>
       <div id="pp-result"></div>
     </div>`;
+  // 存 presets 給按鈕用
+  window._ACC_PROPOSAL_PRESETS = presets;
+}
+function accFillProposalPreset(i){
+  const p = (window._ACC_PROPOSAL_PRESETS||[])[i];
+  if (!p) return;
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
+  set('pp-ind', p.industry); set('pp-scale', p.scale);
+  set('pp-budget', p.budget); set('pp-pain', p.pain);
+  set('pp-area', p.area_ping||'');
 }
 async function accDownloadProposalPDF(){
+  const areaVal = parseFloat(document.getElementById('pp-area')?.value || '') || null;
+  const profile = {
+    industry: document.getElementById('pp-ind').value,
+    scale: document.getElementById('pp-scale').value,
+    budget: document.getElementById('pp-budget').value,
+    pain_point: document.getElementById('pp-pain').value,
+  };
+  if (areaVal) profile.area_ping = areaVal;
   const body = {
     customer: document.getElementById('pp-customer').value,
-    profile: {
-      industry: document.getElementById('pp-ind').value,
-      scale: document.getElementById('pp-scale').value,
-      budget: document.getElementById('pp-budget').value,
-      pain_point: document.getElementById('pp-pain').value,
-    },
+    profile,
   };
   const r = await fetch(API_BASE + '/api/acceptance/proposal-pdf', {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
@@ -9363,14 +9410,17 @@ async function accDoProposal(){
   document.getElementById('pp-result').innerHTML = useAI
     ? '<div class="text-purple-300 text-sm">生成中 + 🧠 Qwen AI 客製化開場白...</div>'
     : '<div class="text-slate-400 text-sm">生成中...</div>';
+  const areaVal = parseFloat(document.getElementById('pp-area')?.value || '') || null;
+  const profile = {
+    industry: document.getElementById('pp-ind').value,
+    scale: document.getElementById('pp-scale').value,
+    budget: document.getElementById('pp-budget').value,
+    pain_point: document.getElementById('pp-pain').value,
+  };
+  if (areaVal) profile.area_ping = areaVal;  // 觸發後端 HCR 型號 + CADR 自動配對
   const r = await accPost('/api/acceptance/proposal', {
     customer: document.getElementById('pp-customer').value,
-    profile: {
-      industry: document.getElementById('pp-ind').value,
-      scale: document.getElementById('pp-scale').value,
-      budget: document.getElementById('pp-budget').value,
-      pain_point: document.getElementById('pp-pain').value,
-    },
+    profile,
     use_ai: useAI,
     user: (typeof ORG_CURRENT_USER_PERSONA!=='undefined'?ORG_CURRENT_USER_PERSONA:'guest')
   });
@@ -9400,18 +9450,49 @@ async function accDoProposal(){
 
 // ── 4. 內容行銷 ──
 function accRenderContent(){
+  const tenant = (typeof CURRENT_TENANT !== 'undefined' ? CURRENT_TENANT : 'addwii');
+  const addwiiPresets = [
+    {label:'📌 驗收題：嬰幼兒房空氣淨化（300 字・官網）',
+     topic:'嬰幼兒房空氣淨化', channel:'Blog',
+     seo:'嬰兒房空氣清淨, PM2.5 過濾, CADR 認證'},
+    {label:'浴室除濕除臭（IG）',
+     topic:'浴室除濕除臭 · 揮別潮濕霉味', channel:'IG',
+     seo:'浴室除濕, 黴菌防護, 除臭'},
+    {label:'廚房油煙淨化（FB）',
+     topic:'廚房油煙 + VOC 淨化，煮完馬上呼吸清新', channel:'FB',
+     seo:'廚房空氣清淨, 油煙過濾, VOC 清除'},
+    {label:'客廳 CADR 選型指南（Blog）',
+     topic:'客廳坪數 vs CADR 選型完整指南', channel:'Blog',
+     seo:'CADR 認證, 客廳空氣清淨機, HCR-300'},
+  ];
+  const mjPresets = [
+    {label:'B2B 精密感測內容',
+     topic:'CurieJet 感測器在智慧工廠的 3 種應用', channel:'LinkedIn',
+     seo:'CurieJet, MEMS 感測器, 智慧工廠'},
+  ];
+  const presets = tenant === 'addwii' ? addwiiPresets : mjPresets;
+  const p0 = presets[0];
+
   document.getElementById('acc-body').innerHTML = `
     <div class="bg-slate-800 rounded-xl p-5">
+      ${tenant === 'addwii' ? `
+        <div class="bg-sky-900/30 border border-sky-500/40 rounded p-3 text-xs text-sky-200 mb-3">
+          <b>🏠 addwii 驗收構面 4（15 分）</b>：內容行銷自動化 · 驗收題為「嬰幼兒房空氣淨化 · 300 字繁中 · 必植入 3 個 SEO 關鍵字」·
+          品牌調性：專業、溫暖、可信賴。
+        </div>
+        <div class="flex gap-1 flex-wrap mb-2">
+          ${presets.map((p,i)=>`<button onclick="accFillContentPreset(${i})" class="text-[11px] bg-slate-700 hover:bg-sky-600 rounded px-2 py-1">${escapeHtml(p.label)}</button>`).join('')}
+        </div>` : ''}
       <div class="flex gap-2 mb-3">
-        <input id="ct-topic" placeholder="主題" value="春季過敏季，室內空氣這樣顧" class="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="ct-topic" placeholder="主題" value="${escapeHtml(p0.topic)}" class="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
         <select id="ct-ch" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
-          <option>FB</option><option>IG</option><option>LinkedIn</option><option>Blog</option>
+          ${['FB','IG','LinkedIn','Blog'].map(c=>`<option ${c===p0.channel?'selected':''}>${c}</option>`).join('')}
         </select>
         <button onclick="accDoContent()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 rounded text-sm">🚀 生成</button>
       </div>
       <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
         <span>📌 必植入 SEO 關鍵字：</span>
-        <input id="ct-seo" value="嬰兒房空氣清淨, PM2.5 過濾, CADR 認證"
+        <input id="ct-seo" value="${escapeHtml(p0.seo)}"
                class="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs"
                title="以逗號分隔；對應 addwii 驗收測試題四的指定關鍵字">
       </label>
@@ -9421,6 +9502,15 @@ function accRenderContent(){
       </label>
       <div id="ct-result"></div>
     </div>`;
+  window._ACC_CONTENT_PRESETS = presets;
+}
+function accFillContentPreset(i){
+  const p = (window._ACC_CONTENT_PRESETS||[])[i];
+  if (!p) return;
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
+  set('ct-topic', p.topic); set('ct-seo', p.seo);
+  const sel = document.getElementById('ct-ch');
+  if (sel) [...sel.options].forEach(o => o.selected = (o.value === p.channel));
 }
 async function accDoContent(){
   const useAI = !!document.getElementById('ct-use-ai')?.checked;
