@@ -12121,17 +12121,20 @@ function _triggerOldAccTabRender(tenant, tabKey) {
     window.ACC_CLIENT = tenant;
   }
   // Tab 映射：new tab_key → old accRender function
+  // microjet 'proposal' tab 走專屬 8 段落 endpoint（符合 docx 場景 C 「8 大段落」要求）
   const map = {
     'qa':          () => typeof accRenderQA === 'function'       && accRenderQA(),
     'feedback':    () => typeof accRenderFeedback === 'function' && accRenderFeedback(),
-    'proposal':    () => typeof accRenderProposal === 'function' && accRenderProposal(),
+    'proposal':    () => {
+      if (tenant === 'microjet') return _renderMJ8SecProposal();
+      return typeof accRenderProposal === 'function' && accRenderProposal();
+    },
     'content':     () => typeof accRenderContent === 'function'  && accRenderContent(),
     'csv':         () => typeof accRenderCSV === 'function'      && accRenderCSV(),
-    // microjet 專屬（舊版沒有 → 用 product-qa 映射；AI 深化也支援）
     'printer-qa':  () => typeof accRenderQA === 'function'       && accRenderQA(),
-    // microjet 新端點（舊 accRender 沒有），用簡化 demo 按鈕版
-    'tickets':     () => _renderMJCustomZone('tickets',   '/api/microjet/classify-tickets',  '分類 6 筆工單 demo'),
-    'dashboard':   () => _renderMJCustomZone('dashboard', '/api/microjet/daily-dashboard',   '產出 12 筆回饋日報 demo'),
+    // microjet 新端點 — 視覺化呈現（取代純 JSON dump）
+    'tickets':     () => _renderMJTicketsZone(),
+    'dashboard':   () => _renderMJDashboardZone(),
     'sec':         () => _renderMJCustomZone('sec',       '/api/microjet/compliance-gaps',   '25 項合規控制點掃描', 'GET'),
   };
   const fn = map[tabKey];
@@ -12159,6 +12162,353 @@ function _triggerOldAccTabRender(tenant, tabKey) {
     _lockCustomerSelect('pp-customer');
     if (typeof accUpdateChips === 'function') accUpdateChips();
   }, 80);
+}
+
+// ──────────────────────────────────────────────
+// microjet 場景 C · B2B 提案 8 段落（專屬 endpoint）
+// ──────────────────────────────────────────────
+function _renderMJ8SecProposal() {
+  const body = document.getElementById('acc-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="bg-amber-900/20 border border-amber-500/40 rounded-xl p-4 mb-3 text-xs text-amber-200">
+      <b>🏭 microjet 場景 C（20 分）</b> · B2B 提案 8 段落自動生成。
+      docx 要求：摘要 / 合作回顧 / 市場分析 / 新品推薦 / 採購方案 / 通路活動 / 雙方承諾 / 附件，3 分鐘內產出。
+    </div>
+    <div class="bg-slate-800 rounded-xl p-5 space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <input id="mj8-name" placeholder="客戶名稱" value="奇景光電" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mj8-region" placeholder="地區" value="新竹" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mj8-goal" placeholder="目標" value="2026 年度智慧製造升級" class="col-span-2 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+      </div>
+      <div class="flex gap-2">
+        <button onclick="_runMJ8Sec()" class="bg-amber-600 hover:bg-amber-500 rounded px-4 py-2 text-sm font-bold">🚀 生成 8 段提案</button>
+        <span class="text-[11px] text-slate-500 self-center">POST /api/microjet/b2b-proposal-8sec</span>
+      </div>
+      <div id="mj8-result"></div>
+    </div>`;
+}
+
+async function _runMJ8Sec() {
+  const res = document.getElementById('mj8-result');
+  if (!res) return;
+  res.innerHTML = `<div class="text-amber-300 text-sm flex items-center gap-2 py-3"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>生成中...</div>`;
+  const body = JSON.stringify({
+    client_profile: {
+      name: document.getElementById('mj8-name')?.value || '奇景光電',
+      region: document.getElementById('mj8-region')?.value || '新竹',
+      goal: document.getElementById('mj8-goal')?.value || '智慧製造升級',
+      history_months: 12,
+      history_records: [
+        {date:'2025-08', model:'MJ-3200', qty:2, revenue:240000},
+        {date:'2025-11', model:'CurieJet P760', qty:30, revenue:96000},
+        {date:'2026-02', model:'MJ-3200', qty:1, revenue:120000},
+      ],
+      target_models: ['MJ-3200 Pro','CurieJet P760 GAS'],
+    },
+    user: 'judge',
+  });
+  const t0 = Date.now();
+  const r = await safeFetch(API_BASE + '/api/microjet/b2b-proposal-8sec',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body });
+  if (!r.ok) {
+    res.innerHTML = errorHTML(r);
+    return;
+  }
+  const d = r.data || {};
+  const ms = Date.now() - t0;
+  const sections = d.sections || {};
+  const order = d.section_order || Object.keys(sections);
+  const completeness = d.completeness_pct ?? 0;
+  const missing = d.missing_sections || [];
+  const passColor = completeness === 100 ? 'emerald' : 'amber';
+
+  // 存歷史
+  try {
+    const sc = (typeof SIM_SCENARIOS !== 'undefined') ? SIM_SCENARIOS.find(s => s.id === 'microjet') : null;
+    _simHistorySave({
+      report_id: `REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp: new Date().toISOString(),
+      tenant: 'microjet', scenario_label: '場景 C · B2B 提案 8 段落',
+      tab_key: 'proposal', weight: 20,
+      question: `(B2B 提案) ${document.getElementById('mj8-name')?.value || '奇景光電'}`,
+      agents: ['orchestrator','bd','proposal','fin','legal','doc'],
+      api_path: '/api/microjet/b2b-proposal-8sec',
+      elapsed_ms: ms, success: completeness === 100,
+      task_id: d.task_id || '—',
+      summary_snippet: `8 段落完整度 ${completeness}%`,
+    });
+  } catch(e) {}
+  toast(`✅ 8 段提案完成 · ${ms}ms · ${completeness}% 完整度`, 'success', 3000);
+
+  res.innerHTML = `
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <div class="bg-${passColor}-900/30 border border-${passColor}-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-${passColor}-300">8 段落完整度</div>
+        <div class="text-2xl font-bold text-${passColor}-200">${completeness}%</div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-2 text-center">
+        <div class="text-[10px] text-slate-400">耗時</div>
+        <div class="text-2xl font-bold text-cyan-300">${ms}<span class="text-xs">ms</span></div>
+        <div class="text-[10px] text-slate-500">門檻 ≤ 3 min</div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-2 text-center">
+        <div class="text-[10px] text-slate-400">客戶 / Task</div>
+        <div class="text-sm font-bold text-white truncate">${escapeHtml(d.client_name || '')}</div>
+        <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(d.task_id || '—')}</div>
+      </div>
+    </div>
+    ${missing.length ? `<div class="bg-rose-900/30 border border-rose-500/40 rounded p-2 mb-2 text-xs text-rose-200">⚠️ 缺少段落：${missing.map(escapeHtml).join('、')}</div>` : ''}
+    <div class="space-y-2">
+      ${order.map((title, i) => `
+        <div class="bg-slate-900/60 border border-slate-700 rounded-lg overflow-hidden">
+          <div class="bg-amber-900/30 border-b border-amber-500/30 px-3 py-1.5 flex items-center gap-2">
+            <span class="text-amber-300 font-bold text-sm">${i+1}</span>
+            <span class="text-white text-sm font-bold">${escapeHtml(title)}</span>
+            <span class="ml-auto text-[10px] text-emerald-300">✓</span>
+          </div>
+          <div class="p-3 text-xs text-slate-200 whitespace-pre-wrap">${escapeHtml(sections[title] || '(空)')}</div>
+        </div>`).join('')}
+    </div>
+    ${d.workflow ? `
+      <div class="mt-3 bg-slate-900/40 border border-slate-700 rounded p-2">
+        <div class="text-[11px] text-slate-400 mb-1">🤖 AI Agent 工作流（${d.workflow.length} 節點）</div>
+        <div class="flex flex-wrap gap-1">
+          ${d.workflow.map(w => `<span class="text-[10px] bg-slate-700 text-slate-200 rounded px-1.5 py-0.5">${escapeHtml(w.name||w)}</span>`).join('')}
+        </div>
+      </div>` : ''}`;
+}
+
+// ──────────────────────────────────────────────
+// microjet 場景 D · 客戶回饋日報 Dashboard
+// ──────────────────────────────────────────────
+async function _renderMJDashboardZone() {
+  const body = document.getElementById('acc-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="bg-amber-900/20 border border-amber-500/40 rounded-xl p-4 mb-3 text-xs text-amber-200">
+      <b>🏭 microjet 場景 D（15 分）</b> · 客戶回饋日報自動生成。
+      docx 要求：Top3 抱怨 / Top3 讚美 / 新興風險 / 改善建議。情感分析 ≥ 85%、主題分類 ≥ 80%、產出 ≤ 5 min。
+    </div>
+    <div class="bg-slate-800 rounded-xl p-5 space-y-3">
+      <div class="text-sm text-slate-300">將分析 12 筆模擬多平台評論（官網 / PChome / Momo / Google / FB），自動生成日報 Dashboard。</div>
+      <div class="text-[11px] text-slate-500 font-mono">POST /api/microjet/daily-dashboard</div>
+      <div class="flex gap-2">
+        <button onclick="_runMJDashboard()" class="bg-amber-600 hover:bg-amber-500 rounded px-4 py-2 text-sm font-bold">📊 產出日報 Dashboard</button>
+      </div>
+      <div id="mjd-result"></div>
+    </div>`;
+}
+
+async function _runMJDashboard() {
+  const res = document.getElementById('mjd-result');
+  if (!res) return;
+  res.innerHTML = `<div class="text-amber-300 text-sm flex items-center gap-2 py-3"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>分析中...</div>`;
+  const t0 = Date.now();
+  const r = await safeFetch(API_BASE + '/api/microjet/daily-dashboard',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  if (!r.ok) { res.innerHTML = errorHTML(r); return; }
+  const d = r.data || {};
+  const ms = Date.now() - t0;
+  const sb = d.sentiment_breakdown || {};
+  const total = (sb['正面']||0)+(sb['中性']||0)+(sb['負面']||0);
+  const pos = total ? Math.round((sb['正面']||0)/total*100) : 0;
+  const neg = total ? Math.round((sb['負面']||0)/total*100) : 0;
+  const neu = 100 - pos - neg;
+  const platforms = d.by_platform || {};
+
+  try {
+    _simHistorySave({
+      report_id: `REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp: new Date().toISOString(),
+      tenant: 'microjet', scenario_label: '場景 D · 客戶回饋日報',
+      tab_key: 'dashboard', weight: 15,
+      question: '(日報) 12 筆多平台評論',
+      agents: ['orchestrator','cs','qa','doc'],
+      api_path: '/api/microjet/daily-dashboard',
+      elapsed_ms: ms, success: true, task_id: d.task_id || '—',
+      summary_snippet: `Top3 抱怨 ${(d.top3_complaints||[]).length} / 讚美 ${(d.top3_praises||[]).length}`,
+    });
+  } catch(e) {}
+  toast(`✅ 日報完成 · ${ms}ms`, 'success', 3000);
+
+  res.innerHTML = `
+    <!-- 標題列 -->
+    <div class="bg-gradient-to-r from-amber-900/40 to-orange-900/40 border border-amber-500/40 rounded-lg p-3 mb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">📊</span>
+        <div class="flex-1">
+          <div class="text-base font-bold text-white">${escapeHtml(d.report_title || 'microjet 客戶回饋日報')}</div>
+          <div class="text-[11px] text-amber-200">${escapeHtml(d.report_date || '')} · 平均評分 ${d.avg_rating || '-'}/5 · 耗時 ${ms}ms · Task ${escapeHtml(d.task_id||'-')}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 情感分布條 -->
+    <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-3 mb-3">
+      <div class="text-xs text-slate-300 mb-2">📈 情感分布（${total} 筆評論）</div>
+      <div class="h-6 bg-slate-950 rounded overflow-hidden flex">
+        <div class="bg-emerald-500 flex items-center justify-center text-white text-xs font-bold" style="width:${pos}%">${pos>5?`正 ${pos}%`:''}</div>
+        <div class="bg-slate-500 flex items-center justify-center text-white text-xs font-bold" style="width:${neu}%">${neu>5?`中 ${neu}%`:''}</div>
+        <div class="bg-rose-500 flex items-center justify-center text-white text-xs font-bold" style="width:${neg}%">${neg>5?`負 ${neg}%`:''}</div>
+      </div>
+    </div>
+
+    <!-- 4 大區塊 -->
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <!-- Top3 抱怨 -->
+      <div class="bg-slate-900/60 border border-rose-500/40 rounded-lg p-3">
+        <div class="text-rose-300 text-sm font-bold mb-2">😣 Top 3 抱怨</div>
+        <div class="space-y-1.5">
+          ${(d.top3_complaints||[]).map((c,i) => `
+            <div class="flex items-center gap-2 text-xs">
+              <span class="bg-rose-700 text-white rounded-full w-5 h-5 flex items-center justify-center font-bold">${i+1}</span>
+              <span class="flex-1 text-slate-200">${escapeHtml(c.topic||c.theme||c.label||c)}</span>
+              <span class="text-rose-300 font-mono">${c.count||c.mentions||c.score||''}</span>
+            </div>`).join('') || '<div class="text-slate-500 text-xs">無</div>'}
+        </div>
+      </div>
+      <!-- Top3 讚美 -->
+      <div class="bg-slate-900/60 border border-emerald-500/40 rounded-lg p-3">
+        <div class="text-emerald-300 text-sm font-bold mb-2">😊 Top 3 讚美</div>
+        <div class="space-y-1.5">
+          ${(d.top3_praises||[]).map((p,i) => `
+            <div class="flex items-center gap-2 text-xs">
+              <span class="bg-emerald-700 text-white rounded-full w-5 h-5 flex items-center justify-center font-bold">${i+1}</span>
+              <span class="flex-1 text-slate-200">${escapeHtml(p.topic||p.theme||p.label||p)}</span>
+              <span class="text-emerald-300 font-mono">${p.count||p.mentions||p.score||''}</span>
+            </div>`).join('') || '<div class="text-slate-500 text-xs">無</div>'}
+        </div>
+      </div>
+      <!-- 新興風險 -->
+      <div class="bg-slate-900/60 border border-amber-500/40 rounded-lg p-3">
+        <div class="text-amber-300 text-sm font-bold mb-2">⚠️ 新興風險（趨勢預警）</div>
+        <div class="space-y-1.5">
+          ${(d.emerging_risks||[]).map(r => `
+            <div class="text-xs text-slate-200 bg-amber-950/30 rounded p-1.5">
+              <span class="text-amber-300 font-bold">⚡</span>
+              ${escapeHtml(r.description||r.risk||r.label||r)}
+              ${r.first_seen ? `<span class="text-[10px] text-slate-500 ml-1">(自 ${escapeHtml(r.first_seen)})</span>` : ''}
+            </div>`).join('') || '<div class="text-slate-500 text-xs">無</div>'}
+        </div>
+      </div>
+      <!-- 改善建議 -->
+      <div class="bg-slate-900/60 border border-cyan-500/40 rounded-lg p-3">
+        <div class="text-cyan-300 text-sm font-bold mb-2">💡 改善建議</div>
+        <ol class="space-y-1.5 text-xs text-slate-200 list-decimal list-inside">
+          ${(d.recommendations||[]).map(r => `<li>${escapeHtml(typeof r==='string'?r:(r.action||r.suggestion||r.text||JSON.stringify(r)))}</li>`).join('') || '<li class="text-slate-500">無</li>'}
+        </ol>
+      </div>
+    </div>
+
+    <!-- 平台分佈 -->
+    <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-3">
+      <div class="text-xs text-slate-300 mb-2">🛒 各平台評論分布</div>
+      <div class="grid grid-cols-5 gap-2">
+        ${Object.entries(platforms).map(([plat, dist]) => {
+          const t = (dist['正面']||0)+(dist['中性']||0)+(dist['負面']||0);
+          return `
+          <div class="bg-slate-950/50 rounded p-2 text-center">
+            <div class="text-[10px] text-slate-400">${escapeHtml(plat)}</div>
+            <div class="text-lg font-bold text-white">${t}</div>
+            <div class="text-[10px] text-slate-500">
+              <span class="text-emerald-400">+${dist['正面']||0}</span> /
+              <span class="text-slate-300">${dist['中性']||0}</span> /
+              <span class="text-rose-400">${dist['負面']||0}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ──────────────────────────────────────────────
+// microjet 場景 B · 客訴工單分類視覺化
+// ──────────────────────────────────────────────
+async function _renderMJTicketsZone() {
+  const body = document.getElementById('acc-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="bg-amber-900/20 border border-amber-500/40 rounded-xl p-4 mb-3 text-xs text-amber-200">
+      <b>🏭 microjet 場景 B（20 分）</b> · 客訴工單自動分類 + 緊急度 + 路由 + 重複偵測。
+      docx 門檻：分類準確 ≥ 88%、urgency F1 ≥ 0.85、單件 ≤ 2 秒、批次 100 件 < 5 分鐘、重複偵測召回 ≥ 90%。
+    </div>
+    <div class="bg-slate-800 rounded-xl p-5 space-y-3">
+      <div class="text-sm text-slate-300">分類 6 筆模擬工單（含 docx 範例「列印品質變差，要上網公開」）</div>
+      <div class="text-[11px] text-slate-500 font-mono">POST /api/microjet/classify-tickets</div>
+      <div class="flex gap-2">
+        <button onclick="_runMJTickets()" class="bg-amber-600 hover:bg-amber-500 rounded px-4 py-2 text-sm font-bold">🚀 批次分類</button>
+      </div>
+      <div id="mjt-result"></div>
+    </div>`;
+}
+
+async function _runMJTickets() {
+  const res = document.getElementById('mjt-result');
+  if (!res) return;
+  res.innerHTML = `<div class="text-amber-300 text-sm flex items-center gap-2 py-3"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>分類中...</div>`;
+  const t0 = Date.now();
+  const r = await safeFetch(API_BASE + '/api/microjet/classify-tickets',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  if (!r.ok) { res.innerHTML = errorHTML(r); return; }
+  const d = r.data || {};
+  const ms = Date.now() - t0;
+  const items = d.tickets || d.classified || d.results || [];
+  const stats = d.stats || {};
+  const dups = d.duplicates_detected || d.duplicate_groups || [];
+
+  try {
+    _simHistorySave({
+      report_id: `REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp: new Date().toISOString(), tenant: 'microjet',
+      scenario_label: '場景 B · 客訴工單分類', tab_key: 'tickets', weight: 20,
+      question: '(批次) 6 筆工單', agents: ['orchestrator','cs','qa','legal'],
+      api_path: '/api/microjet/classify-tickets',
+      elapsed_ms: ms, success: true, task_id: d.task_id || '—',
+      summary_snippet: `${items.length} 筆 · ${dups.length} 重複`,
+    });
+  } catch(e) {}
+  toast(`✅ ${items.length} 筆工單分類完成 · ${ms}ms`, 'success', 3000);
+
+  const urgColor = u => u==='高'?'rose':u==='中'?'amber':'slate';
+  res.innerHTML = `
+    <div class="grid grid-cols-4 gap-2 mb-3">
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-2 text-center">
+        <div class="text-[10px] text-slate-400">分類筆數</div>
+        <div class="text-2xl font-bold text-cyan-300">${items.length}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-rose-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-rose-300">高緊急</div>
+        <div class="text-2xl font-bold text-rose-300">${items.filter(t=>t.urgency==='高').length}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-amber-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-amber-300">重複偵測</div>
+        <div class="text-2xl font-bold text-amber-300">${dups.length} 組</div>
+      </div>
+      <div class="bg-slate-900/60 border border-emerald-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-emerald-300">耗時</div>
+        <div class="text-2xl font-bold text-emerald-300">${ms}<span class="text-xs">ms</span></div>
+      </div>
+    </div>
+    <div class="space-y-1.5">
+      ${items.map(t => `
+        <div class="bg-slate-900/60 border border-slate-700 rounded p-2.5">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-mono text-slate-500">${escapeHtml(t.id||'')}</span>
+            <span class="text-[10px] bg-slate-700 text-slate-200 rounded px-1.5">${escapeHtml(t.category||'?')}</span>
+            <span class="text-[10px] bg-${urgColor(t.urgency)}-700 text-white rounded px-1.5">緊急: ${escapeHtml(t.urgency||'?')}</span>
+            ${t.is_duplicate ? '<span class="text-[10px] bg-amber-700 text-white rounded px-1.5">🔁 重複</span>' : ''}
+            <span class="ml-auto text-[10px] text-slate-500">${escapeHtml((t.routing||[]).join(' / '))}</span>
+          </div>
+          <div class="text-xs text-slate-200">${escapeHtml((t.content||t.text||'').slice(0,120))}</div>
+          ${t.urgency_reasons?.length ? `<div class="text-[10px] text-slate-500 mt-1">觸發詞：${t.urgency_reasons.map(escapeHtml).join('、')}</div>` : ''}
+        </div>`).join('')}
+    </div>
+    ${dups.length ? `
+      <div class="mt-3 bg-amber-900/20 border border-amber-500/40 rounded p-2">
+        <div class="text-amber-300 text-xs font-bold mb-1">🔁 重複工單（24h 內同客戶多封）</div>
+        <div class="text-xs text-slate-200">${dups.map(g => Array.isArray(g)?g.join(' + '):escapeHtml(JSON.stringify(g))).join(' / ')}</div>
+      </div>` : ''}`;
 }
 
 // microjet 專屬 tab 的客製版（舊版沒實作 → 用新 API）
