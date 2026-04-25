@@ -12135,7 +12135,7 @@ function _triggerOldAccTabRender(tenant, tabKey) {
     // microjet 新端點 — 視覺化呈現（取代純 JSON dump）
     'tickets':     () => _renderMJTicketsZone(),
     'dashboard':   () => _renderMJDashboardZone(),
-    'sec':         () => _renderMJCustomZone('sec',       '/api/microjet/compliance-gaps',   '25 項合規控制點掃描', 'GET'),
+    'sec':         () => _renderMJSecurityZone(),
   };
   const fn = map[tabKey];
   if (fn) {
@@ -12509,6 +12509,311 @@ async function _runMJTickets() {
         <div class="text-amber-300 text-xs font-bold mb-1">🔁 重複工單（24h 內同客戶多封）</div>
         <div class="text-xs text-slate-200">${dups.map(g => Array.isArray(g)?g.join(' + '):escapeHtml(JSON.stringify(g))).join(' / ')}</div>
       </div>` : ''}`;
+}
+
+// ──────────────────────────────────────────────
+// microjet 場景 E · 系統安全與資料合規（3 子功能）
+// 1. 合規缺口掃描（25 控制點）
+// 2. 存取異常偵測（非工時 + 大量下載）
+// 3. 事件通報稿（個資法第 12 條）
+// ──────────────────────────────────────────────
+async function _renderMJSecurityZone() {
+  const body = document.getElementById('acc-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="bg-amber-900/20 border border-amber-500/40 rounded-xl p-4 mb-3 text-xs text-amber-200">
+      <b>🏭 microjet 場景 E（20 分）</b> · 系統安全與資料合規。docx 4 大產出：
+      PII 報告、存取異常偵測、合規缺口（≥ 20 控制點）、事件通報稿（≤ 60 分鐘）。
+      量化門檻：PII recall ≥ 95%、PII 誤報率 ≤ 20%。
+    </div>
+
+    <!-- 子分頁 -->
+    <div class="flex gap-1 border-b border-slate-700 mb-3">
+      <button onclick="_setMJSecTab('gaps')" data-mjsec="gaps"
+        class="mjsec-btn text-xs px-3 py-2 rounded-t bg-slate-800 text-white">🛡️ 合規缺口（25 控制點）</button>
+      <button onclick="_setMJSecTab('anomaly')" data-mjsec="anomaly"
+        class="mjsec-btn text-xs px-3 py-2 rounded-t text-slate-400 hover:text-white">🚨 存取異常偵測</button>
+      <button onclick="_setMJSecTab('notice')" data-mjsec="notice"
+        class="mjsec-btn text-xs px-3 py-2 rounded-t text-slate-400 hover:text-white">📝 事件通報稿（個資法 §12）</button>
+    </div>
+
+    <div id="mjsec-content"></div>`;
+  _setMJSecTab('gaps');
+}
+
+function _setMJSecTab(tab) {
+  document.querySelectorAll('.mjsec-btn').forEach(b => {
+    const active = b.dataset.mjsec === tab;
+    b.classList.toggle('bg-slate-800', active);
+    b.classList.toggle('text-white', active);
+    b.classList.toggle('text-slate-400', !active);
+  });
+  if (tab === 'gaps')    _runMJGaps();
+  if (tab === 'anomaly') _runMJAnomaly();
+  if (tab === 'notice')  _showMJNoticeForm();
+}
+
+// E-1 · 合規缺口
+async function _runMJGaps() {
+  const c = document.getElementById('mjsec-content');
+  if (!c) return;
+  c.innerHTML = `<div class="text-amber-300 text-sm flex items-center gap-2 py-3"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>掃描 25 控制點...</div>`;
+  const t0 = Date.now();
+  const r = await safeFetch(API_BASE + '/api/microjet/compliance-gaps');
+  if (!r.ok) { c.innerHTML = errorHTML(r); return; }
+  const d = r.data || {};
+  const ms = Date.now() - t0;
+  const cov = d.coverage_pct || 0;
+  const total = d.total_controls || 0;
+  const impl = d.implemented_count || 0;
+  const gaps = d.gaps || [];
+  const highGaps = d.high_risk_gaps || [];
+  const covered = d.covered || [];
+
+  try {
+    _simHistorySave({
+      report_id:`REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp:new Date().toISOString(), tenant:'microjet',
+      scenario_label:'場景 E · 合規缺口掃描', tab_key:'sec', weight:20,
+      question:'(掃描) 25 控制點 vs 已實作', agents:['orchestrator','legal','qa','be'],
+      api_path:'/api/microjet/compliance-gaps',
+      elapsed_ms:ms, success: total >= 20, task_id:'-',
+      summary_snippet:`${impl}/${total} 涵蓋率 ${cov}% · 高風險缺口 ${highGaps.length}`,
+    });
+  } catch(e) {}
+
+  const passColor = total >= 20 ? 'emerald' : 'amber';
+  c.innerHTML = `
+    <div class="grid grid-cols-4 gap-2 mb-3">
+      <div class="bg-${passColor}-900/30 border border-${passColor}-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-${passColor}-300">控制點總數</div>
+        <div class="text-2xl font-bold text-${passColor}-200">${total}</div>
+        <div class="text-[10px] text-slate-500">門檻 ≥ 20</div>
+      </div>
+      <div class="bg-slate-900/60 border border-blue-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-blue-300">已實作</div>
+        <div class="text-2xl font-bold text-blue-200">${impl}</div>
+        <div class="text-[10px] text-slate-500">涵蓋率 ${cov}%</div>
+      </div>
+      <div class="bg-slate-900/60 border border-amber-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-amber-300">缺口</div>
+        <div class="text-2xl font-bold text-amber-200">${gaps.length}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-rose-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-rose-300">高風險缺口</div>
+        <div class="text-2xl font-bold text-rose-200">${highGaps.length}</div>
+      </div>
+    </div>
+
+    ${highGaps.length ? `
+      <div class="bg-rose-900/20 border border-rose-500/40 rounded-lg p-3 mb-3">
+        <div class="text-rose-300 text-sm font-bold mb-2">🚨 高風險缺口（須立即補上）</div>
+        <div class="space-y-1.5">
+          ${highGaps.map(g => `
+            <div class="text-xs text-slate-200 bg-rose-950/30 rounded p-2">
+              <span class="font-mono text-rose-300">${escapeHtml(g.id)}</span>
+              <b class="text-white ml-2">${escapeHtml(g.name)}</b>
+              <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(g.evidence||'')}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-emerald-900/15 border border-emerald-500/30 rounded-lg p-3">
+        <div class="text-emerald-300 text-sm font-bold mb-2">✅ 已實作 ${impl}</div>
+        <div class="space-y-1 max-h-72 overflow-y-auto">
+          ${covered.map(c => `
+            <div class="text-[11px] text-slate-200 flex items-center gap-2">
+              <span class="font-mono text-emerald-400 w-12">${escapeHtml(c.id)}</span>
+              <span class="flex-1">${escapeHtml(c.name)}</span>
+              <span class="text-[10px] text-${c.risk==='高'?'rose':'slate'}-400">${escapeHtml(c.risk)}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="bg-amber-900/15 border border-amber-500/30 rounded-lg p-3">
+        <div class="text-amber-300 text-sm font-bold mb-2">⏳ 缺口 ${gaps.length}</div>
+        <div class="space-y-1 max-h-72 overflow-y-auto">
+          ${gaps.map(g => `
+            <div class="text-[11px] text-slate-200 flex items-center gap-2">
+              <span class="font-mono text-amber-400 w-12">${escapeHtml(g.id)}</span>
+              <span class="flex-1">${escapeHtml(g.name)}</span>
+              <span class="text-[10px] text-${g.risk==='高'?'rose':'slate'}-400">${escapeHtml(g.risk)}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="text-[10px] text-slate-500 mt-2 text-right">耗時 ${ms}ms · /api/microjet/compliance-gaps</div>`;
+}
+
+// E-2 · 存取異常
+async function _runMJAnomaly() {
+  const c = document.getElementById('mjsec-content');
+  if (!c) return;
+  c.innerHTML = `<div class="text-amber-300 text-sm flex items-center gap-2 py-3"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>掃描存取 log...</div>`;
+  const t0 = Date.now();
+  const r = await safeFetch(API_BASE + '/api/microjet/access-anomaly',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+  if (!r.ok) { c.innerHTML = errorHTML(r); return; }
+  const d = r.data || {};
+  const ms = Date.now() - t0;
+  const total = d.total_logs || 0;
+  const found = d.anomalies_found || 0;
+  const list = d.anomalies || [];
+
+  try {
+    _simHistorySave({
+      report_id:`REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp:new Date().toISOString(), tenant:'microjet',
+      scenario_label:'場景 E · 存取異常偵測', tab_key:'sec', weight:20,
+      question:'(掃描) 5 筆 access log',
+      agents:['orchestrator','legal','qa','be'],
+      api_path:'/api/microjet/access-anomaly',
+      elapsed_ms:ms, success:true, task_id:'-',
+      summary_snippet:`${total} 筆中發現 ${found} 筆異常`,
+    });
+  } catch(e) {}
+
+  const sevColor = s => s==='高'?'rose':s==='中'?'amber':'slate';
+  c.innerHTML = `
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <div class="bg-slate-900/60 border border-slate-700 rounded p-2 text-center">
+        <div class="text-[10px] text-slate-400">掃描 log 筆數</div>
+        <div class="text-2xl font-bold text-cyan-300">${total}</div>
+      </div>
+      <div class="bg-rose-900/20 border border-rose-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-rose-300">發現異常</div>
+        <div class="text-2xl font-bold text-rose-200">${found}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-emerald-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-emerald-300">耗時</div>
+        <div class="text-2xl font-bold text-emerald-300">${ms}<span class="text-xs">ms</span></div>
+      </div>
+    </div>
+    ${list.length ? `
+      <div class="space-y-2">
+        ${list.map(a => `
+          <div class="bg-slate-900/60 border border-${sevColor(a.severity)}-500/40 rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-[10px] bg-${sevColor(a.severity)}-700 text-white rounded px-1.5">嚴重: ${escapeHtml(a.severity||'?')}</span>
+              <b class="text-white">${escapeHtml(a.user||'?')}</b>
+              <span class="text-[10px] text-slate-400">${escapeHtml(a.ts||'')}</span>
+              <span class="ml-auto text-[10px] text-slate-400">${escapeHtml(a.action||'')} · ${a.records_count||0} 筆</span>
+            </div>
+            <div class="text-xs text-slate-200 mb-1.5">
+              <b class="text-rose-300">觸發規則：</b>
+              ${(a.triggers||[]).map(t => `<span class="text-amber-300">${escapeHtml(t)}</span>`).join('，')}
+            </div>
+            <div class="text-[11px] text-slate-300 bg-slate-950/50 rounded p-1.5">
+              <b class="text-emerald-300">建議處置：</b>
+              ${(a.recommended_action||[]).map(escapeHtml).join(' → ')}
+            </div>
+          </div>`).join('')}
+      </div>` : '<div class="text-slate-400 text-center py-4">未發現異常</div>'}
+    <div class="text-[10px] text-slate-500 mt-2 text-right">/api/microjet/access-anomaly · POST</div>`;
+}
+
+// E-3 · 事件通報稿
+function _showMJNoticeForm() {
+  const c = document.getElementById('mjsec-content');
+  if (!c) return;
+  c.innerHTML = `
+    <div class="bg-slate-800 rounded-xl p-4 mb-3">
+      <div class="text-sm text-slate-300 mb-3">填寫事件資料，AI 自動套用「個人資料保護法第 12 條」格式產出通報書（≤ 60 分鐘門檻）。</div>
+      <div class="grid grid-cols-2 gap-2">
+        <input id="mjn-occurred" placeholder="事件發生時間" value="2026-04-15 23:47" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-discovered" placeholder="事件發現時間" value="2026-04-16 09:00" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-count" type="number" placeholder="影響人數" value="1284" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-types" placeholder="個資類型（逗號分隔）" value="身分證,信用卡,手機,地址" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-cause" placeholder="事發原因" value="bob 帳號於非工時匯出 1284 筆客戶清單" class="col-span-2 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-impact" placeholder="影響評估" value="客戶個資外洩風險，已凍結帳號並通報資安長" class="col-span-2 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-contact-name" placeholder="聯絡人姓名" value="DPO 王小華" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+        <input id="mjn-contact-phone" placeholder="聯絡電話" value="03-1234567" class="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm">
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="_runMJNotice()" class="bg-amber-600 hover:bg-amber-500 rounded px-4 py-2 text-sm font-bold">📝 產出通報書</button>
+        <span class="text-[11px] text-slate-500 self-center">POST /api/microjet/incident-notice</span>
+      </div>
+    </div>
+    <div id="mjn-result"></div>`;
+}
+
+async function _runMJNotice() {
+  const res = document.getElementById('mjn-result');
+  if (!res) return;
+  res.innerHTML = `<div class="text-amber-300 text-sm flex items-center gap-2 py-3"><span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>套用個資法第 12 條格式中...</div>`;
+  const t0 = Date.now();
+  const incident = {
+    occurred_at:    document.getElementById('mjn-occurred')?.value,
+    discovered_at:  document.getElementById('mjn-discovered')?.value,
+    data_subject_count: parseInt(document.getElementById('mjn-count')?.value || '0', 10),
+    data_types:    (document.getElementById('mjn-types')?.value || '').split(',').map(s=>s.trim()).filter(Boolean),
+    cause:          document.getElementById('mjn-cause')?.value,
+    impact:         document.getElementById('mjn-impact')?.value,
+    contact_person: document.getElementById('mjn-contact-name')?.value,
+    contact_phone:  document.getElementById('mjn-contact-phone')?.value,
+  };
+  const r = await safeFetch(API_BASE + '/api/microjet/incident-notice',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ incident }) });
+  if (!r.ok) { res.innerHTML = errorHTML(r); return; }
+  const d = r.data || {};
+  const ms = Date.now() - t0;
+  const text = d.template_text || d.notice_text || JSON.stringify(d, null, 2);
+  const noticeId = d.notice_id || '-';
+
+  try {
+    _simHistorySave({
+      report_id:`REPORT-MJ-${Date.now().toString(36).toUpperCase()}`,
+      timestamp:new Date().toISOString(), tenant:'microjet',
+      scenario_label:'場景 E · 事件通報稿', tab_key:'sec', weight:20,
+      question:`(通報) ${incident.cause || ''}`,
+      agents:['orchestrator','legal','doc','be'],
+      api_path:'/api/microjet/incident-notice',
+      elapsed_ms:ms, success:true, task_id:noticeId,
+      summary_snippet:`${noticeId} · ${incident.data_subject_count} 筆 · ${ms}ms`,
+    });
+  } catch(e) {}
+  toast(`✅ 通報書已產出 · ${ms}ms（門檻 ≤ 60 min）`, 'success', 3000);
+
+  res.innerHTML = `
+    <div class="grid grid-cols-3 gap-2 mb-3">
+      <div class="bg-emerald-900/30 border border-emerald-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-emerald-300">產出時間</div>
+        <div class="text-2xl font-bold text-emerald-200">${ms}<span class="text-xs">ms</span></div>
+        <div class="text-[10px] text-slate-500">門檻 ≤ 60 min</div>
+      </div>
+      <div class="bg-slate-900/60 border border-blue-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-blue-300">通報編號</div>
+        <div class="text-sm font-mono text-blue-200 mt-1.5">${escapeHtml(noticeId)}</div>
+      </div>
+      <div class="bg-slate-900/60 border border-rose-500/40 rounded p-2 text-center">
+        <div class="text-[10px] text-rose-300">影響當事人</div>
+        <div class="text-2xl font-bold text-rose-200">${incident.data_subject_count}</div>
+        <div class="text-[10px] text-slate-500">人</div>
+      </div>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-700 rounded-lg overflow-hidden">
+      <div class="bg-amber-900/30 border-b border-amber-500/30 px-3 py-2 flex items-center gap-2">
+        <span class="text-2xl">📋</span>
+        <span class="text-white font-bold">個人資料保護法 第 12 條 · 事件通報書（草稿）</span>
+        <button onclick="_copyNotice()" class="ml-auto text-[10px] bg-slate-700 hover:bg-slate-600 rounded px-2 py-1">📋 複製</button>
+      </div>
+      <pre id="mjn-template" class="p-4 text-xs text-slate-200 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">${escapeHtml(text)}</pre>
+    </div>
+    ${d.workflow ? `
+      <div class="mt-2 text-[11px] text-slate-500">
+        🤖 ${d.workflow.length} 個 Agent workflow 節點 · 已寫入稽核
+      </div>` : ''}`;
+}
+
+function _copyNotice() {
+  const el = document.getElementById('mjn-template');
+  if (!el) return;
+  const text = el.textContent || el.innerText || '';
+  navigator.clipboard.writeText(text).then(
+    () => toast('✅ 已複製通報書到剪貼簿', 'success', 2000),
+    () => toast('❌ 複製失敗', 'error')
+  );
 }
 
 // microjet 專屬 tab 的客製版（舊版沒實作 → 用新 API）
