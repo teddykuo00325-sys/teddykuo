@@ -60,7 +60,7 @@ ST = {
                   spaceBefore=8, spaceAfter=3),
     'p':    style('p',  fontSize=10, leading=14),
     'pSm':  style('pSm', fontSize=9, leading=12, textColor=C_GRAY),
-    'code': style('code', fontName='Courier', fontSize=8.5, leading=11,
+    'code': style('code', fontName=FONT, fontSize=8.5, leading=12,
                   backColor=C_BG_LT, borderPadding=(4,4,4,4), leftIndent=6),
     'cover_title': style('cover_title', fontName=FONT_BOLD, fontSize=32, leading=40,
                          textColor=C_BLUE, alignment=TA_CENTER, spaceBefore=24, spaceAfter=8),
