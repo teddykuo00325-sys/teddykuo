@@ -1,0 +1,52 @@
+MIT License
+
+Copyright (c) 2026 郭祐均 (Kuo Yu-Chun · GitHub: teddykuo00325-sys)
+
+Project: 凌策 LingCe — AI Agent 服務型組織
+Repository: https://github.com/teddykuo00325-sys/teddykuo
+Origin: 凌策公司 AI 領導人擂台大賽 2026 參賽作品（個人原創）
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+─────────────────────────────────────────────────────────────────
+原創宣告 / Original Authorship Statement
+─────────────────────────────────────────────────────────────────
+
+本專案為 郭祐均（B00325）於 2026 年 4 月 13 日至 4 月 27 日期間
+獨立開發完成之原創作品，所有設計、程式碼、文件皆有 Git commit
+歷史可追溯，公開於 GitHub teddykuo00325-sys/teddykuo 倉庫。
+
+開發時程：
+  - 2026-04-13 (一)：競賽開始 / 專案啟動
+  - 2026-04-20 (一)：v1.0 初版繳交（commit 9844d17）
+  - 2026-04-21 (二)：v2.0 雲端部署版（commit 651c32e）
+  - 2026-04-27 (一)：完整版 含 PDF/PPT/維明/冷熱錢包
+
+關鍵技術原創性：
+  - 4 tenant 完整資料切分架構（lingce/microjet/addwii/weiming）
+  - PII Guard 13 類個資自動遮蔽 + SHA-256 稽核
+  - 區塊鏈 hash chain 採購績效結算（5 種 block_type）
+  - 冷熱錢包 M-of-N 多簽 + 24h Timelock
+  - 智慧組織管理系統（出缺勤 / 多級審批 / 階級聊天 / 任務派工）
+  - 100+ Flask API endpoints
+  - 約 25,000 行原創程式碼
+
+如需引用、複製或衍生使用本專案內容，請依本授權條款規範執行，
+並保留原作者署名與此原創宣告。

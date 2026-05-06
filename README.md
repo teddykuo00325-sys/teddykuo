@@ -1,7 +1,40 @@
 # 凌策公司 · LingCe
 
-> **1 位人類老闆 + 10 個 AI Agent 員工** 所構成的新世代 AI 服務公司
-> 作者：郭祐均 Kuo Yu-Chun · 凌策 AI 擂台大賽作品
+> **1 位真人 + 10 個 AI Agent** 所構成的新世代 AI 服務公司
+> 作者：**郭祐均 Kuo Yu-Chun (B00325)** · 凌策 AI 擂台大賽 2026 參賽作品
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Original Work](https://img.shields.io/badge/Original-Authored%202026--04--13-blue.svg)](https://github.com/teddykuo00325-sys/teddykuo)
+[![Three Customers](https://img.shields.io/badge/驗收覆蓋-三家滿分%20300%2F300-success.svg)](#三家客戶驗收滿分)
+
+---
+
+## 📜 原創宣告 · Original Authorship
+
+**本專案為郭祐均（B00325）獨立原創作品**，於 **2026 年 4 月 13 日** 凌策 AI 擂台大賽
+正式啟動後開始開發，所有程式碼、設計、文件皆有 **Git commit 歷史可追溯驗證**。
+
+| 里程碑 | 日期 | Git Commit | 內容 |
+|---|---|---|---|
+| 競賽起跑 | 2026-04-13 | (專案啟動) | 凌策公司 AI 擂台大賽開賽 |
+| **v1.0 初版繳交** | 2026-04-20 | `9844d17` | 凌策公司 v1.0 繳交版 |
+| v2.0 雲端版 | 2026-04-21 | `651c32e` | 雲端部署、SEO 驗證、Agent trace、Ollama |
+| 多租戶分離 | 2026-04-21 ~ 04-22 | – | tenant_context 完整切分 4 tenant |
+| 維明採購系統 | 2026-04-22 | – | Palantir 風 PR/CS/PO/GRN/Invoice/KPI/上鏈 |
+| 冷熱錢包 | 2026-04-23 | – | 4 錢包 + M-of-N 多簽 + 24h Timelock |
+| addwii 構面 5 修補 | 2026-04-23 | `880f56a` | CSV_DIR 4 層 fallback |
+| microjet B 修補 | 2026-04-23 | `b4c0468` | classify_ticket 100% / F1=0.921 |
+| PDF + PPT 繳交檔 | 2026-04-25 | `c125234` | 規格書 + 使用說明書 |
+| **完整版 v3** | 2026-04-27 | `78c0c2b` | PDF microjet 章節深度 + 中文字型修正 |
+
+**累計 76 個 commits · 約 25,000 行程式碼 · 7 天密集開發**
+
+📂 **GitHub 公開倉庫**：https://github.com/teddykuo00325-sys/teddykuo
+🔍 **完整 commit 歷史**：`git log --reverse --pretty=format:"%h %ad %s" --date=short`
+
+如有任何引用、抄襲或衍生使用爭議，請以本倉庫之 Git commit 時間戳為準。
+
+---
 
 ---
 
