@@ -2289,6 +2289,34 @@ def api_microjet_b2b_proposal():
     return jsonify(mjs.generate_b2b_proposal_8sec(profile, user=d.get('user', 'guest')))
 
 
+# ──────────────────────────────────────────────────────
+# P3 新增：8D 報告 + AI Printer 研發包（對應 2026-05 新標準）
+# ──────────────────────────────────────────────────────
+@app.route('/api/microjet/8d-report', methods=['POST'])
+def api_microjet_8d_report():
+    """8D 報告（製造異常案例）依新標準 microjet「製造與品保閉環」要求"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    incident = d.get('incident') or {
+        'product_model': 'MJ-3200',
+        'defect': '噴頭堵塞率上升 15%',
+        'affected_qty': 1240,
+        'customer': 'A 公司',
+        'lot_no': 'MJ-3200-2026-W18',
+        'discovered_at': '2026-05-15',
+    }
+    return jsonify(mjs.generate_8d_report(incident, user=d.get('user', 'qa-01')))
+
+
+@app.route('/api/microjet/printer-dev-plan', methods=['POST'])
+def api_microjet_printer_dev_plan():
+    """AI Printer / 噴頭專案完整研發包（PRD / 研發 / 測試 / 品質 / 供應鏈 / 專利）"""
+    import microjet_scenarios as mjs
+    d = request.get_json(silent=True) or {}
+    project = d.get('project') or {}
+    return jsonify(mjs.generate_printer_dev_plan(project, user=d.get('user', 'rd-01')))
+
+
 # ── Demo 資料（給前端/評審直接用預設值 POST 就看到結果）──
 def _microjet_demo_tickets():
     return [
