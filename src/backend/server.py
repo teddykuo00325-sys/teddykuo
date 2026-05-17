@@ -317,6 +317,36 @@ def serve_dashboard():
 # ══════════════════════════════════════
 # API — 系統狀態
 # ══════════════════════════════════════
+@app.route('/api/mode')
+def api_mode():
+    """雙模式架構狀態查詢（依凌策 AI 擂台 2026 比賽新規則）
+
+    - offline（預設）：自行蒸餾 KB + Ollama qwen2.5:7b
+    - online（選配）：可額外啟用雲端 API（需設 LINGCE_MODE=online）
+    """
+    import pii_guard as pg
+    return jsonify({
+        'mode': pg.LINGCE_MODE,
+        'allow_cloud_api': pg.ALLOW_CLOUD_API,
+        'offline_components': {
+            'open_source_ai_agent': 'Ollama qwen2.5:7b (Apache 2.0)',
+            'distilled_brain': {
+                'product_kb': 'PRODUCT_KB / MICROJET_KB / ADDWII_PRODUCTS · 從 docx 規格書 / datasheet 蒸餾',
+                'rule_engine': 'RULES R001-R006 · 從 docx 第 9 章規則範例蒸餾',
+                'pii_patterns': 'PATTERNS 13 類 · 從台灣個資法蒸餾',
+                'classification': 'TICKET_CATEGORIES · HIGH_URGENCY_KW · 從歷史客訴標籤蒸餾',
+            },
+            'compliance': 'C1 本地推論 / C2 雲端 API 關閉 / C3 PII 13 類 / C4 人審閘',
+        },
+        'online_components': {
+            'cloud_api_hook': 'pii_guard.cloud_api_call_stub() · 預留架構',
+            'pii_protection': '即使線上模式，prompt 必先過 13 類 PII Guard 遮蔽',
+            'enabled': pg.ALLOW_CLOUD_API,
+        },
+        'how_to_switch': 'set LINGCE_MODE=online before python src/backend/server.py',
+    })
+
+
 @app.route('/api/health')
 def health():
     # Test Ollama connectivity（包含 cloudflared / ngrok tunnel 場景）

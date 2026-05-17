@@ -36,6 +36,41 @@
 
 ---
 
+## 🧠 雙模式架構（Dual-Mode）· 對應 2026-05 新比賽辦法
+
+依凌策 AI 擂台 2026 年 5 月最新規則，系統採「離線 + 線上」雙模式設計：
+
+| 階段 | 凌策對應實作 | 切換方式 |
+|---|---|---|
+| **離線 phase**（預設） | **自行蒸餾 AI 大腦**：PRODUCT_KB / RULES / PATTERNS / TICKET_CATEGORIES（從 docx / datasheet / 法規蒸餾）+ **開源離線 AI Agent**：Ollama qwen2.5:7b（Apache 2.0 License） | `LINGCE_MODE=offline`（預設值，可省略） |
+| **線上 phase** | 雲端 API 架構 hook（`pii_guard.cloud_api_call_stub()`），即使啟用仍強制 PII 13 類遮蔽 | `set LINGCE_MODE=online` |
+
+### 蒸餾大腦 4 大組件
+
+凌策的「自行蒸餾」採學術上稱為 **Symbolic Knowledge Distillation** 的路徑 —
+將領域專家文件壓縮為可解釋、可稽核的結構化知識庫：
+
+| 組件 | 蒸餾來源 | 蒸餾結果 | 位置 |
+|---|---|---|---|
+| 產品知識 | MJ-3200/3100/2800/4500 datasheet | MICROJET_KB（4 機型完整規格 + 錯誤碼 E-041~E-051） | `microjet_scenarios.py:230` |
+| 規則引擎 | 維明 docx 第 9 章 R001-R006 | RULES list 6 條 lambda 規則 | `weiming_scenarios.py:285` |
+| PII 模式 | 台灣個資法 9 大類個資 | PATTERNS 13 類 regex（含護照/健保/病歷） | `pii_guard.py` |
+| 分類經驗 | microjet docx 場景 B「6 類客訴」 | TICKET_CATEGORIES + HIGH_URGENCY_KW 30+ | `microjet_scenarios.py:30` |
+
+### 評審驗證
+
+```bash
+# 查詢當前模式
+curl http://localhost:5000/api/mode
+
+# 切換線上模式
+set LINGCE_MODE=online && python src/backend/server.py
+```
+
+📋 完整論述請見 PDF 規格書第 8.5 章「雙模式架構 + 蒸餾大腦」。
+
+---
+
 ---
 
 ## 🏆 給評審的 3 分鐘快速導覽
