@@ -441,6 +441,274 @@ PRODUCT_KB = {
 # P1: addwii 產品規格對應表（HCR 系列）
 # 備註：CADR 值為「依官網 52 次/小時換氣率 + 坪數」推估，待 addwii 提供正式 datasheet 替換
 # ============================================================
+# ══════════════════════════════════════════════════════════════
+# Home Clean Room 真實產品知識庫（2026-05 addwii KB 整合）
+#
+# 來源：addwii_knowledge_base.zip / kb_pack
+#   · 1_產品基礎知識.md（ZP2 系列 + S03-S12 配置）
+#   · 2_市場策略範本.md（5 個範本 A-E）
+#   · 3_報價問答.jsonl（26 筆）
+#   · 4_系統介紹.txt（成本表 + 41 場域 field trial）
+#   · 5_銷售問答.jsonl（18 筆）
+#   · 6_買斷定價完整試算模型.md
+#
+# 新標準調整二：選 addwii 為主線完整跑完，故本系統重做 addwii 為最高完整度
+# ══════════════════════════════════════════════════════════════
+
+# ZP2 系列清淨機（移動過濾機組，6 個型號依 CADR 命名）
+ZP2_PRODUCTS = {
+    'ZP2-200':  {'cadr': 200,  'power_w': 18,  'size_mm': '273 × 255 × 270'},
+    'ZP2-400':  {'cadr': 400,  'power_w': 68,  'size_mm': '303 × 272 × 316'},
+    'ZP2-600':  {'cadr': 600,  'power_w': 78,  'size_mm': '273 × 255 × 540'},
+    'ZP2-800':  {'cadr': 800,  'power_w': 131, 'size_mm': '303 × 272 × 628'},
+    'ZP2-1200': {'cadr': 1200, 'power_w': 206, 'size_mm': '303 × 272 × 941'},
+    'ZP2-1600': {'cadr': 1600, 'power_w': 264, 'size_mm': '303 × 272 × 1254'},
+}
+
+# Home Clean Room 系統方案 S03-S12（依坪數配置 ZP2 清淨機 + 三合一板架構）
+HOME_CLEAN_ROOM_SYSTEMS = {
+    'S03': {'area_ping': 3.3, 'cadr_total': 1600, 'zp2_config': {'ZP2-1600': 1},
+            'cost_ntd': 4209,  'buyout_price_ntd': 38900,  'description': '小套房 / 嬰兒房'},
+    'S04': {'area_ping': 4,   'cadr_total': 2200, 'zp2_config': {'ZP2-1600': 1, 'ZP2-600': 1},
+            'cost_ntd': 6297,  'buyout_price_ntd': 52900,  'description': '臥室 / 書房'},
+    'S05': {'area_ping': 5,   'cadr_total': 2800, 'zp2_config': {'ZP2-1600': 1, 'ZP2-1200': 1},
+            'cost_ntd': 7488,  'buyout_price_ntd': 66900,  'description': '主臥'},
+    'S06': {'area_ping': 6,   'cadr_total': 3200, 'zp2_config': {'ZP2-1600': 2},
+            'cost_ntd': 8418,  'buyout_price_ntd': 76900,  'description': '大主臥 / 小客廳'},
+    'S07': {'area_ping': 7,   'cadr_total': 3800, 'zp2_config': {'ZP2-1600': 2, 'ZP2-600': 1},
+            'cost_ntd': 10506, 'buyout_price_ntd': 90900,  'description': '客廳 / 餐廳'},
+    'S08': {'area_ping': 8,   'cadr_total': 4400, 'zp2_config': {'ZP2-1600': 2, 'ZP2-1200': 1},
+            'cost_ntd': 11697, 'buyout_price_ntd': 105900, 'description': '大客廳'},
+    'S09': {'area_ping': 9,   'cadr_total': 4800, 'zp2_config': {'ZP2-1600': 3},
+            'cost_ntd': 12627, 'buyout_price_ntd': 114900, 'description': '小辦公室'},
+    'S10': {'area_ping': 10,  'cadr_total': 5400, 'zp2_config': {'ZP2-1600': 3, 'ZP2-600': 1},
+            'cost_ntd': 14715, 'buyout_price_ntd': 128900, 'description': '中辦公室'},
+    'S11': {'area_ping': 11,  'cadr_total': 6000, 'zp2_config': {'ZP2-1600': 3, 'ZP2-1200': 1},
+            'cost_ntd': 15906, 'buyout_price_ntd': 143900, 'description': '大辦公室'},
+    'S12': {'area_ping': 12,  'cadr_total': 6400, 'zp2_config': {'ZP2-1600': 4},
+            'cost_ntd': 16836, 'buyout_price_ntd': 152900, 'description': '豪宅大客廳 / 開放式辦公'},
+}
+
+# 周邊設備（除 ZP2 系列以外）
+HOME_CLEAN_ROOM_PERIPHERALS = {
+    'ZFU1':    {'name': '吊掛式 HEPA 風機過濾單元', 'power_w': '17/50/90/150', 'airflow_m3h': '400-1600'},
+    'ZH1':     {'name': '抽煙機',                'power_w': 466, 'airflow_m3min': 1800},
+    'ZVF1':    {'name': '壁掛式新風機',          'power_w': 36,  'airflow_m3h': 300},
+    'ZF2-170': {'name': '浴室排風扇',            'power_w': '-', 'airflow_m3h': '-'},
+    'ZHAC1':   {'name': '冷暖氣機',              'power_w': '-', 'airflow_m3h': '-'},
+    'ZDHU1':   {'name': '除溼機',                'power_w': '-', 'airflow_m3h': '-'},
+    'ZE1':     {'name': '中控電腦',              'power_w': '-', 'note': '場域空污數據收集 + 中位數處理 + 整合控制'},
+}
+
+# 41 場域 Field Trial 統計（依 KB 4_系統介紹.txt + 5_銷售問答.jsonl）
+FIELD_TRIAL_STATS = {
+    'total_sites':    41,
+    'internal_sites': 30,   # 公司內部員工家裡
+    'external_sites': 11,   # 外部用戶
+    'pm25_results': {
+        'most_sites_avg':  '< 2 μg/m³（趨零）',
+        'some_sites_avg':  '2 ~ 5 μg/m³',
+        'office_75ping':   '< 1 μg/m³（環境部許可機構檢測 NPA23C01250001）',
+    },
+    'closed_loop_control': '系統更新優化控制邏輯並推送 OTA 形成閉環',
+    'duration_records':    '完整實測期間記錄',
+}
+
+# 房屋分佈與採購行為（依 KB 5_銷售問答.jsonl 推估）
+HOUSING_DISTRIBUTION = [
+    {'type': '套房',     'pct': 15, 'area_ping': '8~12',  'avg_sets': 1.0, 'avg_revenue_ntd': 105900},
+    {'type': '1房1廳',   'pct': 15, 'area_ping': '15~20', 'avg_sets': 2.0, 'avg_revenue_ntd': 143800},
+    {'type': '2房2廳',   'pct': 30, 'area_ping': '22~28', 'avg_sets': 2.6, 'avg_revenue_ntd': 189540},
+    {'type': '3房2廳',   'pct': 30, 'area_ping': '28~38', 'avg_sets': 3.5, 'avg_revenue_ntd': 262150},
+    {'type': '4房+',     'pct': 10, 'area_ping': '40~60', 'avg_sets': 4.5, 'avg_revenue_ntd': 426050},
+]
+# 加權平均：每戶 2.73 套 · 215,567 元
+
+# 競品比較（依 KB 2_市場策略範本.md 範本 E）
+COMPETITOR_COMPARISON = [
+    {'brand': 'Coway AP-2023K',   'cadr': 850,  'price': 29800, 'pm25_real': '8-15 μg/m³'},
+    {'brand': 'Blueair CP9i',     'cadr': 850,  'price': 26990, 'pm25_real': '5-12 μg/m³'},
+    {'brand': 'Dyson BP04',       'cadr': 312,  'price': 34900, 'pm25_real': '8-15 μg/m³'},
+    {'brand': 'Honeywell X1000',  'cadr': 1000, 'price': 63700, 'pm25_real': '5-15 μg/m³'},
+    {'brand': 'LG PuriCare 360°', 'cadr': 768,  'price': 40590, 'pm25_real': '8-15 μg/m³'},
+    {'brand': 'addwii HCR S03',   'cadr': 1600, 'price': 38900, 'pm25_real': '< 1 μg/m³（趨零）',
+     'is_self': True},
+]
+
+
+def recommend_home_clean_room(area_ping: float) -> dict:
+    """依坪數推薦 Home Clean Room 方案（S03-S12）
+
+    使用真實 addwii KB 配置表，回傳 {system, cadr_total, zp2_config, price, ...}
+    """
+    try:
+        a = float(area_ping)
+    except Exception:
+        return {'error': '坪數必須為數字'}
+
+    # 找到對應系統（最小滿足條件）
+    best = None
+    for sys_code, spec in HOME_CLEAN_ROOM_SYSTEMS.items():
+        if a <= spec['area_ping']:
+            if best is None or spec['area_ping'] < best[1]['area_ping']:
+                best = (sys_code, spec)
+
+    if best is None:
+        # 超過 12 坪 → 推 S12 多套組合
+        units = int((a + 11) // 12)
+        spec = HOME_CLEAN_ROOM_SYSTEMS['S12']
+        return {
+            'system':         'S12',
+            'cadr_total':     spec['cadr_total'] * units,
+            'zp2_config':     {k: v * units for k, v in spec['zp2_config'].items()},
+            'units':          units,
+            'unit_price_ntd': spec['buyout_price_ntd'],
+            'total_price_ntd': spec['buyout_price_ntd'] * units,
+            'description':    f'{a} 坪超過 S12（12 坪）上限 → 部署 {units} 套 S12 組合',
+            'reason':         f'{a} 坪：S12 × {units} (4 × {units} × ZP2-1600)，總 CADR {spec["cadr_total"] * units} m³/h',
+        }
+
+    sys_code, spec = best
+    return {
+        'system':         sys_code,
+        'cadr_total':     spec['cadr_total'],
+        'zp2_config':     spec['zp2_config'],
+        'units':          1,
+        'unit_price_ntd': spec['buyout_price_ntd'],
+        'total_price_ntd': spec['buyout_price_ntd'],
+        'description':    spec['description'],
+        'reason':         f'{a} 坪 → {sys_code}（適用 {spec["area_ping"]} 坪以下） · CADR {spec["cadr_total"]} m³/h · 配置 {spec["zp2_config"]}',
+    }
+
+
+def home_clean_room_quote(area_ping: float, with_installation: bool = True,
+                          with_maintenance: bool = True) -> dict:
+    """產出 Home Clean Room 完整報價（系統 + 安裝 + 首年保養 + 稅）"""
+    rec = recommend_home_clean_room(area_ping)
+    if 'error' in rec:
+        return rec
+
+    equipment = rec['total_price_ntd']
+    installation = max(15000, int(area_ping * 1500)) if with_installation else 0
+    maintenance = int(equipment * 0.05) if with_maintenance else 0
+    subtotal = equipment + installation + maintenance
+    tax = int(subtotal * 0.05)
+    total = subtotal + tax
+
+    return {
+        'area_ping':            area_ping,
+        'recommended_system':   rec['system'],
+        'zp2_config':           rec['zp2_config'],
+        'cadr_total':           rec['cadr_total'],
+        'equipment_ntd':        equipment,
+        'installation_ntd':     installation,
+        'maintenance_ntd':      maintenance,
+        'subtotal_ntd':         subtotal,
+        'tax_5pct_ntd':         tax,
+        'total_ntd':            total,
+        'monthly_24m_ntd':      total // 24,  # 24 期分期月付
+        'description':          rec['description'],
+        'data_source':          'addwii Home Clean Room 系統 KB · 2026-05',
+    }
+
+
+# ══════════════════════════════════════════════════════════════
+# 市場策略 5 範本（A-E）依 addwii KB 2_市場策略範本.md
+# ══════════════════════════════════════════════════════════════
+MARKET_STRATEGY_TEMPLATES = {
+    'A': {
+        'trigger_keywords': ['整體計畫', '如何打開市場', '市場戰略', '進入市場'],
+        'title': '整體市場計畫',
+        'content': {
+            'positioning':       '對空氣品質極度敏感、有付費能力的高端市場（CADR 1.88~7.53 倍 + PM2.5 實測趨零 + IoT 整合）',
+            'pricing':           '10 階 S03-S12 買斷價（38,900 ~ 152,900）· 比市場主流便宜 30% 但 CADR 多 1.88~7.53 倍',
+            'phase_1_m1_m3':     'B2B 月子中心/婦幼診所/過敏專科/兒科診所/高端幼兒園 + B2C 過敏兒/新生兒/裝潢族',
+            'phase_2_m4_m6':     'ESG 上市櫃企業 + 24 期分期方案（S03 月付 1,621 元）',
+            'phase_3_m7_m12':    '耗材訂閱 LTV + 以舊換新升級路徑 + 實測見證內容護城河',
+            'operational_cost':  '供應鏈規模化採購 / IoT SaaS 化 / 安裝 SOP / 耗材訂閱 / 客服自動化 / 物流整合',
+        },
+    },
+    'B': {
+        'trigger_keywords': ['物美價廉', '打敗競爭者', '最低價', '價格競爭力'],
+        'title': '強化市場競爭力',
+        'content': {
+            'current_strength':  'S03 售價 38,900 比市場主流 2 台 850 CADR 並聯（54,520）便宜 29% + 系統級全屋潔淨',
+            'option_1':          '推「整戶配置包」3 套以上享 92~95 折',
+            'option_2':          '618/雙11/節慶 限期促銷 + 舊機回收折抵',
+            'option_3':          'B2B 給較積極優惠，B2C 維持原價保護品牌',
+            'option_4':          '加值不降價：升規送濾網 / 24 期 0 利率 / PM2.5 趨零保固',
+        },
+    },
+    'C': {
+        'trigger_keywords': ['成本怎麼降', '降低成本', '營運效率'],
+        'title': '成本優化（維持產品技術規格）',
+        'content': {
+            '1_supply':         '供應鏈規模化（年度框架合約批量採購）',
+            '2_iot_saas':       'IoT 服務雲端 SaaS 化',
+            '3_install_sop':    '安裝流程 SOP + IoT 遠端診斷',
+            '4_subscription':   '濾網訂閱制（降庫存壓力）',
+            '5_customer_svc':   '客服自動化 + IoT 主動推送濾網壽命提醒',
+            '6_logistics':      '多戶集中配送',
+            'note':             '三合一板架構已是當前最優化設計',
+        },
+    },
+    'D': {
+        'trigger_keywords': ['實測證據', '驗證了多少場域', '趨零', 'field trial'],
+        'title': '實測資料（41 場域驗證）',
+        'content': {
+            'total_sites':       41,
+            'internal':          30,  # 公司內部員工家裡
+            'external':          11,  # 外部用戶
+            'pm25_趨零':         '大部分場域 < 2 μg/m³',
+            'pm25_中段':         '少數 2~5 μg/m³',
+            'office_75ping':     '< 1 μg/m³（環境部許可機構檢測，報告編號 NPA23C01250001）',
+            'closed_loop':       '系統 OTA 更新優化控制邏輯，形成閉環控制系統',
+        },
+    },
+    'E': {
+        'trigger_keywords': ['Coway', 'Blueair', 'Dyson', '主流市場', '競品'],
+        'title': '競品比較',
+        'content': {
+            'comparison': COMPETITOR_COMPARISON,
+            'key_diff':   '市場主流訴求單機效能 vs addwii 訴求系統級全屋潔淨 + 實測 PM2.5 < 1 μg/m³（醫療無塵級）',
+        },
+    },
+}
+
+
+def get_market_strategy(query: str = '') -> dict:
+    """依關鍵字回傳市場策略範本（A-E）"""
+    q = (query or '').lower()
+    matched = []
+    for code, tpl in MARKET_STRATEGY_TEMPLATES.items():
+        if any(kw in query for kw in tpl['trigger_keywords']):
+            matched.append({'template': code, **tpl})
+    if not matched:
+        # 回傳全部 5 個範本概覽
+        return {
+            'query':       query,
+            'templates':   [{'code': c, 'title': t['title'],
+                            'keywords': t['trigger_keywords']}
+                           for c, t in MARKET_STRATEGY_TEMPLATES.items()],
+            'note':        '無關鍵字匹配，回傳 5 個範本概覽',
+        }
+    return {'query': query, 'matched_templates': matched}
+
+
+def get_field_trial_summary() -> dict:
+    """41 場域 Field Trial 完整摘要"""
+    return {
+        **FIELD_TRIAL_STATS,
+        'housing_distribution':    HOUSING_DISTRIBUTION,
+        'weighted_avg_sets_per_household': 2.73,
+        'weighted_avg_revenue_ntd': 215567,
+        'competitor_comparison':   COMPETITOR_COMPARISON,
+    }
+
+
+# ══════════════════════════════════════════════════════════════
+# 舊版 ADDWII_PRODUCTS 保留（向後相容 · 對應舊驗收測試題目）
+# ══════════════════════════════════════════════════════════════
 ADDWII_PRODUCTS = {
     'HCR-100': {
         'model':            'HCR-100',

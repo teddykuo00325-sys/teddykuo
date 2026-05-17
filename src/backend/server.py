@@ -2021,6 +2021,47 @@ def api_addwii_air_loop():
     return jsonify(accs.simulate_24h_air_loop(home_id, user=d.get('user', 'system')))
 
 
+# ──────────────────────────────────────────────────────
+# 2026-05 競賽辦法調整 2：addwii 主線完整跑完
+# 整合 addwii_knowledge_base.zip（加我科技競賽方提供）
+#   · ZP2 系列 6 機型（200/400/600/800/1200/1600 CADR）
+#   · S03-S12 系統方案（買斷價 38,900~152,900）
+#   · 41 場域 Field Trial 統計 + PM2.5 趨零實證
+#   · 市場策略範本 A-E + 房型分佈 + 競品比較
+# ──────────────────────────────────────────────────────
+@app.route('/api/addwii/recommend-system', methods=['POST'])
+def api_addwii_recommend_system():
+    """依坪數推薦 Home Clean Room 方案（S03-S12）"""
+    d = request.get_json(silent=True) or {}
+    area = float(d.get('area_ping', 6))
+    return jsonify(accs.recommend_home_clean_room(area))
+
+
+@app.route('/api/addwii/quote', methods=['POST'])
+def api_addwii_quote():
+    """完整買斷報價：設備 + 安裝 + 維護 + 稅"""
+    d = request.get_json(silent=True) or {}
+    area = float(d.get('area_ping', 6))
+    return jsonify(accs.home_clean_room_quote(
+        area,
+        with_installation=bool(d.get('with_installation', True)),
+        with_maintenance=bool(d.get('with_maintenance', True)),
+    ))
+
+
+@app.route('/api/addwii/market-strategy', methods=['POST'])
+def api_addwii_market_strategy():
+    """依關鍵字回傳市場策略範本 A-E（整體計畫 / 競爭力 / 成本 / 實測 / 競品）"""
+    d = request.get_json(silent=True) or {}
+    return jsonify(accs.get_market_strategy(d.get('query', '')))
+
+
+@app.route('/api/addwii/field-trial')
+def api_addwii_field_trial():
+    """41 場域 Field Trial 完整摘要（30 內 + 11 外 / PM2.5 趨零 / OTA 閉環）"""
+    return jsonify(accs.get_field_trial_summary())
+
+
 # ══════════════════════════════════════════════════════════
 # addwii 構面 5（25 分·一票否決）· 合規驗收控制台
 # 提供：CSV 上傳 → PII 掃描預覽 → 人工審核閘 → 分析 → 稽核
