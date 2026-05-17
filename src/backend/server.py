@@ -2000,6 +2000,27 @@ def api_acc_csv():
     d = request.json or {}
     return jsonify(accs.analyze_all_csv(d.get('user', 'guest'), force=bool(d.get('force'))))
 
+
+# ──────────────────────────────────────────────────────
+# P4 新增：addwii 完整家庭案例 + 24h 空氣資料閉環
+# 對應 2026-05 新標準 addwii 驗收四大重點之 1+2
+# ──────────────────────────────────────────────────────
+@app.route('/api/addwii/home-case-full', methods=['POST'])
+def api_addwii_home_case_full():
+    """30 分鐘內依「一個家庭案例」自動產生 7 大產出"""
+    d = request.get_json(silent=True) or {}
+    family = d.get('family') or {}
+    return jsonify(accs.generate_home_case_full(family, user=d.get('user', 'consultant-01')))
+
+
+@app.route('/api/addwii/air-loop', methods=['POST'])
+def api_addwii_air_loop():
+    """24 小時家庭空氣資料閉環（感測→判斷→控制→回報→優化）"""
+    d = request.get_json(silent=True) or {}
+    home_id = d.get('home_id', 'HOME-DEMO-001')
+    return jsonify(accs.simulate_24h_air_loop(home_id, user=d.get('user', 'system')))
+
+
 # ══════════════════════════════════════════════════════════
 # addwii 構面 5（25 分·一票否決）· 合規驗收控制台
 # 提供：CSV 上傳 → PII 掃描預覽 → 人工審核閘 → 分析 → 稽核
