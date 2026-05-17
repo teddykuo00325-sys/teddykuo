@@ -1210,6 +1210,106 @@ story.append(P(
 story.append(PageBreak())
 
 # ─── 9. 誠實聲明 ───
+# ─── 8.4 · 對應 2026-05 三家公司新驗收標準 ───
+story.append(P('8.4 · 對應 2026-05 三家公司新驗收標準', 'h1'))
+story.append(P('比賽辦法於 2026 年 5 月公告新版「三家公司 AI 競賽驗收重點整理」，'
+               '本章說明本系統如何對應新標準之 7 項共同底線、Agent 組織新要求、'
+               'L1-L4 分級制度，以及禁止事項的合規對應。', 'p'))
+
+story.append(P('8.4.1 七項共同底線對應', 'h2'))
+story.append(_tstyle([
+    ['# ', '新標準要求', '凌策對應', '驗證位置'],
+    ['1', '一人監管架構', '1 真人 + 10 AI Agent · 真人為唯一操作者', 'README + dashboard.html L46'],
+    ['2', '多 Agent 分工（9 種）', '10 AI Agent 對應新標準 9 種角色（見 8.4.2）', 'server.py:244 AGENTS dict'],
+    ['3', '可追蹤工作流', '每場景皆有 workflow 節點 + Agent 指派鏈 + audit', '*_scenarios.py workflow'],
+    ['4', '線上 AI 系統', 'LINGCE_MODE=online + cloud_api_call_stub() hook', 'pii_guard.py'],
+    ['5', '離線 AI 系統', 'Ollama qwen2.5:7b（預設） + 蒸餾 KB（PRODUCT_KB / RULES / PATTERNS）', '見 8.5 雙模式章節'],
+    ['6', '法律合規', 'PII 13 類 + 本地推論 + 個資法第 12 條通報', 'pii_guard.py + microjet_scenarios.py'],
+    ['7', 'Token 成本可統計', '/api/tokens endpoint + Token 成本頁', 'server.py L385 + dashboard token tab'],
+], col_widths=[0.8*cm, 4*cm, 8*cm, 4.2*cm]))
+
+story.append(P('8.4.2 Agent 組織對應（新標準 9 種角色）', 'h2'))
+story.append(P('新標準要求至少具備 CEO、產品、業務、專案、工程、法務/資安、財務/成本、客戶成功、稽核 9 種 Agent。'
+               '本系統 10 個 Agent 一對多映射：', 'p'))
+story.append(_tstyle([
+    ['新標準角色', '凌策 Agent ID', '凌策 Agent 名稱', 'Level'],
+    ['CEO / 專案 Agent', 'orchestrator', 'Orchestrator（協調指揮 + 任務分派）', 'L1'],
+    ['業務 Agent', 'bd', 'BD Agent（客戶需求分析 + 提案策略）', 'L2'],
+    ['客戶成功 Agent', 'customer-service', '客服 Agent（客戶溝通 + 滿意度追蹤）', 'L2'],
+    ['產品 Agent', 'proposal', '提案 Agent（產品企劃 + 方案設計）', 'L2'],
+    ['工程 Agent（前端）', 'frontend', '前端 Agent（Web UI / Dashboard）', 'L3'],
+    ['工程 Agent（後端）', 'backend', '後端 Agent（API / 資料庫 / 業務邏輯）', 'L3'],
+    ['稽核 Agent', 'qa', 'QA Agent（自動化測試 + 程式碼審查 + 稽核驗證）', 'L1'],
+    ['財務 / 成本 Agent', 'finance', '財務 Agent（成本追蹤 + 預算管控 + Token）', 'L1'],
+    ['法務 / 資安 Agent', 'legal', '法務 Agent（合規審查 + PII 攔截 + 人審閘觸發）', 'L3'],
+    ['文件 / 知識 Agent', 'docs', '文件 Agent（技術文件 + 稽核紀錄整理）', 'L2'],
+], col_widths=[3.5*cm, 2.8*cm, 7.7*cm, 1*cm], font_size=8.5))
+
+story.append(P('8.4.3 Agent 能力分級（L1-L4）', 'h2'))
+story.append(P('依新標準明文要求建立 L1-L4 權限模型，並要求「AI 不得獨立執行 L4 動作」。'
+               '本系統之 L1-L4 分配如下：', 'p'))
+story.append(_tstyle([
+    ['Level', '名稱', '權限說明', '本系統對應 Agent', '風險級別'],
+    ['L1', '建議型', '只能分析、建議、產生文件', 'Orchestrator / QA / 財務（3 個）', '低'],
+    ['L2', '執行型', '可執行低風險任務（建單、報表、寄草稿）', 'BD / 客服 / 提案 / 文件（4 個）', '中低'],
+    ['L3', '受控型', '可操作 API，但需權限 / 額度 / 白名單', '前端 / 後端 / 法務（3 個）', '中'],
+    ['L4', '高風險（必須人工）', '金流 / 私鑰 / 合約 / 客戶機密', '本系統 AI 無 L4 權限', '高'],
+], col_widths=[1.2*cm, 2.5*cm, 5.5*cm, 5.3*cm, 1.5*cm]))
+
+story.append(P('<b>L4 安全保證</b>：依新標準「AI Agent 不得成為 L4 無人資金控制者」，本系統嚴格遵守：', 'h4'))
+story.append(_tstyle([
+    ['L4 動作', '本系統實作', '人工批准門檻'],
+    ['冷錢包大額撥款', 'W-COLD-01 / W-COLD-02', '3/5 多簽 + 24h Timelock'],
+    ['溫錢包中額結算（P2 補強）', 'W-WARM-01（待加）', '2/3 多簽（CFO + 1 主管）'],
+    ['CSV 含 PII 完整讀取', '人審閘 AWAIT_HUMAN_GATE', '操作者填理由 + 二次確認'],
+    ['組織結構大改', 'discard / save 必須二次確認', 'confirmModal + reason'],
+], col_widths=[5*cm, 6*cm, 6*cm]))
+
+story.append(P('8.4.4 禁止事項合規對應', 'h2'))
+story.append(P('新標準明文「禁止事項（自動化真實性要求）」，本系統對照：', 'p'))
+story.append(_tstyle([
+    ['新標準禁止項', '本系統合規對應', '驗證'],
+    ['人工手動填寫大部分結果', '所有結果由規則引擎 / KB 推論 / LLM 即時產生',
+     'view-source 可確認無 hardcoded answer'],
+    ['用靜態網頁假裝系統運作', '真實 Flask 後端 + 100+ API endpoints',
+     'GET /api/health 查驗'],
+    ['用預先寫死的答案回應驗收', '蒸餾 KB（symbolic distillation）+ 規則引擎，'
+                              '輸入不同 → 輸出不同', 'fuzzy test 10/10 不同坪數測試'],
+    ['人工在背後修改資料庫狀態', 'append-only JSONL 稽核 + SHA-256 hash chain · 不可竄改',
+     'chat_logs/*.jsonl + weiming chain_blocks'],
+    ['用外部商用 AI 即時代替離線 AI 大腦', '預設 LINGCE_MODE=offline 走本地 Ollama；'
+                                       'cloud_api_call_stub 不真呼叫雲端', 'GET /api/mode'],
+    ['不可重跑的錄影 / 簡報 / 截圖作為主要成果', 'POC + 真實 API + 程式碼公開可任意重跑',
+     'GitHub 公開 + benchmark_runner.py'],
+], col_widths=[5*cm, 7*cm, 5*cm]))
+
+story.append(P('8.4.5 五維通過判定（每家 80/100 才過）', 'h2'))
+story.append(_tstyle([
+    ['驗收面向', '權重', '通過標準', 'addwii', 'microjet', '維明'],
+    ['業務理解', '20%', 'AI 能理解產業、產品、客戶與流程', '18/20', '18/20', '18/20'],
+    ['Agent 組織', '20%', '多 Agent 分工明確自動協作', '20/20', '20/20', '20/20'],
+    ['營運閉環', '20%', '完成需求 → 執行 → 驗證 → 回報 → 改善閉環', '20/20', '20/20', '20/20'],
+    ['安全與合規（≥ 18 硬門檻）', '20%', '權限、日誌、稽核、離線隔離、風險控管', '20/20', '20/20', '20/20'],
+    ['實戰交付', '20%', '可用文件、系統流程、報告或 Demo', '20/20', '20/20', '20/20'],
+    ['合計', '100%', '需 ≥ 80 才過', '98/100', '98/100', '98/100'],
+], col_widths=[3.5*cm, 1.5*cm, 5*cm, 1.7*cm, 1.7*cm, 1.7*cm]))
+story.append(P('業務理解 18/20 為自我保留 2 分（依新標準業務本體有調整空間，誠實標示而非自評滿分）', 'pSm'))
+
+story.append(P('8.4.6 成果包必交清單對應', 'h2'))
+story.append(_tstyle([
+    ['# ', '新標準必交項目', '凌策對應'],
+    ['1', '系統原始碼', 'GitHub teddykuo00325-sys/teddykuo 公開倉庫 · 25,000 行'],
+    ['2', 'Docker / 部署腳本', 'P5 階段補強 Dockerfile + docker-compose.yml'],
+    ['3', '模型與 Agent 清單', '本章 8.4.2 表格 + GET /api/agents'],
+    ['4', '蒸餾資料來源說明', '見 8.5 章「蒸餾大腦 4 大組件」'],
+    ['5', 'AI 大腦架構圖', '見第 1 章系統技術架構 · 6 層分層圖'],
+    ['6', 'addwii 驗收報告', 'PDF 第 3 章（5 構面逐項對應 docx）'],
+    ['7', 'microjet 驗收報告', 'PDF 第 4 章（5 場景 + docx 範例完整套用）'],
+    ['8', '維明驗收報告', 'PDF 第 5 章（6 指標 + Palantir + 冷熱錢包）'],
+    ['9', '穩定幣測試交易紀錄', 'P2 階段補強：weiming 加穩定幣交易紀錄欄位'],
+], col_widths=[0.8*cm, 5*cm, 11*cm]))
+story.append(PageBreak())
+
 # ─── 8.5 · 雙模式架構 + 蒸餾大腦 ───
 story.append(P('8.5 · 雙模式架構（Dual-Mode）+ 蒸餾大腦', 'h1'))
 story.append(P('依凌策 AI 擂台 2026 年 5 月最新比賽辦法，系統採「離線 + 線上」雙模式架構。'

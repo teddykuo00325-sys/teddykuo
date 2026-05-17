@@ -241,56 +241,127 @@ def ollama_generate(prompt, system_prompt=None):
 # ══════════════════════════════════════
 # Agent 定義
 # ══════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
+# 10 個 AI Agent · 對應 2026-05 三家公司新驗收標準
+#
+# 新標準要求 9 種 Agent：CEO / 產品 / 業務 / 專案 / 工程 / 法務資安 /
+#                       財務成本 / 客戶成功 / 稽核
+#
+# Agent 能力分級（Level）：
+#   L1 建議型：只能分析、建議、產生文件
+#   L2 執行型：可執行低風險任務（建立訂單、產生報表）
+#   L3 受控型：可操作 API，但需權限、額度、白名單限制
+#   L4 高風險：涉及金流、私鑰、合約、客戶機密，必須人工批准
+# ══════════════════════════════════════════════════════════════
 AGENTS = {
     'orchestrator': {
         'name': 'Orchestrator',
+        'role_new_standard': 'CEO / 專案 Agent',   # 對應新標準
         'dept': '指揮中心',
-        'system': '你是凌策公司的 Orchestrator Agent（協調指揮），負責接收人類領導人的指令，分析任務，分派給最適合的 Agent，並彙整結果。你的回答要簡潔、有結構、用繁體中文。'
+        'level': 'L1',  # 只能分派與彙整，本身不做執行
+        'permissions': ['task_dispatch', 'result_aggregation', 'audit_view'],
+        'system': '你是凌策公司的 Orchestrator Agent（CEO + 專案管理），負責接收真人操作者指令，分析任務，分派給最適合的 Agent，並彙整結果。你的回答要簡潔、有結構、用繁體中文。Agent Level: L1（建議型）。'
     },
     'bd': {
         'name': 'BD Agent',
+        'role_new_standard': '業務 Agent',
         'dept': '業務開發',
-        'system': '你是凌策公司的 BD Agent（業務開發），負責分析客戶需求、市場調研、撰寫提案策略。回答要專業、有商業洞察力、用繁體中文。'
+        'level': 'L2',  # 可建立提案、報價單等
+        'permissions': ['create_proposal', 'market_research', 'crm_read'],
+        'system': '你是凌策公司的 BD Agent（業務開發），負責分析客戶需求、市場調研、撰寫提案策略。回答要專業、有商業洞察力、用繁體中文。Agent Level: L2（執行型，可建立提案）。'
     },
     'customer-service': {
         'name': '客服 Agent',
+        'role_new_standard': '客戶成功 Agent',
         'dept': '業務開發',
-        'system': '你是凌策公司的客服 Agent，負責與客戶溝通、回答技術問題、追蹤客戶滿意度。回答要親切、專業、用繁體中文。'
+        'level': 'L2',
+        'permissions': ['answer_customer', 'create_ticket', 'satisfaction_track'],
+        'system': '你是凌策公司的客戶成功（Customer Success）Agent，負責與客戶溝通、回答技術問題、追蹤客戶滿意度。回答要親切、專業、用繁體中文。Agent Level: L2（執行型）。'
     },
     'proposal': {
         'name': '提案 Agent',
+        'role_new_standard': '產品 Agent',
         'dept': '業務開發',
-        'system': '你是凌策公司的提案 Agent，負責產出商業企劃書、技術提案、方案設計。回答要有結構、重點突出、用繁體中文。'
+        'level': 'L2',
+        'permissions': ['generate_proposal', 'spec_validation'],
+        'system': '你是凌策公司的產品 / 提案 Agent，負責產出商業企劃書、技術提案、方案設計。回答要有結構、重點突出、用繁體中文。Agent Level: L2（執行型）。'
     },
     'frontend': {
         'name': '前端 Agent',
+        'role_new_standard': '工程 Agent（前端）',
         'dept': '技術研發',
-        'system': '你是凌策公司的前端 Agent，負責 Web UI、Dashboard、介面設計與前端程式碼開發。回答要技術精確、用繁體中文。需要時可以產出 HTML/CSS/JS 程式碼。'
+        'level': 'L3',  # 操作前端介面 API，需權限
+        'permissions': ['ui_render', 'dashboard_update'],
+        'system': '你是凌策公司的工程 Agent（前端），負責 Web UI、Dashboard、介面設計與前端程式碼開發。回答要技術精確、用繁體中文。Agent Level: L3（受控型）。'
     },
     'backend': {
         'name': '後端 Agent',
+        'role_new_standard': '工程 Agent（後端）',
         'dept': '技術研發',
-        'system': '你是凌策公司的後端 Agent，負責 API 開發、資料庫設計、核心業務邏輯。回答要技術精確、用繁體中文。需要時可以產出 Python/Node.js 程式碼。'
+        'level': 'L3',
+        'permissions': ['api_implementation', 'database_design'],
+        'system': '你是凌策公司的工程 Agent（後端），負責 API 開發、資料庫設計、核心業務邏輯。回答要技術精確、用繁體中文。Agent Level: L3（受控型）。'
     },
     'qa': {
         'name': 'QA Agent',
+        'role_new_standard': '稽核 Agent',
         'dept': '技術研發',
-        'system': '你是凌策公司的 QA Agent，負責自動化測試、程式碼審查、品質保證。回答要嚴謹、注重細節、用繁體中文。'
+        'level': 'L1',  # 只能審查，不能修改
+        'permissions': ['audit_review', 'benchmark_run', 'code_review'],
+        'system': '你是凌策公司的 QA / 稽核 Agent，負責自動化測試、程式碼審查、品質保證、稽核日誌驗證。回答要嚴謹、注重細節、用繁體中文。Agent Level: L1（建議型，只審查不改）。'
     },
     'finance': {
         'name': '財務 Agent',
+        'role_new_standard': '財務成本 Agent',
         'dept': '營運管理',
-        'system': '你是凌策公司的財務 Agent，負責成本追蹤、預算管控、Token 用量分析。回答要精確、有數據支撐、用繁體中文。'
+        'level': 'L1',  # 金流相關必須人工批准（L4），AI 只能建議（L1）
+        'permissions': ['cost_track', 'token_usage_analysis', 'budget_advice'],
+        'system': '你是凌策公司的財務成本 Agent，負責成本追蹤、預算管控、Token 用量分析。涉及金流的執行動作必須升級為 L4（人工批准）。回答要精確、有數據支撐、用繁體中文。Agent Level: L1（建議型，金流不越權）。'
     },
     'legal': {
         'name': '法務 Agent',
+        'role_new_standard': '法務 / 資安 Agent',
         'dept': '營運管理',
-        'system': '你是凌策公司的法務 Agent，負責合規審查、合約審核、法律風險評估。你熟悉台灣的營業秘密法、個資法、公平交易法。用繁體中文回答。'
+        'level': 'L3',  # PII 攔截 / 合規檢查屬受控操作
+        'permissions': ['compliance_check', 'pii_mask', 'human_gate_trigger'],
+        'system': '你是凌策公司的法務 / 資安 Agent，負責合規審查、合約審核、法律風險評估、PII 偵測攔截。你熟悉台灣的營業秘密法、個資法、公平交易法。用繁體中文回答。Agent Level: L3（受控型，可觸發人審閘）。'
     },
     'docs': {
         'name': '文件 Agent',
+        'role_new_standard': '文件 / 知識管理 Agent',
         'dept': '營運管理',
-        'system': '你是凌策公司的文件 Agent，負責產出技術文件、使用手冊、API 文檔。回答要清晰、有結構、用繁體中文。'
+        'level': 'L2',
+        'permissions': ['doc_generation', 'changelog', 'manual_update'],
+        'system': '你是凌策公司的文件 / 知識管理 Agent，負責產出技術文件、使用手冊、API 文檔、稽核紀錄整理。回答要清晰、有結構、用繁體中文。Agent Level: L2（執行型）。'
+    },
+}
+
+# Agent Level 定義（給 /api/agents/levels 用）
+AGENT_LEVELS = {
+    'L1': {
+        'name': '建議型 Agent',
+        'permissions': '只能分析、建議、產生文件',
+        'examples': '財務（成本分析建議）/ QA（稽核審查）/ Orchestrator（任務分派）',
+        'risk': '低',
+    },
+    'L2': {
+        'name': '執行型 Agent',
+        'permissions': '可執行低風險任務（建立訂單、產生報表、寄草稿）',
+        'examples': 'BD（建立提案）/ 客戶成功（建立工單）/ 文件（產生文件）',
+        'risk': '中低',
+    },
+    'L3': {
+        'name': '受控型 Agent',
+        'permissions': '可操作 API，但需權限、額度、白名單限制',
+        'examples': '工程（API 實作）/ 法務（PII 攔截 + 人審閘觸發）',
+        'risk': '中',
+    },
+    'L4': {
+        'name': '高風險 Agent · 必須人工批准',
+        'permissions': '涉及金流、私鑰、合約、客戶機密；本系統 AI 無 L4 權限',
+        'examples': '冷錢包簽核（需 3/5 人工多簽 + 24h timelock）/ 維明溫錢包（需 2 人簽核）',
+        'risk': '高 · 由真人操作者批准',
+        'note': '依新驗收標準，AI Agent 一律不得獨立執行 L4 動作；本系統嚴格遵守',
     },
 }
 
@@ -405,12 +476,36 @@ def list_agents():
         result.append({
             'id': k,
             'name': v['name'],
+            'role_new_standard': v.get('role_new_standard', ''),
             'department': v['dept'],
+            'level': v.get('level', 'L1'),
+            'permissions': v.get('permissions', []),
             'status': stats.get('status', 'active'),
             'tasksCompleted': stats.get('tasks_completed', 0),
             'model': OLLAMA_MODEL,
         })
     return jsonify(result)
+
+
+@app.route('/api/agents/levels')
+def api_agent_levels():
+    """Agent L1-L4 分級對照（對應 2026-05 三家公司新驗收標準）"""
+    # 統計每個 level 的 agent 數量
+    level_counts = {'L1': [], 'L2': [], 'L3': [], 'L4': []}
+    for k, v in AGENTS.items():
+        level_counts.setdefault(v.get('level','L1'), []).append({
+            'id': k, 'name': v['name'], 'role': v.get('role_new_standard','')
+        })
+    return jsonify({
+        'levels': AGENT_LEVELS,
+        'agents_by_level': level_counts,
+        'compliance_note': '依新驗收標準：AI Agent 不得獨立執行 L4 動作。本系統所有 L4 動作均需真人多簽 + Timelock。',
+        'l4_safeguards': {
+            'cold_wallet': '3/5 多簽 + 24h Timelock',
+            'warm_wallet_pending': 'P2 階段補強：2/3 多簽',
+            'audit_trail': '所有 L4 動作寫入 append-only audit_log',
+        }
+    })
 
 @app.route('/api/tokens')
 def token_usage():
