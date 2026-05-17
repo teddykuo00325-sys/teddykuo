@@ -256,12 +256,25 @@ _DEMO_WALLETS = [
         'note': '中額供應商付款（$10K ~ $50K / tx · 2/3 多簽）',
     },
     {
+        # 🆕 P2 補強：依 2026-05 新標準維明三層錢包架構（熱/溫/冷）
+        'wallet_id': 'W-WARM-01', 'name': '公司間結算溫錢包', 'type': 'warm',
+        'chain': 'ETH', 'asset': 'USDC', 'address_masked': '0x4w...8a3F',
+        'balance_usd': 800000,
+        'policy': {'per_tx_cap_usd': 200000, 'required_signers': 2,
+                   'signer_roles': ['cfo', 'controller'], 'timelock_hr': 6},
+        'note': '公司間結算 / 定期結算 / 資金歸集（2/3 多簽 + 6h timelock · AI 限 L1 僅建議）',
+        'agent_level': 'L4',  # 動作為 L4，需人工 2 簽
+        'compliance_note': 'AI Agent 限 L1（僅能分析建議），實際簽核必須人工',
+    },
+    {
         'wallet_id': 'W-COLD-01', 'name': '公司儲備冷錢包', 'type': 'cold',
         'chain': 'BTC', 'asset': 'BTC', 'address_masked': 'bc1q...x8sc',
         'balance_usd': 4800000,
         'policy': {'per_tx_cap_usd': 999999999, 'required_signers': 3,
                    'signer_roles': ['cfo', 'ceo', 'chairman'], 'timelock_hr': 24},
-        'note': '大額撥款（3/5 多簽 + 24h timelock）',
+        'note': '大額撥款（3/5 多簽 + 24h timelock）· 不連 AI、不連日常系統、僅人工離線簽署',
+        'agent_level': 'L4',
+        'compliance_note': '冷錢包私鑰離線保管 · AI 完全無法觸碰',
     },
     {
         'wallet_id': 'W-COLD-02', 'name': '多簽金庫 (Gnosis Safe)', 'type': 'cold',
@@ -788,46 +801,66 @@ def _wallet(wid: str):
 
 
 def _rebalance_snapshot():
-    """計算熱/冷比例，熱錢包 > 10% 總資產即建議 rebalance"""
+    """計算熱/溫/冷三層比例（依 2026-05 新標準維明三層錢包架構）"""
     hot = sum(w['balance_usd'] for w in _STATE['wallets'] if w['type'] == 'hot')
+    warm = sum(w['balance_usd'] for w in _STATE['wallets'] if w['type'] == 'warm')
     cold = sum(w['balance_usd'] for w in _STATE['wallets'] if w['type'] == 'cold')
-    total = hot + cold
+    total = hot + warm + cold
     hot_ratio = (hot / total * 100) if total else 0
-    # healthy 必須同時滿足：有資金 + 熱錢包比例 ≤ 10%
-    healthy = total > 0 and hot_ratio <= 10.0
+    warm_ratio = (warm / total * 100) if total else 0
+    cold_ratio = (cold / total * 100) if total else 0
+    # healthy 標準：熱 ≤ 10%、溫 ≤ 25%、冷 ≥ 65%
+    healthy = total > 0 and hot_ratio <= 10.0 and warm_ratio <= 25.0 and cold_ratio >= 65.0
     if total <= 0:
-        advice = '⚠️ 所有錢包餘額為 0，流動性不足'
-    elif hot_ratio <= 10.0:
-        advice = '熱錢包比例正常（≤ 10%）'
+        advice = '所有錢包餘額為 0，流動性不足'
+    elif hot_ratio > 10.0:
+        advice = f'警示：熱錢包比例 {hot_ratio:.1f}% 過高（門檻 10%），建議移轉至冷錢包'
+    elif warm_ratio > 25.0:
+        advice = f'警示：溫錢包比例 {warm_ratio:.1f}% 過高（門檻 25%），建議移轉至冷錢包'
+    elif cold_ratio < 65.0:
+        advice = f'警示：冷錢包比例 {cold_ratio:.1f}% 過低（門檻 65%），核心資產保護不足'
     else:
-        advice = f'⚠️ 熱錢包比例 {hot_ratio:.1f}% 過高，建議移轉至冷錢包'
+        advice = '三層比例健康：熱 ≤ 10% / 溫 ≤ 25% / 冷 ≥ 65%'
     return {
-        'total_usd': total, 'hot_usd': hot, 'cold_usd': cold,
+        'total_usd': total,
+        'hot_usd': hot, 'warm_usd': warm, 'cold_usd': cold,
         'hot_ratio_pct': round(hot_ratio, 2),
-        'threshold_pct': 10.0, 'healthy': healthy,
-        'advice': advice,
+        'warm_ratio_pct': round(warm_ratio, 2),
+        'cold_ratio_pct': round(cold_ratio, 2),
+        'thresholds': {'hot_max': 10.0, 'warm_max': 25.0, 'cold_min': 65.0},
+        'healthy': healthy, 'advice': advice,
+        'compliance_note': '依 2026-05 新標準維明三層架構：熱（日常）/ 溫（結算）/ 冷（儲備）',
     }
 
 
 def _recommend_wallet(amount_usd: float):
-    """依金額推薦錢包（策略引擎）"""
-    # 找最小滿足的熱錢包
+    """依金額推薦錢包（三層策略引擎：熱 < 50K / 溫 50K-200K / 冷 > 200K）"""
+    # 1. 熱錢包：金額在 per_tx_cap_usd 以內
     hot_candidates = [w for w in _STATE['wallets']
                       if w['type'] == 'hot'
                       and amount_usd <= w['policy']['per_tx_cap_usd']
                       and amount_usd <= w['balance_usd']]
     if hot_candidates:
         pick = min(hot_candidates, key=lambda w: w['policy']['per_tx_cap_usd'])
-        return {'wallet_id': pick['wallet_id'], 'reason':
+        return {'wallet_id': pick['wallet_id'], 'tier': 'hot', 'reason':
                 f'金額 ${amount_usd:,.0f} ≤ 熱錢包單筆上限 ${pick["policy"]["per_tx_cap_usd"]:,} → 走熱錢包 {pick["name"]}'}
-    # 否則走冷錢包（選餘額夠的）
+    # 2. 溫錢包：中額結算（依新標準維明三層架構）
+    warm_candidates = [w for w in _STATE['wallets']
+                       if w['type'] == 'warm'
+                       and amount_usd <= w['policy']['per_tx_cap_usd']
+                       and amount_usd <= w['balance_usd']]
+    if warm_candidates:
+        pick = min(warm_candidates, key=lambda w: w['policy']['per_tx_cap_usd'])
+        return {'wallet_id': pick['wallet_id'], 'tier': 'warm', 'reason':
+                f'金額 ${amount_usd:,.0f} 超過熱錢包上限 → 走溫錢包 {pick["name"]}（2/3 多簽 + 6h timelock）'}
+    # 3. 冷錢包：大額撥款
     cold_candidates = [w for w in _STATE['wallets']
                        if w['type'] == 'cold' and amount_usd <= w['balance_usd']]
     if cold_candidates:
         pick = max(cold_candidates, key=lambda w: w['balance_usd'])
-        return {'wallet_id': pick['wallet_id'], 'reason':
-                f'金額 ${amount_usd:,.0f} 超過所有熱錢包上限 → 走冷錢包 {pick["name"]}（3/5 多簽 + 24h timelock）'}
-    return {'wallet_id': None, 'reason': '⚠️ 所有錢包餘額都不足支付此筆金額'}
+        return {'wallet_id': pick['wallet_id'], 'tier': 'cold', 'reason':
+                f'金額 ${amount_usd:,.0f} 超過溫錢包上限 → 走冷錢包 {pick["name"]}（3/5 多簽 + 24h timelock + 人工離線簽核）'}
+    return {'wallet_id': None, 'tier': None, 'reason': '所有錢包餘額都不足支付此筆金額'}
 
 
 @_locked
@@ -951,6 +984,13 @@ def execute_wallet_tx(tx_id: str, executor: str = 'system', skip_timelock: bool 
 
 
 @_locked
+@_locked
+def list_contract_audits(limit: int = 50) -> List[Dict[str, Any]]:
+    """列出合約審查歷史紀錄（從 chain blocks 中取 CONTRACT_AUDIT 類型）"""
+    _init()
+    audits = [b for b in _STATE['chain_blocks'] if b.get('type') == 'CONTRACT_AUDIT']
+    return list(reversed(audits[-limit:]))
+
 def list_wallets():         _init(); return list(_STATE['wallets'])   # 回傳 copy 避免外部修改
 @_locked
 def list_wallet_txs(limit=100):  _init(); return list(reversed(_STATE['wallet_txs']))[:limit]
@@ -975,6 +1015,191 @@ def list_chain_blocks(limit=50):  _init(); return list(reversed(_STATE['chain_bl
 def list_audit_log(limit=100):    _init(); return list(reversed(_STATE['audit_log']))[:limit]
 def get_pr(pr_no):      _init(); return next((p for p in _STATE['prs'] if p['pr_no'] == pr_no), None)
 def get_change_set(cs_id): _init(); return next((c for c in _STATE['change_sets'] if c['change_set_id'] == cs_id), None)
+# ══════════════════════════════════════════════════════════════
+# P2 補強：智能合約審查 + 穩定幣交易紀錄
+# 對應 2026-05 新標準維明驗收：
+#   · AI 區塊鏈業務本體
+#   · 智能合約與鏈上風控
+#   · 穩定幣測試交易紀錄
+# ══════════════════════════════════════════════════════════════
+SMART_CONTRACT_RISK_PATTERNS = [
+    # 高風險模式（自動標 high）
+    ('REENTRANCY',     'high',   '可重入攻擊（缺少 ReentrancyGuard / Checks-Effects-Interactions 順序錯誤）'),
+    ('UNCHECKED_LOWLEVEL', 'high', '未檢查 .call() / .delegatecall() 回傳值（可能造成靜默失敗）'),
+    ('TX_ORIGIN',      'high',   '使用 tx.origin 而非 msg.sender 進行授權檢查（前置攻擊風險）'),
+    ('SELFDESTRUCT',   'high',   '合約可被銷毀；存在資產永久鎖定或盜取風險'),
+    ('NO_ACCESS_CTRL', 'high',   '關鍵函式缺少 onlyOwner / AccessControl 修飾子'),
+    # 中風險（自動標 medium）
+    ('FLOAT_DIV',      'medium', '整數除法精度損失（建議使用 SafeMath 或 OpenZeppelin Math）'),
+    ('NO_EVENTS',      'medium', '狀態變更未發送事件（鏈下無法追蹤）'),
+    ('GAS_DOS',        'medium', '迴圈內不受限制操作可能造成 gas DoS'),
+    ('TIMESTAMP_DEP',  'medium', '依賴 block.timestamp 做關鍵決策（礦工可操控 15 秒）'),
+    # 低風險（自動標 low）
+    ('NO_NATSPEC',     'low',    '函式缺少 NatSpec 註解（影響可讀性）'),
+    ('PRAGMA_FLOAT',   'low',    'pragma version 用 ^ 浮動（建議鎖定具體版本）'),
+]
+
+
+@_locked
+def review_smart_contract(contract_code: str, contract_name: str = 'Unknown',
+                          reviewer: str = 'qa-01') -> Dict[str, Any]:
+    """智能合約自動審查（依新標準維明要求）
+
+    輸入合約原始碼，輸出：
+      · 風險等級（high / medium / low / safe）
+      · 命中的風險模式清單
+      · 測試建議
+      · 修補建議
+      · 管理層決策摘要
+    AI Agent 限 L1（建議型），實際修改必須人工。
+    """
+    _init()
+    t0 = time.time()
+    code = (contract_code or '').lower()
+    code_lines = (contract_code or '').split('\n')
+
+    hits = []
+    # 簡化的關鍵字偵測（生產系統會用 Slither / Mythril）
+    detect_patterns = {
+        'REENTRANCY':        ['call.value(', '.call{value:', 'transfer('] ,  # without nonReentrant
+        'UNCHECKED_LOWLEVEL': ['.call(', '.delegatecall(', '.staticcall('],
+        'TX_ORIGIN':         ['tx.origin'],
+        'SELFDESTRUCT':      ['selfdestruct', 'suicide('],
+        'NO_ACCESS_CTRL':    [],   # logic: function lacks onlyOwner
+        'FLOAT_DIV':         [' / ', '/='],
+        'NO_EVENTS':         [],   # logic: state vars changed without emit
+        'GAS_DOS':           ['for (uint', 'while ('],
+        'TIMESTAMP_DEP':     ['block.timestamp', 'now '],
+        'NO_NATSPEC':        [],   # logic
+        'PRAGMA_FLOAT':      ['pragma solidity ^'],
+    }
+    for code_id, level, desc in SMART_CONTRACT_RISK_PATTERNS:
+        kws = detect_patterns.get(code_id, [])
+        for kw in kws:
+            if kw in contract_code:
+                # 找出行號
+                for i, line in enumerate(code_lines, 1):
+                    if kw in line and not line.strip().startswith('//'):
+                        hits.append({
+                            'code_id': code_id, 'risk_level': level,
+                            'description': desc, 'line': i,
+                            'evidence': line.strip()[:120],
+                        })
+                        break
+                break
+
+    # 額外規則：是否含 nonReentrant
+    has_reentrant_guard = 'nonReentrant' in contract_code or 'ReentrancyGuard' in contract_code
+    if any(h['code_id'] == 'REENTRANCY' for h in hits) and has_reentrant_guard:
+        # 移除 REENTRANCY 警告
+        hits = [h for h in hits if h['code_id'] != 'REENTRANCY']
+
+    # 計算整體風險
+    has_high = any(h['risk_level'] == 'high' for h in hits)
+    has_medium = any(h['risk_level'] == 'medium' for h in hits)
+    if has_high:
+        overall_risk = 'high'
+        recommendation = '建議：暫不部署。修補所有 high 級別問題後重新審查。'
+    elif has_medium:
+        overall_risk = 'medium'
+        recommendation = '建議：可進入測試網部署，但 mainnet 前需修補 medium 級別問題。'
+    elif hits:
+        overall_risk = 'low'
+        recommendation = '建議：可部署，建議修補 low 級別以提升程式品質。'
+    else:
+        overall_risk = 'safe'
+        recommendation = '通過：未發現已知風險模式。建議仍需經過正式 Slither / Mythril / Echidna 測試。'
+
+    # 測試建議
+    test_suggestions = [
+        '單元測試（Foundry / Hardhat）：所有 public/external 函式 100% 覆蓋',
+        '不變量測試（Invariant Testing）：總供應量、餘額守恆',
+        'Fuzz 測試（Echidna）：邊界值、極端輸入',
+    ]
+    if has_high:
+        test_suggestions.append('外部稽核（建議第三方 Smart Contract Audit Firm）')
+
+    report_id = f'CONTRACT-AUDIT-{int(time.time())}'
+    report = {
+        'report_id': report_id,
+        'contract_name': contract_name,
+        'reviewer': reviewer,
+        'agent_level': 'L1',  # AI 限 L1 建議型
+        'overall_risk': overall_risk,
+        'hits_count': len(hits),
+        'high_count': sum(1 for h in hits if h['risk_level']=='high'),
+        'medium_count': sum(1 for h in hits if h['risk_level']=='medium'),
+        'low_count': sum(1 for h in hits if h['risk_level']=='low'),
+        'findings': hits,
+        'test_suggestions': test_suggestions,
+        'recommendation': recommendation,
+        'management_summary': (
+            f'合約 {contract_name} 審查結果：{overall_risk.upper()} 風險，'
+            f'共發現 {len(hits)} 項問題（high={sum(1 for h in hits if h["risk_level"]=="high")} '
+            f'medium={sum(1 for h in hits if h["risk_level"]=="medium")} '
+            f'low={sum(1 for h in hits if h["risk_level"]=="low")}）。'
+            f'{recommendation}'
+        ),
+        'elapsed_ms': round((time.time() - t0) * 1000, 1),
+        'created_at': datetime.now().isoformat(timespec='seconds'),
+    }
+    # 上鏈 + 稽核
+    _chain_append_block('CONTRACT_AUDIT', {
+        'report_id': report_id, 'contract_name': contract_name,
+        'overall_risk': overall_risk, 'hits_count': len(hits),
+    })
+    _audit('ai', 'qa-agent', 'review_smart_contract', 'contract', contract_name,
+           {'overall_risk': overall_risk, 'hits_count': len(hits), 'report_id': report_id})
+    _save()
+    return report
+
+
+# ─── 穩定幣交易紀錄 ───
+@_locked
+def list_stablecoin_txs(limit: int = 100) -> List[Dict[str, Any]]:
+    """列出穩定幣交易紀錄（USDT / USDC / DAI）
+
+    依新標準維明驗收成果包必交清單第 9 項「穩定幣測試交易紀錄」。
+    從現有 wallet_txs 過濾出 asset in (USDT / USDC) 的交易。
+    """
+    _init()
+    stablecoins = {'USDT', 'USDC', 'DAI', 'BUSD', 'TUSD'}
+    txs = [t for t in _STATE.get('wallet_txs', [])
+           if t.get('asset', '').upper() in stablecoins]
+    # 加上 stablecoin 標記 + 三層分類
+    result = []
+    for t in reversed(txs[-limit:]):
+        result.append({
+            **t,
+            'is_stablecoin': True,
+            'tier': next((w['type'] for w in _STATE['wallets']
+                          if w['wallet_id'] == t.get('from_wallet_id')), 'unknown'),
+        })
+    return result
+
+
+def get_stablecoin_summary() -> Dict[str, Any]:
+    """穩定幣交易摘要統計"""
+    _init()
+    txs = list_stablecoin_txs(limit=1000)
+    total_amount = sum(t['amount_usd'] for t in txs if t.get('status') == 'EXECUTED')
+    by_status = defaultdict(int)
+    by_tier = defaultdict(int)
+    by_asset = defaultdict(int)
+    for t in txs:
+        by_status[t.get('status', 'UNKNOWN')] += 1
+        by_tier[t.get('tier', 'unknown')] += 1
+        by_asset[t.get('asset', 'UNKNOWN').upper()] += 1
+    return {
+        'total_transactions': len(txs),
+        'executed_amount_usd': total_amount,
+        'by_status': dict(by_status),
+        'by_tier': dict(by_tier),
+        'by_asset': dict(by_asset),
+        'compliance_note': '所有穩定幣交易皆走多簽 + 上鏈紀錄；AI Agent 限 L1-L3 不得越權',
+    }
+
+
 @_locked
 def reset_demo():
     global _STATE

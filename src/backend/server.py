@@ -1556,6 +1556,58 @@ def api_weiming_wallet_execute(tx_id):
         skip_timelock=bool(data.get('skip_timelock', False))))
 
 
+# ──────────────────────────────────────────────────────
+# P2 新增：智能合約審查 + 穩定幣交易（對應 2026-05 新標準）
+# ──────────────────────────────────────────────────────
+@app.route('/api/weiming/contract/review', methods=['POST'])
+def api_weiming_contract_review():
+    """智能合約自動審查（依新標準維明驗收要求）"""
+    data = request.json or {}
+    code = data.get('contract_code', '')
+    name = data.get('contract_name', 'Unknown')
+    reviewer = data.get('reviewer', 'qa-01')
+    if not code:
+        # 提供 demo 合約（含已知 vulnerabilities）讓評審快速驗證
+        code = '''
+pragma solidity ^0.8.0;
+contract DemoVuln {
+    address public owner;
+    mapping(address => uint) public balances;
+    function withdraw() public {
+        uint bal = balances[msg.sender];
+        require(bal > 0);
+        msg.sender.call.value(bal)("");  // REENTRANCY!
+        balances[msg.sender] = 0;
+    }
+    function admin() public {
+        require(tx.origin == owner);  // TX_ORIGIN!
+    }
+    function emergency() public {
+        selfdestruct(payable(msg.sender));  // SELFDESTRUCT!
+    }
+}'''
+        name = 'DemoVuln.sol (內建測試合約)'
+    return jsonify(wms.review_smart_contract(code, name, reviewer))
+
+
+@app.route('/api/weiming/contract/audits')
+def api_weiming_contract_audits():
+    """歷史合約審查紀錄"""
+    return jsonify(wms.list_contract_audits(limit=int(request.args.get('limit', 50))))
+
+
+@app.route('/api/weiming/stablecoin/txs')
+def api_weiming_stablecoin_txs():
+    """穩定幣交易紀錄（依新標準成果包必交清單 #9）"""
+    return jsonify(wms.list_stablecoin_txs(limit=int(request.args.get('limit', 100))))
+
+
+@app.route('/api/weiming/stablecoin/summary')
+def api_weiming_stablecoin_summary():
+    """穩定幣交易摘要統計"""
+    return jsonify(wms.get_stablecoin_summary())
+
+
 @app.route('/api/tenants')
 def api_list_tenants():
     """回傳所有租戶的 metadata 給前端（side bar / context switcher 用）"""
