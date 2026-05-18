@@ -17,19 +17,91 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table,
                                 TableStyle, PageBreak)
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+import os as _os
 
-# 註冊中文 CID 字型（ReportLab 內建，**完全不需安裝任何字型檔**）
-# 優先繁中 MSung-Light (Adobe-CNS1)，不可用時退回簡中 STSong-Light (Adobe-GB1)
+# ────────────────────────────────────────────────────────────
+# 中文字型註冊（**子集嵌入到 PDF**，收件人不需安裝任何字型）
+#
+# 修法說明：原本用 Adobe CID font 名稱（MSung-Light / STSong-Light）僅是
+# *字型參照*，不嵌字到 PDF；Chrome/Edge/Mobile 預覽器找不到該字型 → 亂碼。
+# 現改用 TTFont() 從 .ttc/.ttf 讀取後子集嵌入 → 任何 PDF viewer 皆正確顯示。
+#
+# 優先序：
+#   1. 倉內 assets/fonts/ 自帶字型（離線部署 / Docker 用）
+#   2. Windows 系統 Microsoft JhengHei (msjh.ttc · 繁中)
+#   3. Linux 系統 Noto Sans CJK / DejaVu
+#   4. 退回 Adobe CID（最差情況，仍走原邏輯）
+# ────────────────────────────────────────────────────────────
 CN_FONT = 'Helvetica'
-for _cid_name in ('MSung-Light', 'STSong-Light'):
+CN_FONT_BOLD = 'Helvetica-Bold'
+
+def _try_ttf(name: str, path: str, subfont_index: int = 0) -> bool:
+    """嘗試註冊 TTF/TTC 字型；成功傳回 True"""
     try:
-        pdfmetrics.registerFont(UnicodeCIDFont(_cid_name))
-        CN_FONT = _cid_name
-        print(f'[PDF] 字型 {_cid_name} 註冊成功（無需外部字型檔）')
-        break
-    except Exception:
+        if not _os.path.exists(path):
+            return False
+        if path.lower().endswith('.ttc'):
+            pdfmetrics.registerFont(TTFont(name, path, subfontIndex=subfont_index))
+        else:
+            pdfmetrics.registerFont(TTFont(name, path))
+        return True
+    except Exception as _e:
+        print(f'[PDF] TTF 註冊失敗 {name}@{path}: {_e}')
+        return False
+
+
+# 1. 倉內字型（最高優先 · Docker / Linux 部署）
+_REPO_FONT_DIR = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                '..', '..', 'assets', 'fonts')
+_CANDIDATES = [
+    # (display_name, path, subfont_index_for_ttc, is_bold_variant)
+    ('CJK',      _os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Regular.otf'), 0, False),
+    ('CJK-Bold', _os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Bold.otf'),    0, True),
+    ('CJK',      _os.path.join(_REPO_FONT_DIR, 'jf-openhuninn.ttf'),      0, False),
+    # 2. Windows 系統字型（開發機 / Windows 部署）
+    ('CJK',      r'C:\Windows\Fonts\msjh.ttc',   0, False),  # JhengHei Regular
+    ('CJK-Bold', r'C:\Windows\Fonts\msjhbd.ttc', 0, True),   # JhengHei Bold
+    ('CJK',      r'C:\Windows\Fonts\mingliu.ttc', 0, False),
+    # 3. Linux 常見字型
+    ('CJK',      '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 1, False),
+    ('CJK',      '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc', 1, False),
+    ('CJK',      '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 0, False),
+]
+
+_have_regular = False
+_have_bold = False
+for name, path, idx, is_bold in _CANDIDATES:
+    if is_bold and _have_bold:
         continue
+    if not is_bold and _have_regular:
+        continue
+    if _try_ttf(name, path, idx):
+        if is_bold:
+            CN_FONT_BOLD = 'CJK-Bold'
+            _have_bold = True
+            print(f'[PDF] 中文粗體字型嵌入: {path}')
+        else:
+            CN_FONT = 'CJK'
+            _have_regular = True
+            print(f'[PDF] 中文字型嵌入: {path} （子集會打包進每份 PDF → 無需安裝字型）')
+
+# 沒有粗體就用一般字型代替
+if _have_regular and not _have_bold:
+    CN_FONT_BOLD = CN_FONT
+
+# 4. 最差情況：退回 Adobe CID（仍可用，但收件方需有 PDF reader 內建 CJK）
+if not _have_regular:
+    for _cid_name in ('MSung-Light', 'STSong-Light'):
+        try:
+            pdfmetrics.registerFont(UnicodeCIDFont(_cid_name))
+            CN_FONT = _cid_name
+            CN_FONT_BOLD = _cid_name
+            print(f'[PDF] 退回 Adobe CID 字型 {_cid_name}（不嵌字，建議補上 TTF）')
+            break
+        except Exception:
+            continue
 
 
 def _styles():
