@@ -556,3 +556,7 @@
 {"ts": "2026-05-20T19:16:55", "action": "content", "user": "sim-addwii", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "website", "use_ai": false, "seo_coverage": 100}}
 {"ts": "2026-05-20T19:18:01", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
 {"ts": "2026-05-20T19:46:48", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T19:57:28", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T20:10:20", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T20:17:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T20:29:24", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}

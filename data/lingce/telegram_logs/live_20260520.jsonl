@@ -1,0 +1,12 @@
+{"ts": "2026-05-20T19:59:04", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "/start"}}
+{"ts": "2026-05-20T19:59:05", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "👋 您好！我是 *addwii 加我科技* 的 AI 業務助理\n（由凌策公司 AI Agent 提供 · 自由呼吸 淨零生活）\n\n您可以這樣問我：\n🛏️ _我家有過敏兒 想找臥室 8 坪的方案_\n🍳 _廚房油煙好嚴重 5 坪怎麼處理_\n🏢 _我們是月子中心 想配 8 坪嬰兒房 5 套 算 8 折_\n📊 _Coway 跟你們比怎樣_\n\n我背後有 10 個 AI Agent 協作（業務 / 提案 / 法務 / 客服），會自動依您的需求 handoff 給最適合的同事處理。\n\n想了解品牌？回 _品牌_\n想看實證？回 _實測_\n想比競品？回 _競品_"}}
+{"ts": "2026-05-20T19:59:11", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "烤肉"}}
+{"ts": "2026-05-20T20:00:55", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "跟coway比"}}
+{"ts": "2026-05-20T20:01:11", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "ㄆㄧㄣˇ ㄆㄞ"}}
+{"ts": "2026-05-20T20:01:13", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "[stub] 規則引擎已回答（非 LLM 生成 · 啟動 Ollama 或設 ANTHROPIC_API_KEY 後可獲得 LLM 增強）\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:01:21", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "烤肉"}}
+{"ts": "2026-05-20T20:02:34", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "了解了！我們可以比較一下 addwii 和 Coway 的空氣清淨機。請告訴我您打算清淨的空間類型（如嬰兒房、客廳等）和大概的坪數，好讓我可以提供更精准的對比資訊給您。😊✨\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:03:11", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "您好！請問您是想要測試加我科技的空氣清淨機嗎？如果是的話，可以告訴我您的使用空間是什麼地方呢？像是嬰兒房、客廳還是廚房？另外，大概需要多少坪的覆蓋面積呢？還有預算方面有沒有特別的考量？😊✨\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:03:24", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "[stub] 規則引擎已回答（非 LLM 生成 · 啟動 Ollama 或設 ANTHROPIC_API_KEY 後可獲得 LLM 增強）\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:24:19", "direction": "polling_error", "payload": {"error": "('Connection aborted.', ConnectionResetError(10054, '遠端主機已強制關閉一個現存的連線。', None, 10054, None))"}}
+{"ts": "2026-05-20T20:25:46", "direction": "polling_error", "payload": {"error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"}}

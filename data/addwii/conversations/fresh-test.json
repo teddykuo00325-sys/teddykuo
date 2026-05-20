@@ -1,0 +1,57 @@
+{
+  "chat_id": "fresh-test",
+  "created_at": "2026-05-20T20:17:56",
+  "messages": [
+    {
+      "role": "user",
+      "content": "臥室 8 坪 過敏兒",
+      "user_name": "測試者",
+      "ts": "2026-05-20T20:17:56"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "了解了！针对您家宝宝的卧室环境，推荐使用「臥室無塵室」（🛏️），CADR 4400 m³/h，能有效净化过敏源。售价105900元，已通过41场域实测验证，PM2.5趋零，助您一夜好眠。环境部NPA报告编号：NPA23C01250001。预算充足吗？有其他需求可以告诉我哦！👶🛋️",
+      "ts": "2026-05-20T20:21:23",
+      "intent": {
+        "space": "bedroom",
+        "area_ping": 8.0,
+        "customer_type": "B2C",
+        "segment": "allergy_family",
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [
+        {
+          "tool": "lookup_product",
+          "ok": true,
+          "elapsed_ms": 0
+        }
+      ],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
+    }
+  ],
+  "agent_trace": [
+    {
+      "ts": "2026-05-20T20:21:23",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 1,
+      "tools_used": [
+        "lookup_product"
+      ]
+    }
+  ],
+  "current_agent": "bd",
+  "customer_profile": {},
+  "last_updated": "2026-05-20T20:21:23"
+}

@@ -130,19 +130,240 @@ def _log_handoff(chat_id, from_agent, to_agent, context_summary, reason):
 # ────────────────────────────────────────────────────────────
 # Multi-Agent 對話入口
 # ────────────────────────────────────────────────────────────
+def _parse_intent(text: str) -> dict:
+    """規則 + 關鍵字偵測意圖（不靠 LLM · 快速且可靠）"""
+    import re
+    t = text.strip()
+    intent = {
+        'space': None, 'area_ping': None,
+        'customer_type': 'B2C', 'segment': None,
+        'requested_discount_pct': 0, 'bundle_units': 1,
+        'is_brand_inquiry': False,
+        'is_competitor_inquiry': False,
+        'is_field_trial_inquiry': False,
+        'is_complaint': False,
+        'is_pricing': False,
+        'is_strategy_inquiry': False,
+    }
+
+    # 空間
+    spaces = {
+        'baby':     ['嬰兒', '寶寶', '新生兒', '小孩房', '嬰幼兒', '兒童房'],
+        'kitchen':  ['廚房', '油煙', '烹飪', '煮菜', '料理'],
+        'bathroom': ['浴室', '廁所', '潮溼', '潮濕', '黴菌', '霉'],
+        'living':   ['客廳', '訪客', '寵物', '會客'],
+        'bedroom':  ['臥室', '臥房', '主臥', '睡眠', '床'],
+        'dining':   ['餐廳', '飯廳', '聚餐'],
+    }
+    for sp, kws in spaces.items():
+        if any(kw in t for kw in kws):
+            intent['space'] = sp; break
+
+    # 坪數
+    m = re.search(r'(\d+(?:\.\d+)?)\s*坪', t)
+    if m: intent['area_ping'] = float(m.group(1))
+
+    # B2B / B2C / segment
+    b2b_segs = {
+        'maternity_center':   ['月子', '坐月子'],
+        'gyn_clinic':         ['婦幼', '婦產', '產科'],
+        'allergy_clinic':     ['過敏專科', '過敏診所'],
+        'pediatric_clinic':   ['兒科'],
+        'kindergarten':       ['幼兒園', '托嬰', '幼稚園'],
+        'beauty_dental':      ['醫美', '牙醫', '牙科'],
+        'esg_enterprise':     ['ESG', 'esg', '上市櫃', '永續', '辦公', '企業'],
+    }
+    for seg, kws in b2b_segs.items():
+        if any(kw in t for kw in kws):
+            intent['segment'] = seg; intent['customer_type'] = 'B2B'; break
+    if intent['customer_type'] == 'B2C':
+        b2c_segs = {
+            'allergy_family': ['過敏'],
+            'newborn_family': ['新生兒', '寶寶', '嬰兒'],
+            'renovation':     ['裝潢', '甲醛'],
+            'pet_owner':      ['寵物', '貓', '狗', '毛屑'],
+        }
+        for seg, kws in b2c_segs.items():
+            if any(kw in t for kw in kws):
+                intent['segment'] = seg; break
+
+    # 折扣
+    m2 = re.search(r'(\d+)\s*折', t)
+    if m2:
+        v = int(m2.group(1))
+        if 1 <= v <= 10:
+            intent['requested_discount_pct'] = (10 - v) * 10  # 8 折 = 20% off
+    m3 = re.search(r'折扣?\s*(\d+)\s*[%％]?', t)
+    if m3 and not m2:
+        intent['requested_discount_pct'] = int(m3.group(1))
+
+    # 包套套數
+    m4 = re.search(r'(\d+)\s*套', t)
+    if m4: intent['bundle_units'] = int(m4.group(1))
+
+    # 意圖類別
+    if any(kw in t for kw in ['品牌', '介紹', '加我科技', 'addwii', 'addw',
+                                  '請問你們', '你們是', '公司']):
+        intent['is_brand_inquiry'] = True
+    if any(kw in t.lower() for kw in ['coway', 'blueair', 'dyson', 'honeywell',
+                                          'lg ', '競品', '比一下', '比較', '比怎樣',
+                                          '比你', '對手', '差別']):
+        intent['is_competitor_inquiry'] = True
+    if any(kw in t for kw in ['實測', '實驗', '驗證', '證據', '科學', '報告',
+                                  '場域', 'field trial', 'NPA', '趨零', '證明']):
+        intent['is_field_trial_inquiry'] = True
+    if any(kw in t for kw in ['投訴', '抱怨', '退費', '退錢', '故障', '壞',
+                                  '不滿', '客訴', '差勁']):
+        intent['is_complaint'] = True
+    if any(kw in t for kw in ['多少錢', '價格', '報價', '預算', '折', '便宜',
+                                  '貴', '價位']) or intent['requested_discount_pct'] > 0:
+        intent['is_pricing'] = True
+    if any(kw in t for kw in ['策略', '計畫', '怎麼打', '物美價廉',
+                                  '成本怎麼降', '降低成本', '進入市場']):
+        intent['is_strategy_inquiry'] = True
+
+    return intent
+
+
+def _decide_agent_chain(intent: dict, conv: dict) -> list:
+    """依意圖決定 Agent 鏈"""
+    chain = ['bd']
+    if intent['is_complaint']:
+        chain.append('customer-service')
+    if intent['is_pricing'] and intent['requested_discount_pct'] >= 5:
+        chain.append('proposal')
+    if intent['requested_discount_pct'] >= 5:
+        # 折扣意圖 → 法務檢查不實宣稱（preventive）
+        chain.append('legal')
+    return chain
+
+
+def _collect_tool_calls(intent: dict, agent: str) -> list:
+    """依意圖預先呼叫工具（規則決策 · 不靠 LLM）"""
+    import agent_tools
+    calls = []
+
+    if agent == 'bd':
+        if intent['is_brand_inquiry']:
+            calls.append(('get_brand_asset', {}))
+        if intent['is_competitor_inquiry']:
+            calls.append(('lookup_competitor', {}))
+        if intent['is_field_trial_inquiry']:
+            calls.append(('lookup_field_trial', {}))
+        if intent['space'] and intent['area_ping']:
+            calls.append(('lookup_product', {
+                'space': intent['space'], 'area_ping': intent['area_ping'],
+            }))
+        if intent['is_pricing'] and intent['area_ping']:
+            calls.append(('get_quote', {
+                'area_ping': intent['area_ping'],
+                'segment': intent['segment'],
+                'customer_type': intent['customer_type'],
+                'requested_discount_pct': intent['requested_discount_pct'],
+                'bundle_units': intent['bundle_units'],
+            }))
+        if intent['is_strategy_inquiry']:
+            kw = '物美價廉' if '物美' in str(intent) else '整體計畫'
+            calls.append(('get_market_strategy', {'query': kw}))
+    elif agent == 'proposal':
+        # 提案 Agent：要降規方案 / ROI
+        if intent['area_ping']:
+            calls.append(('get_market_strategy', {'query': '物美價廉'}))
+    elif agent == 'legal':
+        calls.append(('check_advertising_claim', {
+            'text': f'addwii PM2.5 趨零 環境部認證 折扣 {intent["requested_discount_pct"]}%',
+        }))
+    elif agent == 'customer-service':
+        # 客服：升級到主管
+        calls.append(('submit_for_approval', {
+            'track': 'compliance',
+            'payload': {'type': 'customer_complaint',
+                        'intent': intent},
+            'agent': 'customer-service',
+            'customer': 'telegram',
+            'priority': 'high',
+        }))
+
+    # 執行
+    results = []
+    for tool, args in calls:
+        r = agent_tools.dispatch(tool, args, agent=agent)
+        results.append(r)
+    return results
+
+
+def _compose_reply(intent: dict, tool_results: dict, agent: str,
+                   chat_id: str, user_text: str) -> str:
+    """用 LLM 組成自然回覆（Ollama / Anthropic / stub 通用）"""
+    import ai_backend
+
+    # 把工具結果濃縮成 KB context
+    kb_lines = []
+    for agent_name, results in tool_results.items():
+        for r in results:
+            if not r.get('ok'): continue
+            tool = r.get('tool')
+            res = r.get('result', {})
+            if tool == 'get_brand_asset':
+                kb_lines.append(f"品牌：{res.get('slogan')} | 研發 {res.get('r_and_d_years')} 年 / 投資 {res.get('r_and_d_invest')} / {res.get('patents')} | 環境部報告：{res.get('env_report', {}).get('report_no')}（75 坪辦公室 {res.get('env_report', {}).get('pm25')}）")
+            elif tool == 'lookup_competitor':
+                items = res.get('comparison', [])[:5]
+                kb_lines.append(f"競品對照：" + " / ".join([f"{i['brand']} CADR {i['cadr']} 售{i['price']} 實測{i['pm25_real']}" for i in items[:3]]))
+                kb_lines.append(f"差異：addwii HCR S03 CADR 1,600 / 38,900 / PM2.5 < 1（趨零）· 系統級全屋潔淨")
+            elif tool == 'lookup_field_trial':
+                kb_lines.append(f"實證：41 場域（30 內部員工家 + 11 外部）· 大部分 PM2.5 < 2（趨零）· 75 坪辦公室 < 1（環境部 NPA23C01250001）")
+            elif tool == 'lookup_product':
+                kb_lines.append(f"推薦：{res.get('space_zh')}（{res.get('icon')}） {res.get('recommended_system')} · CADR {res.get('cadr_total')} m³/h · {res.get('total_price_ntd')} 元 · {res.get('pitch','')}")
+            elif tool == 'get_quote':
+                kb_lines.append(f"報價：{res.get('recommended_system')} · 原 {res.get('base_total_ntd')} 折扣後 {res.get('final_total_ntd')} · 24m 0 利率月付 {res.get('zero_interest_24m_ntd')} · 狀態：{res.get('approval_status')}（{res.get('reason','')}）")
+            elif tool == 'get_market_strategy':
+                m = res.get('matched_templates', [])
+                if m: kb_lines.append(f"策略範本 {m[0].get('template')}：{m[0].get('title')}")
+            elif tool == 'check_advertising_claim':
+                if res.get('compliant'):
+                    kb_lines.append("法務檢查：用語合規通過")
+                else:
+                    kb_lines.append(f"法務檢查：發現 {len(res.get('violations', []))} 項潛在違規")
+            elif tool == 'submit_for_approval':
+                kb_lines.append(f"已升級到 {res.get('track')} 主管 queue（單號 {res.get('ticket_id')}）")
+
+    kb_context = ' / '.join(kb_lines) if kb_lines else '（先問顧客空間+坪數）'
+
+    # 極簡 system + prompt，加速 Ollama
+    simple_system = '你是 addwii 業務助理。必須用台灣繁體中文（禁簡體）。專業溫暖，不亂承諾。'
+    prompt = (
+        f'顧客：「{user_text}」\n'
+        f'KB：{kb_context}\n\n'
+        f'用繁體中文簡短（80字內）回覆。引用真實數字。可用 emoji 👶🛋️🛁🍳🛏️🍽️。'
+    )
+
+    r = ai_backend.generate(prompt=prompt, system=simple_system,
+                             max_tokens=200, temperature=0.3, timeout_s=180)
+    text = (r.get('text') or '').strip()
+    # 移除可能的 LLM 自言自語 prefix
+    for prefix in ('回覆內容：', '回覆：', 'A：', 'addwii AI：', '助理：'):
+        if text.startswith(prefix):
+            text = text[len(prefix):].strip()
+    # 簡體 → 繁體（簡單轉換 · 不引入 OpenCC 重套件）
+    try:
+        from simple_s2t import s2t
+        text = s2t(text)
+    except Exception:
+        pass
+    return text or '（系統繁忙，請稍候）'
+
+
 def respond(chat_id: str, user_text: str, user_name: str = 'guest') -> dict:
-    """處理一則使用者訊息 · 自動跑 multi-agent 流程
+    """處理一則使用者訊息 · 規則決策 + LLM 組句（混合模式 · Ollama 友善）
 
     流程：
-      1. 載入對話 thread
-      2. 取當前 Agent（預設 bd）
-      3. 用 ai_backend.generate_with_tools 跑 tool-use 迴圈
-      4. 若 LLM 呼叫了 handoff_to_agent → 換 Agent 再跑一輪
-      5. 寫入 thread + trace
+      1. 載入對話 thread + append 訊息
+      2. 規則 _parse_intent 判斷意圖
+      3. _decide_agent_chain 決定 Agent 鏈
+      4. 對每個 Agent 跑 _collect_tool_calls（規則預先呼叫工具）
+      5. _compose_reply（LLM 組成自然回覆）
+      6. 寫 trace
     """
-    import ai_backend
-    import agent_tools
-
     conv = load_conversation(chat_id)
     conv['messages'].append({
         'role':      'user',
@@ -151,90 +372,77 @@ def respond(chat_id: str, user_text: str, user_name: str = 'guest') -> dict:
         'ts':        datetime.now().isoformat(timespec='seconds'),
     })
 
-    current_agent = conv.get('current_agent', 'bd')
+    # 1. 意圖偵測
+    intent = _parse_intent(user_text)
+
+    # 2. Agent 鏈
+    agent_chain = _decide_agent_chain(intent, conv)
+    final_agent = agent_chain[-1]
+
+    # 3. 預先呼叫工具（依 Agent 分組）
+    tool_results = {}
     all_tool_calls = []
+    for ag in agent_chain:
+        results = _collect_tool_calls(intent, ag)
+        tool_results[ag] = results
+        all_tool_calls.extend(results)
+
+    # 4. 記 handoff
     handoffs = []
-    final_text = ''
-    max_handoffs = 3
-    handoff_count = 0
+    for i in range(len(agent_chain) - 1):
+        h = {
+            'from':    agent_chain[i],
+            'to':      agent_chain[i + 1],
+            'reason':  '依意圖規則自動 handoff',
+            'summary': f'intent={intent}',
+        }
+        handoffs.append(h)
+        _log_handoff(chat_id, h['from'], h['to'], h['summary'], h['reason'])
 
-    # 構建對話歷史（給 LLM 看）
-    history = '\n'.join(
-        f'{m["role"]}: {m["content"]}'
-        for m in conv['messages'][-10:]   # 最近 10 輪
-    )
+    # 5. LLM 組句
+    try:
+        final_text = _compose_reply(intent, tool_results, final_agent,
+                                      chat_id, user_text)
+    except Exception as e:
+        final_text = f'⚠️ 系統繁忙（{type(e).__name__}）。請稍候或換個說法。'
 
-    while handoff_count <= max_handoffs:
-        system = AGENT_PROMPTS.get(current_agent, AGENT_PROMPTS['bd'])
-        tools = agent_tools.list_tools_for_llm('anthropic')
-
-        r = ai_backend.generate_with_tools(
-            prompt=f'對話歷史：\n{history}\n\n顧客最新訊息：{user_text}',
-            system=system,
-            tools=tools,
-            max_tokens=1500,
-            temperature=0.2,
-            max_iters=5,
-            agent_id=current_agent,
-        )
-        all_tool_calls.extend(r.get('tool_calls', []))
-        final_text = r.get('final_text', '')
-
-        # 偵測 LLM 在 tool_calls 裡有沒有呼叫 handoff_to_agent
-        handoff_call = next(
-            (tc for tc in r.get('tool_calls', []) if tc.get('tool') == 'handoff_to_agent'),
-            None,
-        )
-        if handoff_call:
-            target = handoff_call['input'].get('target_agent', 'bd')
-            reason = handoff_call['input'].get('reason', '')
-            summary = handoff_call['input'].get('context_summary', '')
-            handoffs.append({
-                'from':    current_agent,
-                'to':      target,
-                'reason':  reason,
-                'summary': summary,
-            })
-            _log_handoff(chat_id, current_agent, target, summary, reason)
-            current_agent = target
-            handoff_count += 1
-            # 更新 history 給下一個 Agent 看
-            history += f'\n[Handoff: {handoffs[-1]["from"]} → {target}] {summary} (因：{reason})'
-            continue
-
-        break  # 沒 handoff，迴圈結束
-
-    # 寫回 thread
-    conv['current_agent'] = current_agent
+    # 6. 寫回 thread
+    import ai_backend
+    backend_info = ai_backend.backend_info()
+    conv['current_agent'] = final_agent
     conv['messages'].append({
-        'role':            'assistant',
-        'agent':           current_agent,
-        'content':         final_text,
-        'ts':              datetime.now().isoformat(timespec='seconds'),
-        'tool_calls':      all_tool_calls,
-        'handoffs':        handoffs,
-        'backend':         r.get('backend'),
-        'model':           r.get('model'),
-        'iterations':      r.get('iterations'),
+        'role':       'assistant',
+        'agent':      final_agent,
+        'content':    final_text,
+        'ts':         datetime.now().isoformat(timespec='seconds'),
+        'intent':     intent,
+        'tool_calls': [{'tool': t.get('tool'), 'ok': t.get('ok'),
+                         'elapsed_ms': t.get('elapsed_ms')} for t in all_tool_calls],
+        'handoffs':   handoffs,
+        'backend':    backend_info.get('backend'),
+        'model':      backend_info.get('model'),
     })
     conv['agent_trace'].append({
-        'ts':           datetime.now().isoformat(timespec='seconds'),
-        'agent_chain':  ['bd'] + [h['to'] for h in handoffs],
-        'tool_count':   len(all_tool_calls),
-        'tools_used':   [tc['tool'] for tc in all_tool_calls],
+        'ts':          datetime.now().isoformat(timespec='seconds'),
+        'agent_chain': agent_chain,
+        'tool_count':  len(all_tool_calls),
+        'tools_used':  list(set(t.get('tool') for t in all_tool_calls if t.get('tool'))),
     })
     save_conversation(conv)
 
     return {
-        'chat_id':        chat_id,
-        'reply':          final_text,
-        'final_agent':    current_agent,
-        'agent_chain':    ['bd'] + [h['to'] for h in handoffs],
-        'tool_calls':     all_tool_calls,
-        'handoffs':       handoffs,
-        'backend':        r.get('backend'),
-        'model':          r.get('model'),
-        'iterations':     r.get('iterations'),
+        'chat_id':      chat_id,
+        'reply':        final_text,
+        'final_agent':  final_agent,
+        'agent_chain':  agent_chain,
+        'intent':       intent,
+        'tool_calls':   [{'tool': t.get('tool'), 'ok': t.get('ok'),
+                           'elapsed_ms': t.get('elapsed_ms'),
+                           'result_preview': str(t.get('result', ''))[:200]}
+                          for t in all_tool_calls],
+        'handoffs':     handoffs,
+        'backend':      backend_info.get('backend'),
+        'model':        backend_info.get('model'),
     }
 
 

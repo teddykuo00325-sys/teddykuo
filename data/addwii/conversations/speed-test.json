@@ -1,0 +1,57 @@
+{
+  "chat_id": "speed-test",
+  "created_at": "2026-05-20T20:29:26",
+  "messages": [
+    {
+      "role": "user",
+      "content": "臥室 8 坪 過敏兒",
+      "user_name": "web-guest",
+      "ts": "2026-05-20T20:29:26"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "针對過敏兒的臥室環境，我們推薦使用「無塵室」S08 🛏️，CADR 4400 m³/h，噪音僅39 dB，每晚淨化PM2.5至零，助 REGARD 小朋友安然入眠 👶。淨化效果佳，價格合理，105,900元即可擁有！",
+      "ts": "2026-05-20T20:30:36",
+      "intent": {
+        "space": "bedroom",
+        "area_ping": 8.0,
+        "customer_type": "B2C",
+        "segment": "allergy_family",
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [
+        {
+          "tool": "lookup_product",
+          "ok": true,
+          "elapsed_ms": 0
+        }
+      ],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
+    }
+  ],
+  "agent_trace": [
+    {
+      "ts": "2026-05-20T20:30:36",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 1,
+      "tools_used": [
+        "lookup_product"
+      ]
+    }
+  ],
+  "current_agent": "bd",
+  "customer_profile": {},
+  "last_updated": "2026-05-20T20:30:36"
+}
