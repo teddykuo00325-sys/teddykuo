@@ -37,23 +37,67 @@ _TOTAL_TOKENS   = 0
 
 
 def _try_ollama() -> dict:
-    """嘗試連 Ollama"""
+    """嘗試連 Ollama · 自動選最佳繁中模型
+
+    優先序：
+      1. env OLLAMA_MODEL 強制指定
+      2. Breeze-7B（聯發科 · 台灣繁中最佳）
+      3. TAIDE-LX-7B / Llama3-TAIDE（國科會繁中）
+      4. qwen2.5:7b（簡體偏好但工具呼叫強）
+      5. 任何已存在的模型
+    """
     try:
         import requests
-        url   = os.getenv('OLLAMA_URL',   'http://127.0.0.1:11434')
-        model = os.getenv('OLLAMA_MODEL', 'qwen2.5:7b')
+        url = os.getenv('OLLAMA_URL', 'http://127.0.0.1:11434')
+        forced = os.getenv('OLLAMA_MODEL', '')
         r = requests.get(f'{url}/api/tags', timeout=2)
-        if r.status_code == 200:
-            tags = [m['name'] for m in r.json().get('models', [])]
-            if any(model.split(':')[0] in t for t in tags) or len(tags) > 0:
-                return {
-                    'backend':  'ollama',
-                    'url':      url,
-                    'model':    model if any(model in t for t in tags) else (tags[0] if tags else model),
-                    'license':  'Apache 2.0（qwen / gemma 等開源）',
-                    'mode':     'offline',
-                    'available_models': tags,
-                }
+        if r.status_code != 200:
+            return None
+        tags = [m['name'] for m in r.json().get('models', [])]
+        if not tags:
+            return None
+
+        # 繁中優先序（依模型 quality / availability）
+        preference = [
+            'breeze-7b', 'Breeze-7B', 'second-state/Breeze',  # 聯發科繁中最佳
+            'taide', 'TAIDE',                                    # 國科會繁中
+            'qwen2.5:7b', 'qwen2.5:14b',                         # 簡體強但仍可用
+            'qwen2.5:3b',                                        # 速度首選
+        ]
+
+        # 1. forced env var
+        if forced and any(forced in t for t in tags):
+            chosen = next((t for t in tags if forced in t), forced)
+        else:
+            chosen = None
+            # 2-5. 自動選最佳
+            for pref in preference:
+                for t in tags:
+                    if pref.lower() in t.lower():
+                        chosen = t
+                        break
+                if chosen: break
+            if not chosen:
+                chosen = tags[0]
+
+        # 判斷模型家族（給 UI 顯示）
+        family = 'unknown'
+        if 'breeze' in chosen.lower(): family = 'Breeze-7B（聯發科 · 台灣繁中）'
+        elif 'taide' in chosen.lower(): family = 'TAIDE（國科會 · 繁中）'
+        elif 'qwen' in chosen.lower(): family = 'Qwen（阿里巴巴 · 多語）'
+        elif 'gemma' in chosen.lower(): family = 'Gemma（Google · 多語）'
+        elif 'llama' in chosen.lower(): family = 'Llama（Meta · 英文強）'
+
+        return {
+            'backend':  'ollama',
+            'url':      url,
+            'model':    chosen,
+            'family':   family,
+            'license':  'Apache 2.0 / Mistral / Llama license（依模型不同）',
+            'mode':     'offline',
+            'available_models': tags,
+            'auto_selected':    not bool(forced),
+        }
     except Exception:
         pass
     return None

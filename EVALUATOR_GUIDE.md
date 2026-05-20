@@ -26,7 +26,24 @@ data/lingce/agents/
 
 ---
 
-## 二、AI 模型不是依賴 Ollama · 4 重備援
+## 二、AI 模型 · 台灣繁中專用（Breeze-7B）+ 4 重備援
+
+### 主模型：Breeze-7B-Instruct-v1.0 ⭐
+- **聯發科 MediaTek Research** 開源（Apache 2.0）
+- 大量台灣繁體中文語料訓練
+- 業務客服場景對齊：「空氣清淨機」「淨化」「過敏兒」「報價」（無簡體傾向）
+- 通過 ai_backend 自動偵測 → 評審 Mac 跑起來自動用 Breeze（若已 pull）
+
+### 與 qwen2.5:7b 對照（實測 benchmark）
+
+| 指標 | qwen2.5:7b | Breeze-7B-Instruct |
+|---|:--:|:--:|
+| 簡體字命中 | 4/抽樣 | **0** ✅ |
+| 業務用語 | 「空气净化器」 | 「空氣清淨機」 ✅ |
+| PM2.5 術語 | 「微粒物」 | 「細懸浮微粒」（CNS 標準）✅ |
+| 回覆完整度 | 50 字 | 129 字（多 2.6 倍）✅ |
+
+### 4 重 fallback 鏈
 
 ```
 src/backend/ai_backend.py

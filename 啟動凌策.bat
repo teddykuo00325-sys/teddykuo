@@ -51,6 +51,24 @@ if errorlevel 1 (
 
 REM ---- 3. Kill old server ----
 echo.
+REM ── 2.5 模型下載（首次 5-15 分鐘 · 之後跳過） ──
+echo.
+echo [2.5/4] Checking local AI models...
+ollama --version >nul 2>&1
+if errorlevel 1 (
+    echo        Ollama 未安裝。本地模型功能將降級為規則引擎。
+    echo        若要完整功能請從 https://ollama.com/download/windows 安裝
+    timeout /t 3 >nul
+) else (
+    ollama list 2>nul | findstr /C:"second-state/Breeze-7B-Instruct" >nul
+    if errorlevel 1 (
+        echo        首次啟動：下載 Breeze-7B 繁中模型 ^(4.4 GB · 約 5-10 分鐘^)...
+        call setup_models.bat
+    ) else (
+        echo        Breeze-7B 已下載  [OK]
+    )
+)
+
 echo [3/4] Cleaning ports 5000/5050/5051...
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":5000 " ^| findstr "LISTENING"') do (
     taskkill /F /PID %%p >nul 2>&1

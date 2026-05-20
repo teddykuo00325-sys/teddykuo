@@ -83,6 +83,35 @@ set LINGCE_MODE=online && python src/backend/server.py
 
 ---
 
+## 🤖 本地 AI 模型（自動下載）
+
+系統預設使用 **聯發科 Breeze-7B-Instruct**（台灣繁中專用 · Apache 2.0）。
+
+| 模型 | 大小 | 用途 |
+|---|:--:|---|
+| **Breeze-7B-Instruct-v1.0** | 4.5 GB | **主模型**（聯發科 · 台灣繁中業務客服）|
+| qwen2.5:7b | 4.7 GB | 備援（工具呼叫強）|
+
+**首次啟動會自動下載**（5-15 分鐘 · 之後跳過）：
+- Windows：雙擊 `啟動凌策.bat` 會自動呼叫 `setup_models.bat`
+- macOS / Linux：先跑 `bash setup_models.sh`
+- Docker：`docker-compose up` 自動拉
+
+**手動 pull**：
+```bash
+ollama pull hf.co/second-state/Breeze-7B-Instruct-v1_0-GGUF:Q4_K_M
+ollama pull qwen2.5:7b
+```
+
+模型自動偵測順序（`ai_backend.py`）：
+1. `OLLAMA_MODEL` env var 強制
+2. **Breeze-7B**（聯發科 · 繁中最佳）⭐
+3. TAIDE-LX-7B（國科會 · 繁中）
+4. qwen2.5:7b（多語）
+5. 任何已存在的模型
+
+---
+
 ## 🚀 快速啟動（跨平台 · Windows / macOS / Linux）
 
 ### Port 預設 5050

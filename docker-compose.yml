@@ -26,7 +26,9 @@ services:
       LINGCE_MODE: offline
       LINGCE_PORT: "5050"
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+      # 預設 Breeze-7B（聯發科 · 台灣繁中專用 · Apache 2.0）
+      # ai_backend 會依存在的模型自動選最佳
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-hf.co/second-state/Breeze-7B-Instruct-v1_0-GGUF:Q4_K_M}
       CLAUDE_API_DISABLED: "true"
     volumes:
       # 持久化資料 + 稽核 log
