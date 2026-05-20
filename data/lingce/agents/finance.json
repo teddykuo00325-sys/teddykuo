@@ -1,0 +1,21 @@
+{
+  "agent_id": "finance",
+  "name": "財務 Agent",
+  "role": "財務成本 Agent",
+  "department": "營運管理",
+  "agent_level": "L1",
+  "persona": "我追 Token 用量、預算、報價 ROI。金流相關必須升級 L4 人審。",
+  "tasks_completed": 0,
+  "tasks_in_progress": 0,
+  "action_distribution": {},
+  "recent_activities": [],
+  "collaborators": [],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-20T10:00:00",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "(no live calls - L1 advisory only)"
+  ]
+}

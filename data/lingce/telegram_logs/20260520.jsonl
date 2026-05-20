@@ -1,0 +1,2 @@
+{"ts": "2026-05-20T18:57:08", "direction": "inbound", "mode": "dry-run", "payload": {"chat_id": "chat_demo", "user_name": "測試客戶", "text": "我家有過敏兒 臥室 6 坪 想了解方案"}}
+{"ts": "2026-05-20T18:57:10", "direction": "outbound", "mode": "dry-run", "payload": {"chat_id": "chat_demo", "reply_text": "🛏️ 為您推薦 臥室無塵室 · S06\nCADR 3200 m³/h · 售價 76,900 元\n靜音 39 dB 入睡，PM2.5 趨零讓您一夜好眠", "intent_detected": {"space": "bedroom", "area_ping": 6.0, "customer_type": "B2C", "segment": "allergy_family", "requested_discount_pct": 0}, "pii_redactions": 0, "quote": null, "approval_ticket": null}}

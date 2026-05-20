@@ -33,40 +33,33 @@ except Exception:
 def _ollama_generate(prompt: str, system: str = '', temperature: float = 0.3,
                      num_predict: int = 400, timeout: int = 60,
                      context: str = 'scenario') -> dict:
-    """呼叫本地 Qwen 2.5 7B。所有輸入先過 PII Guard 遮蔽後再送 LLM。
-    回傳 {ok, text, elapsed_s, pii_redactions}"""
-    assert_local_only()  # 合規：確認雲端 API 未啟用
-    url = os.getenv('OLLAMA_URL', 'http://127.0.0.1:11434')
-    model = os.getenv('OLLAMA_MODEL', 'qwen2.5:7b')
+    """呼叫 LLM。v3.x 起改透過 ai_backend 多後端抽象（Ollama → Anthropic →
+    Transformers → stub）。所有輸入先過 PII Guard 遮蔽後再送 LLM。
+    回傳 {ok, text, elapsed_s, pii_redactions, backend, model}"""
+    assert_local_only()  # 合規：確認雲端 API 未啟用（除非用戶顯式 ANTHROPIC_API_KEY）
 
     # ─── PII 遮蔽（雙保險：即便是本地 LLM 也不吞原始個資）───
     safe_prompt, dets_p = _pii_mask(prompt, context=f'{context}:prompt')
     safe_system, dets_s = _pii_mask(system, context=f'{context}:system') if system else ('', [])
     total_redactions = len(dets_p) + len(dets_s)
 
-    payload = {
-        'model': model,
-        'messages': [],
-        'stream': False,
-        'options': {'temperature': temperature, 'num_predict': num_predict, 'num_ctx': 2048},
-    }
-    if safe_system:
-        payload['messages'].append({'role': 'system', 'content': safe_system})
-    payload['messages'].append({'role': 'user', 'content': safe_prompt})
     t0 = time.time()
     try:
-        # 加 ngrok-skip-browser-warning 支援 Render 雲端透過 ngrok 連本機 Ollama
-        r = _requests.post(f'{url}/api/chat', json=payload,
-                           headers={'ngrok-skip-browser-warning': 'true'}, timeout=timeout)
-        r.raise_for_status()
-        msg = r.json().get('message', {}) or {}
-        text = (msg.get('content') or msg.get('thinking') or '').strip()
-        return {'ok': True, 'text': text, 'elapsed_s': round(time.time()-t0, 1),
-                'model': model, 'pii_redactions': total_redactions}
-    except _requests.exceptions.Timeout:
-        return {'ok': False, 'error': 'AI 逾時', 'elapsed_s': round(time.time()-t0, 1), 'model': model}
+        from ai_backend import generate as _ai_gen
+        r = _ai_gen(prompt=safe_prompt, system=safe_system or None,
+                    max_tokens=num_predict, temperature=temperature, timeout_s=timeout)
+        return {
+            'ok':              not r.get('fallback', False),
+            'text':            r.get('text', '').strip(),
+            'elapsed_s':       round(time.time() - t0, 1),
+            'model':           r.get('model'),
+            'backend':         r.get('backend'),
+            'pii_redactions':  total_redactions,
+            'fallback':        r.get('fallback', False),
+        }
     except Exception as e:
-        return {'ok': False, 'error': str(e), 'elapsed_s': round(time.time()-t0, 1), 'model': model}
+        return {'ok': False, 'error': str(e),
+                'elapsed_s': round(time.time() - t0, 1), 'model': 'unknown'}
 
 # ============================================================
 # PII 去識別化

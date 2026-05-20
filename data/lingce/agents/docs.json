@@ -1,0 +1,85 @@
+{
+  "agent_id": "docs",
+  "name": "文件 Agent",
+  "role": "文件 / 知識管理 Agent",
+  "department": "營運管理",
+  "agent_level": "L2",
+  "persona": "我產出技術文件、API doc、行銷文案、合規 changelog。",
+  "tasks_completed": 57,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "content": 57
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-05-18T01:28:53",
+      "action": "content",
+      "user": "",
+      "detail_sha": "fcbd37383cde7021"
+    },
+    {
+      "ts": "2026-04-25T20:38:32",
+      "action": "content",
+      "user": "",
+      "detail_sha": "fcbd37383cde7021"
+    },
+    {
+      "ts": "2026-04-23T16:29:48",
+      "action": "content",
+      "user": "judge",
+      "detail_sha": "fcbd37383cde7021"
+    },
+    {
+      "ts": "2026-04-23T14:48:23",
+      "action": "content",
+      "user": "boss",
+      "detail_sha": "fcbd37383cde7021"
+    },
+    {
+      "ts": "2026-04-22T19:08:16",
+      "action": "content",
+      "user": "boss",
+      "detail_sha": "fcbd37383cde7021"
+    },
+    {
+      "ts": "2026-04-22T19:07:21",
+      "action": "content",
+      "user": "boss",
+      "detail_sha": "fcbd37383cde7021"
+    },
+    {
+      "ts": "2026-04-22T18:32:16",
+      "action": "content",
+      "user": "",
+      "detail_sha": "a1b0c118bc923c20"
+    },
+    {
+      "ts": "2026-04-22T15:52:42",
+      "action": "content",
+      "user": "sim-addwii",
+      "detail_sha": "8ec5b2ba0ed084d8"
+    },
+    {
+      "ts": "2026-04-22T14:42:04",
+      "action": "content",
+      "user": "commander",
+      "detail_sha": "af26066dfa02c86c"
+    },
+    {
+      "ts": "2026-04-22T13:43:34",
+      "action": "content",
+      "user": "commander",
+      "detail_sha": "f9d10284af61525e"
+    }
+  ],
+  "collaborators": [],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-18T01:28:53",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "generate_content(theme, channel)",
+    "generate_8d_report(issue)"
+  ]
+}

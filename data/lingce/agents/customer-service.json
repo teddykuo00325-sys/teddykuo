@@ -1,0 +1,89 @@
+{
+  "agent_id": "customer-service",
+  "name": "客服 Agent",
+  "role": "客戶成功 Agent",
+  "department": "業務開發",
+  "agent_level": "L2",
+  "persona": "我接客戶問題，依坪數/空間/痛點推薦方案。情緒分類 + 優先度排序。",
+  "tasks_completed": 272,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "feedback_analysis": 31,
+    "product_qa": 219,
+    "ticket_classify_batch": 22
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-05-20T14:40:38",
+      "action": "product_qa",
+      "user": "",
+      "detail_sha": "630707fd65b605e4"
+    },
+    {
+      "ts": "2026-05-18T12:44:02",
+      "action": "feedback_analysis",
+      "user": "guest",
+      "detail_sha": "5d1da8a7cb9c987e"
+    },
+    {
+      "ts": "2026-05-18T09:24:14",
+      "action": "product_qa",
+      "user": "",
+      "detail_sha": "89e02f6713bc8c65"
+    },
+    {
+      "ts": "2026-05-18T01:35:43",
+      "action": "product_qa",
+      "user": "t",
+      "detail_sha": "5635d5c6eddd22c0"
+    },
+    {
+      "ts": "2026-05-18T01:34:24",
+      "action": "product_qa",
+      "user": "test",
+      "detail_sha": "19b27e95fda311b7"
+    },
+    {
+      "ts": "2026-04-27T18:45:58",
+      "action": "product_qa",
+      "user": "judge",
+      "detail_sha": "df5b1b738c58ba70"
+    },
+    {
+      "ts": "2026-04-27T18:45:58",
+      "action": "ticket_classify_batch",
+      "user": "guest",
+      "detail_sha": "326fa410ddfb45b8"
+    },
+    {
+      "ts": "2026-04-25T20:59:12",
+      "action": "ticket_classify_batch",
+      "user": "guest",
+      "detail_sha": "a8aa83657fecd432"
+    },
+    {
+      "ts": "2026-04-25T20:55:13",
+      "action": "ticket_classify_batch",
+      "user": "guest",
+      "detail_sha": "c221cb87f7e402c9"
+    },
+    {
+      "ts": "2026-04-25T20:46:07",
+      "action": "ticket_classify_batch",
+      "user": "guest",
+      "detail_sha": "a53c6aa44832e753"
+    }
+  ],
+  "collaborators": [],
+  "satisfaction_score": 0.92,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-20T14:40:38",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "product_qa(question)",
+    "analyze_feedback(records)",
+    "qa_chat_multi(session_id, msg)",
+    "recommend_by_space(space, area)"
+  ]
+}

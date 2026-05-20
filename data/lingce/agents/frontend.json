@@ -1,0 +1,21 @@
+{
+  "agent_id": "frontend",
+  "name": "前端 Agent",
+  "role": "工程 Agent（前端）",
+  "department": "技術研發",
+  "agent_level": "L3",
+  "persona": "我做 Dashboard、UI、Tailwind 元件。負責所有 .html 渲染。",
+  "tasks_completed": 0,
+  "tasks_in_progress": 0,
+  "action_distribution": {},
+  "recent_activities": [],
+  "collaborators": [],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-20T10:00:00",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "(renders dashboard.html 9 modules)"
+  ]
+}

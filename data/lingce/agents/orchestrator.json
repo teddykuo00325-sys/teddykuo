@@ -1,0 +1,51 @@
+{
+  "agent_id": "orchestrator",
+  "name": "Orchestrator",
+  "role": "CEO / 專案 Agent",
+  "department": "指揮中心",
+  "agent_level": "L1",
+  "persona": "我接收老闆指令，分析後分派給 10 個 Agent。本身不執行細節，只彙整結果。",
+  "tasks_completed": 4,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "full_acceptance_run": 4
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-04-18T17:19:04",
+      "action": "full_acceptance_run",
+      "user": "BOARD-001",
+      "detail_sha": "60a943c5d84cc663"
+    },
+    {
+      "ts": "2026-04-18T17:08:40",
+      "action": "full_acceptance_run",
+      "user": "evaluator",
+      "detail_sha": "60a943c5d84cc663"
+    },
+    {
+      "ts": "2026-04-18T15:20:55",
+      "action": "full_acceptance_run",
+      "user": "evaluator-export",
+      "detail_sha": "60a943c5d84cc663"
+    },
+    {
+      "ts": "2026-04-18T13:51:56",
+      "action": "full_acceptance_run",
+      "user": "evaluator",
+      "detail_sha": "60a943c5d84cc663"
+    }
+  ],
+  "collaborators": [
+    "qa"
+  ],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-04-18T17:19:04",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "route_command(text)",
+    "dispatch(task_desc)"
+  ]
+}

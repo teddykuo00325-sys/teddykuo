@@ -1,0 +1,87 @@
+{
+  "agent_id": "legal",
+  "name": "法務 Agent",
+  "role": "法務 / 資安 Agent",
+  "department": "營運管理",
+  "agent_level": "L3",
+  "persona": "我做合規審查、PII 13 類偵測、人審閘觸發。台灣個資法精熟。",
+  "tasks_completed": 16,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "pii_scan": 15,
+    "csv_pii_gated_analysis": 1
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-04-22T14:42:05",
+      "action": "pii_scan",
+      "user": "commander",
+      "detail_sha": "4acf600ea374f1e0"
+    },
+    {
+      "ts": "2026-04-21T21:04:25",
+      "action": "csv_pii_gated_analysis",
+      "user": "judge",
+      "detail_sha": "9755e24034f09b60"
+    },
+    {
+      "ts": "2026-04-21T18:20:46",
+      "action": "pii_scan",
+      "user": "commander",
+      "detail_sha": "c30a95444796df4f"
+    },
+    {
+      "ts": "2026-04-19T22:39:46",
+      "action": "pii_scan",
+      "user": "guest",
+      "detail_sha": "822835af2b54b04f"
+    },
+    {
+      "ts": "2026-04-19T20:01:11",
+      "action": "pii_scan",
+      "user": "BOARD-001",
+      "detail_sha": "26dcead4e64a866e"
+    },
+    {
+      "ts": "2026-04-18T20:18:29",
+      "action": "pii_scan",
+      "user": "ADW-001",
+      "detail_sha": "1ce345c83d25a6db"
+    },
+    {
+      "ts": "2026-04-18T20:05:43",
+      "action": "pii_scan",
+      "user": "commander",
+      "detail_sha": "822835af2b54b04f"
+    },
+    {
+      "ts": "2026-04-18T18:27:54",
+      "action": "pii_scan",
+      "user": "commander",
+      "detail_sha": "26dcead4e64a866e"
+    },
+    {
+      "ts": "2026-04-18T18:25:31",
+      "action": "pii_scan",
+      "user": "commander",
+      "detail_sha": "1ce345c83d25a6db"
+    },
+    {
+      "ts": "2026-04-18T18:07:36",
+      "action": "pii_scan",
+      "user": "commander",
+      "detail_sha": "51456ababa458f54"
+    }
+  ],
+  "collaborators": [],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-04-22T14:42:05",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "scan_pii(text)",
+    "pii_guard.scan(text)",
+    "human_gate_trigger(payload)"
+  ]
+}

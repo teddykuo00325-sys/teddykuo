@@ -1,0 +1,89 @@
+{
+  "agent_id": "bd",
+  "name": "BD Agent",
+  "role": "業務 Agent",
+  "department": "業務開發",
+  "agent_level": "L2",
+  "persona": "我做客戶需求分析、市場調研、提案策略。擅長 B2B/B2C 雙軌定價。",
+  "tasks_completed": 59,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "proposal": 40,
+    "proposal_8sec": 19
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-05-18T13:44:02",
+      "action": "proposal",
+      "user": "",
+      "detail_sha": "86a7d7f736b37818"
+    },
+    {
+      "ts": "2026-05-18T13:44:02",
+      "action": "proposal",
+      "user": "guest",
+      "detail_sha": "887e26728627e73a"
+    },
+    {
+      "ts": "2026-05-18T13:40:56",
+      "action": "proposal",
+      "user": "test",
+      "detail_sha": "4de4c339032c9c81"
+    },
+    {
+      "ts": "2026-05-18T12:40:12",
+      "action": "proposal",
+      "user": "",
+      "detail_sha": "137be2703f058563"
+    },
+    {
+      "ts": "2026-05-18T12:38:57",
+      "action": "proposal",
+      "user": "",
+      "detail_sha": "4cc27b0674ae2157"
+    },
+    {
+      "ts": "2026-05-18T12:37:51",
+      "action": "proposal",
+      "user": "",
+      "detail_sha": "18da778169d7208e"
+    },
+    {
+      "ts": "2026-05-18T01:28:38",
+      "action": "proposal",
+      "user": "",
+      "detail_sha": "52fb380fc9148099"
+    },
+    {
+      "ts": "2026-04-27T18:45:58",
+      "action": "proposal_8sec",
+      "user": "judge",
+      "detail_sha": "baefede2c2255c9d"
+    },
+    {
+      "ts": "2026-04-25T20:58:49",
+      "action": "proposal_8sec",
+      "user": "judge",
+      "detail_sha": "43d2a502a2df1362"
+    },
+    {
+      "ts": "2026-04-25T20:57:30",
+      "action": "proposal_8sec",
+      "user": "judge",
+      "detail_sha": "98141d3fe1cb1282"
+    }
+  ],
+  "collaborators": [
+    "proposal"
+  ],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-18T13:44:02",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "generate_proposal(customer, profile)",
+    "home_clean_room_quote(area)",
+    "quote_with_negotiation(area, segment)"
+  ]
+}

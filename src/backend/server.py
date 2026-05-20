@@ -2112,6 +2112,165 @@ def api_addwii_segments():
     return jsonify(accs.get_customer_segments(customer_type))
 
 
+# ──────────────────────────────────────────────────────
+# AI Backend Status · 給評審看「目前用哪個 LLM」
+# ──────────────────────────────────────────────────────
+@app.route('/api/ai/backend')
+def api_ai_backend():
+    """回傳當前 AI 後端資訊（ollama / anthropic / transformers / stub）"""
+    try:
+        import ai_backend
+        return jsonify(ai_backend.backend_info())
+    except Exception as e:
+        return jsonify({'error': str(e), 'backend': 'unknown'}), 500
+
+
+@app.route('/api/ai/generate', methods=['POST'])
+def api_ai_generate():
+    """直接呼叫 ai_backend.generate — 測試 LLM 連線"""
+    import ai_backend
+    d = request.get_json(silent=True) or {}
+    return jsonify(ai_backend.generate(
+        prompt=d.get('prompt', '請介紹 addwii 加我科技'),
+        system=d.get('system'),
+        max_tokens=int(d.get('max_tokens', 200)),
+        temperature=float(d.get('temperature', 0.3)),
+    ))
+
+
+# ──────────────────────────────────────────────────────
+# Agent Status · 給評審看「10 個 Agent 都在做事」
+# ──────────────────────────────────────────────────────
+@app.route('/api/agents/profiles')
+def api_agents_profiles():
+    """回傳 data/lingce/agents/ 所有 Agent profile + organization"""
+    base = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'lingce', 'agents')
+    out = {'agents': {}, 'organization': None}
+    if not os.path.isdir(base):
+        return jsonify({'error': 'data/lingce/agents/ 不存在 — 請先跑 scripts/build_agents.py'}), 404
+    for fname in os.listdir(base):
+        path = os.path.join(base, fname)
+        if not fname.endswith('.json'):
+            continue
+        try:
+            with open(path, encoding='utf-8') as f:
+                data = json.load(f)
+            if fname == '_organization.json':
+                out['organization'] = data
+            else:
+                out['agents'][fname.replace('.json', '')] = data
+        except Exception as e:
+            out['agents'][fname] = {'error': str(e)}
+    return jsonify(out)
+
+
+# ──────────────────────────────────────────────────────
+# 三軌人審 Queue（sales / marketing / compliance · 1 人總監）
+# ──────────────────────────────────────────────────────
+@app.route('/api/approval/queue')
+def api_approval_queue():
+    """列出待審項目（給 dashboard 紅點 + 列表）"""
+    import approval_queue as aq
+    track = request.args.get('track')
+    limit = int(request.args.get('limit', 50))
+    return jsonify(aq.list_pending(track=track, limit=limit))
+
+
+@app.route('/api/approval/stats')
+def api_approval_stats():
+    """3 軌待審統計（給 dashboard 卡片）"""
+    import approval_queue as aq
+    return jsonify(aq.stats())
+
+
+@app.route('/api/approval/submit', methods=['POST'])
+def api_approval_submit():
+    """送進 queue 等審（內部呼叫；客服 / 行銷 Agent 觸發）"""
+    import approval_queue as aq
+    d = request.get_json(silent=True) or {}
+    return jsonify(aq.submit(
+        track=d.get('track', 'sales'),
+        payload=d.get('payload', {}),
+        agent=d.get('agent', 'unknown'),
+        customer=d.get('customer', 'unknown'),
+        priority=d.get('priority', 'normal'),
+    ))
+
+
+@app.route('/api/approval/review', methods=['POST'])
+def api_approval_review():
+    """總監一鍵 approve / reject / edit"""
+    import approval_queue as aq
+    d = request.get_json(silent=True) or {}
+    return jsonify(aq.review(
+        track=d.get('track', 'sales'),
+        ticket_id=d.get('ticket_id', ''),
+        action=d.get('action', 'approve'),
+        reviewed_by=d.get('reviewed_by', '總監'),
+        note=d.get('note', ''),
+        edited_payload=d.get('edited_payload'),
+    ))
+
+
+@app.route('/api/approval/seed-demo', methods=['POST'])
+def api_approval_seed_demo():
+    """評審展示用：產生 5 筆 demo 待審項目"""
+    import approval_queue as aq
+    return jsonify(aq.seed_demo())
+
+
+# ──────────────────────────────────────────────────────
+# Telegram Bot Adapter（模擬 LINE OA · 因 addwii 不開放真實 LINE）
+# ──────────────────────────────────────────────────────
+@app.route('/api/telegram/status')
+def api_telegram_status():
+    """連線狀態（dry-run / live）+ 流程說明"""
+    import telegram_bot_adapter as tg
+    return jsonify(tg.status())
+
+
+@app.route('/api/telegram/inbound', methods=['POST'])
+def api_telegram_inbound():
+    """模擬 webhook：使用者訊息進來 → 處理流程 → 回覆"""
+    import telegram_bot_adapter as tg
+    d = request.get_json(silent=True) or {}
+    return jsonify(tg.handle_message(
+        chat_id=d.get('chat_id', 'chat_demo'),
+        text=d.get('text', ''),
+        user_name=d.get('user_name', 'guest'),
+    ))
+
+
+@app.route('/api/telegram/demo', methods=['POST'])
+def api_telegram_demo():
+    """跑 4 個 demo 對話展示完整流程"""
+    import telegram_bot_adapter as tg
+    return jsonify(tg.demo_conversation())
+
+
+@app.route('/api/agents/activity-log')
+def api_agents_activity_log():
+    """回傳 activity_log.jsonl 最近 N 筆"""
+    base = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'lingce', 'agents')
+    log_path = os.path.join(base, 'activity_log.jsonl')
+    n = int(request.args.get('n', 50))
+    if not os.path.exists(log_path):
+        return jsonify({'error': 'activity_log.jsonl 不存在'}), 404
+    lines = []
+    with open(log_path, encoding='utf-8') as f:
+        for line in f:
+            try:
+                lines.append(json.loads(line))
+            except Exception:
+                pass
+    return jsonify({
+        'total':         len(lines),
+        'returned':      min(n, len(lines)),
+        'activities':    lines[-n:],
+        'source':        'data/lingce/agents/activity_log.jsonl',
+    })
+
+
 # ══════════════════════════════════════════════════════════
 # addwii 構面 5（25 分·一票否決）· 合規驗收控制台
 # 提供：CSV 上傳 → PII 掃描預覽 → 人工審核閘 → 分析 → 稽核

@@ -1,0 +1,87 @@
+{
+  "agent_id": "backend",
+  "name": "後端 Agent",
+  "role": "工程 Agent（後端）",
+  "department": "技術研發",
+  "agent_level": "L3",
+  "persona": "我做 Flask API、SQLite、JSONL 稽核、多租戶切換。",
+  "tasks_completed": 141,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "csv_analysis": 141
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-05-20T16:30:37",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-20T15:46:33",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-20T14:39:03",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T13:37:21",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T01:25:27",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T01:07:54",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:35:44",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:34:20",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:12:07",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:02:33",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    }
+  ],
+  "collaborators": [
+    "qa"
+  ],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-20T16:30:37",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "analyze_all_csv()",
+    "simulate_24h_air_loop(home_id)"
+  ]
+}

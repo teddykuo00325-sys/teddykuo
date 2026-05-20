@@ -1,0 +1,62 @@
+{
+  "company": "凌策公司 LingCe",
+  "total_agents": 10,
+  "total_tasks_processed": 753,
+  "human_supervisor": 1,
+  "ratio": "1 人類老闆 + 10 AI Agent · 1:10 槓桿",
+  "departments": {
+    "指揮中心": [
+      "orchestrator"
+    ],
+    "業務開發": [
+      "bd",
+      "customer-service",
+      "proposal"
+    ],
+    "技術研發": [
+      "frontend",
+      "backend",
+      "qa"
+    ],
+    "營運管理": [
+      "finance",
+      "legal",
+      "docs"
+    ]
+  },
+  "agent_levels_summary": {
+    "L1 建議型": [
+      "orchestrator",
+      "qa",
+      "finance"
+    ],
+    "L2 執行型": [
+      "bd",
+      "customer-service",
+      "proposal",
+      "docs"
+    ],
+    "L3 受控型": [
+      "frontend",
+      "backend",
+      "legal"
+    ],
+    "L4 禁止型": [
+      "(由真人老闆執行：金流簽核、合約用印、解雇)"
+    ]
+  },
+  "ai_backend_chain": [
+    "1. Ollama qwen2.5:7b (Apache 2.0 - 預設離線)",
+    "2. Anthropic API (ANTHROPIC_API_KEY 環境變數)",
+    "3. HuggingFace transformers + Phi-3-mini (microsoft, MIT)",
+    "4. Rule engine + distilled KB (stub fallback)"
+  ],
+  "distillation_sources": [
+    "addwii_knowledge_base.zip (加我科技 RD 直供 6 份檔案)",
+    "addwii_驗收評比標準_含測試題目v3.docx",
+    "microjet_驗收標準_v0.3_1.docx",
+    "維明顧問 docx (區塊鏈 / 智能合約 / 冷熱錢包)",
+    "www.addwii.com 官網內容"
+  ],
+  "last_updated": "2026-05-20T18:49:42.886176"
+}

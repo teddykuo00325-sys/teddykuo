@@ -1,0 +1,89 @@
+{
+  "agent_id": "qa",
+  "name": "QA Agent",
+  "role": "稽核 Agent",
+  "department": "技術研發",
+  "agent_level": "L1",
+  "persona": "我跑自動化測試、benchmark、稽核日誌驗證。情緒準確率 100%。",
+  "tasks_completed": 145,
+  "tasks_in_progress": 0,
+  "action_distribution": {
+    "csv_analysis": 141,
+    "full_acceptance_run": 4
+  },
+  "recent_activities": [
+    {
+      "ts": "2026-05-20T16:30:37",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-20T15:46:33",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-20T14:39:03",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T13:37:21",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T01:25:27",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T01:07:54",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:35:44",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:34:20",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:12:07",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    },
+    {
+      "ts": "2026-05-18T00:02:33",
+      "action": "csv_analysis",
+      "user": "system-prewarm",
+      "detail_sha": "863e9c9d608099ae"
+    }
+  ],
+  "collaborators": [
+    "backend",
+    "orchestrator"
+  ],
+  "satisfaction_score": 0.95,
+  "status": "idle",
+  "backend_used": "ai_backend (auto: ollama → anthropic → transformers → stub)",
+  "last_active": "2026-05-20T16:30:37",
+  "audit_source": "chat_logs/acceptance_audit.jsonl (SHA-256 hash chain)",
+  "capability_examples": [
+    "analyze_all_csv()",
+    "benchmark_runner.run()"
+  ]
+}

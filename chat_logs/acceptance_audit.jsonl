@@ -547,3 +547,4 @@
 {"ts": "2026-05-20T14:40:38", "action": "product_qa", "user": "", "detail": {"customer": "addwii", "q": "家中35坪 有2歲過敏兒  推薦方案", "retrieval": "bigram", "use_ai": true}}
 {"ts": "2026-05-20T15:46:33", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
 {"ts": "2026-05-20T16:30:37", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T19:00:39", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
