@@ -2062,6 +2062,56 @@ def api_addwii_field_trial():
     return jsonify(accs.get_field_trial_summary())
 
 
+# ──────────────────────────────────────────────────────
+# P0 · addwii 真實上線預備（KB + 官網 www.addwii.com 對齊）
+#   · 6 空間無塵室（行銷層）
+#   · 品牌資產（口號 / 數字 / 媒體背書 / 環境部報告）
+#   · 客群分層（B2B 7 類 + B2C 4 類）
+#   · 議價引擎（KB 範本 B 4 個方向 + 自動/人審/拒絕門檻）
+# ──────────────────────────────────────────────────────
+@app.route('/api/addwii/brand')
+def api_addwii_brand():
+    """addwii 品牌資產（口號 / 數字 / 媒體背書 / NPA 報告）"""
+    return jsonify(accs.get_brand_assets())
+
+
+@app.route('/api/addwii/spaces')
+def api_addwii_spaces():
+    """6 空間無塵室清單（嬰兒 / 廚房 / 浴室 / 客廳 / 臥室 / 餐廳）"""
+    return jsonify(accs.list_space_products())
+
+
+@app.route('/api/addwii/recommend-by-space', methods=['POST'])
+def api_addwii_recommend_by_space():
+    """依「空間 + 坪數」推薦方案 — 客戶語言入口"""
+    d = request.get_json(silent=True) or {}
+    return jsonify(accs.recommend_by_space(
+        space=d.get('space', 'living'),
+        area_ping=d.get('area_ping'),
+    ))
+
+
+@app.route('/api/addwii/negotiate', methods=['POST'])
+def api_addwii_negotiate():
+    """含議價邏輯的完整報價（自動 / 人審 / 拒絕 三閘）"""
+    d = request.get_json(silent=True) or {}
+    return jsonify(accs.quote_with_negotiation(
+        area_ping=float(d.get('area_ping', 6)),
+        segment=d.get('segment'),
+        customer_type=d.get('customer_type', 'B2C'),
+        requested_discount_pct=float(d.get('requested_discount_pct', 0)),
+        bundle_units=int(d.get('bundle_units', 1)),
+        seasonal_promo=bool(d.get('seasonal_promo', False)),
+    ))
+
+
+@app.route('/api/addwii/segments')
+def api_addwii_segments():
+    """客群分層（給客服 Agent 第一句識別客戶用）"""
+    customer_type = request.args.get('customer_type')
+    return jsonify(accs.get_customer_segments(customer_type))
+
+
 # ══════════════════════════════════════════════════════════
 # addwii 構面 5（25 分·一票否決）· 合規驗收控制台
 # 提供：CSV 上傳 → PII 掃描預覽 → 人工審核閘 → 分析 → 稽核

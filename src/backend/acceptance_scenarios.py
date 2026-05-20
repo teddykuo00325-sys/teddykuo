@@ -607,6 +607,8 @@ def home_clean_room_quote(area_ping: float, with_installation: bool = True,
         'tax_5pct_ntd':         tax,
         'total_ntd':            total,
         'monthly_24m_ntd':      total // 24,  # 24 期分期月付
+        'zero_interest_24m_ntd': total // 24,  # 24 期 0 利率（無加價）
+        'financing_note':       '24 期 0 利率分期 · 無手續費 · 無加價',
         'description':          rec['description'],
         'data_source':          'addwii Home Clean Room 系統 KB · 2026-05',
     }
@@ -704,6 +706,364 @@ def get_field_trial_summary() -> dict:
         'weighted_avg_revenue_ntd': 215567,
         'competitor_comparison':   COMPETITOR_COMPARISON,
     }
+
+
+# ══════════════════════════════════════════════════════════════
+# P0 · addwii 真實品牌資產（依官網 www.addwii.com 2026-05）
+# ══════════════════════════════════════════════════════════════
+ADDWII_BRAND = {
+    'company_name_zh':  '加我科技股份有限公司',
+    'company_name_en':  'addwii',
+    'slogan':           '自由呼吸 淨零生活',
+    'core_claim':       '人每日吸入 6.5 億顆 PM2.5 微粒',
+    'r_and_d_years':    10,
+    'r_and_d_invest':   'NT$ 20 億',
+    'patents':          '逾千項國際研發專利',
+    'official_site':    'https://www.addwii.com',
+    'address':          '236 新北市土城區中央路四段 51 號 8 樓',
+    'phone':            '+886-2-7715-8588',
+    'email':            'service@addwii.com',
+    'line_oa':          'addwii 官方帳號（已開通）',
+    'youtube_channel':  '已開通',
+    'media_endorsements': [
+        {'year': 2024, 'month': 11, 'event': 'Vogue 聯名講座'},
+        {'year': 2024, 'month': 10, 'event': '台北時裝週快閃店'},
+        {'year': 2024, 'month': 10, 'event': '婦幼展參展'},
+        {'year': 2023, 'month': 6,  'event': '美國舊金山 AIA 建築展（500+ 觀展者）'},
+        {'year': 2025, 'month': 3,  'event': '免費體驗用戶相見歡'},
+    ],
+    'technology_pillars': [
+        '醫療級標準空氣清淨系統',
+        'AI 智能監測技術',
+        'IoT 技術 24 小時淨化',
+        '系統級全屋潔淨（非單機效能）',
+        'WiFi + MCU + AWS 雲端閉環',
+    ],
+    'env_report': {
+        'report_no':  'NPA23C01250001',
+        'venue':      '75 坪實際辦公空間',
+        'pm25':       'ND < 1 μg/m³',
+        'authority':  '環境部許可機構',
+    },
+}
+
+
+# ══════════════════════════════════════════════════════════════
+# P0 · 6 空間無塵室（行銷層 · 客戶用空間語言溝通）
+#   嬰兒 / 廚房 / 浴室 / 客廳 / 臥室 / 餐廳
+#   → 每個空間對應一組 S 系列方案範圍 + 客戶痛點 + 推薦話術
+# ══════════════════════════════════════════════════════════════
+SPACE_PRODUCTS = {
+    'baby': {
+        'space_zh':       '嬰兒無塵室',
+        'space_en':       'Baby Clean Room',
+        'icon':           '👶',
+        'typical_area':   (3, 5),
+        's_range':        ['S03', 'S04', 'S05'],
+        'pain_points':    ['新生兒呼吸道脆弱', 'PM2.5 嬰幼兒哮喘關聯', '甲醛揮發傷害發育', '塵蟎過敏'],
+        'target_customer': ['新生兒家庭', '孕婦', '過敏兒家庭', '月子中心'],
+        'pitch':          '為您的寶寶打造 PM2.5 < 1 μg/m³ 的醫療級淨零環境，環境部 NPA23C01250001 報告驗證',
+        'extra_equipment': [],
+    },
+    'kitchen': {
+        'space_zh':       '廚房無塵室',
+        'space_en':       'Kitchen Clean Room',
+        'icon':           '🍳',
+        'typical_area':   (4, 6),
+        's_range':        ['S04', 'S05', 'S06'],
+        'pain_points':    ['烹飪油煙 PM2.5 暴增', '油煙致癌物', '冷氣壓縮機油煙倒灌', '熱炒高溫油霧'],
+        'target_customer': ['烹飪愛好者', '中式重油料理家庭', '開放式廚房住戶'],
+        'pitch':          '油煙瞬間吸除 + 系統級換氣，連客廳一起保護不被油煙污染',
+        'extra_equipment': ['ZH1 油煙機（466W / 1800 m³/min）'],
+    },
+    'bathroom': {
+        'space_zh':       '浴室無塵室',
+        'space_en':       'Bathroom Clean Room',
+        'icon':           '🛁',
+        'typical_area':   (1.5, 3),
+        's_range':        ['S03'],
+        'pain_points':    ['潮溼黴菌', '異味', '濕氣引發呼吸道', '通風不良'],
+        'target_customer': ['潮濕地區住戶', '老屋翻新家庭', '過敏體質'],
+        'pitch':          '排風 + 除濕 + HEPA 過濾三合一，浴室不再悶臭發霉',
+        'extra_equipment': ['ZF2-170 浴室排風扇', 'ZDHU1 除溼機'],
+    },
+    'living': {
+        'space_zh':       '客廳無塵室',
+        'space_en':       'Living Room Clean Room',
+        'icon':           '🛋️',
+        'typical_area':   (8, 12),
+        's_range':        ['S08', 'S09', 'S10', 'S11', 'S12'],
+        'pain_points':    ['全家活動中心', '寵物毛屑', '訪客帶入過敏原', '與廚房相連易污染'],
+        'target_customer': ['注重待客的家庭', '寵物家庭', 'ESG 企業辦公室', '高端家庭'],
+        'pitch':          '系統級全屋潔淨核心，從客廳起守護全家健康',
+        'extra_equipment': ['ZHAC1 冷暖氣機', 'ZVF1 新風機'],
+    },
+    'bedroom': {
+        'space_zh':       '臥室無塵室',
+        'space_en':       'Bedroom Clean Room',
+        'icon':           '🛏️',
+        'typical_area':   (4, 8),
+        's_range':        ['S04', 'S05', 'S06', 'S07', 'S08'],
+        'pain_points':    ['睡眠 8 小時暴露', '塵蟎過敏', '夜咳/鼻塞', '寢具揚塵'],
+        'target_customer': ['過敏兒', '失眠族', '夜咳者', '高端品味家庭'],
+        'pitch':          '靜音 39 dB 入睡，PM2.5 趨零讓您一夜好眠',
+        'extra_equipment': [],
+    },
+    'dining': {
+        'space_zh':       '餐廳無塵室',
+        'space_en':       'Dining Clean Room',
+        'icon':           '🍽️',
+        'typical_area':   (6, 10),
+        's_range':        ['S06', 'S07', 'S08', 'S09'],
+        'pain_points':    ['餐廳與廚房相連', '聚餐油煙', '訪客帶入過敏原'],
+        'target_customer': ['宴客家庭', '大家庭', '美食愛好者'],
+        'pitch':          '用餐空間瞬淨，遠離油煙與外來污染',
+        'extra_equipment': ['ZH1 油煙機'],
+    },
+}
+
+
+# ══════════════════════════════════════════════════════════════
+# P0 · 客群分層（B2B 7 類 + B2C 4 類 · 依 KB 範本 A）
+# ══════════════════════════════════════════════════════════════
+CUSTOMER_SEGMENTS = {
+    'B2B': {
+        'maternity_center':      {'zh': '月子中心',     'priority': 1, 'discount_max_pct': 12, 'avg_units': 8,
+                                  'opening_line': '了解月子中心對新生兒空氣品質的高標準需求，我們為您規劃整棟系統級配置'},
+        'gyn_clinic':            {'zh': '婦幼診所',     'priority': 1, 'discount_max_pct': 10, 'avg_units': 5,
+                                  'opening_line': '婦幼診所的客戶對空氣敏感度高，addwii 醫療級認證可成為您的差異化亮點'},
+        'allergy_clinic':        {'zh': '過敏專科診所', 'priority': 1, 'discount_max_pct': 10, 'avg_units': 4,
+                                  'opening_line': '過敏專科患者最重視 PM2.5，環境部 NPA23C01250001 報告可背書您的診療環境'},
+        'pediatric_clinic':      {'zh': '兒科診所',     'priority': 1, 'discount_max_pct': 10, 'avg_units': 4,
+                                  'opening_line': '兒童呼吸道最為脆弱，addwii 已驗證 PM2.5 趨零的醫療無塵級水準'},
+        'kindergarten':          {'zh': '高端幼兒園',   'priority': 2, 'discount_max_pct': 8,  'avg_units': 6,
+                                  'opening_line': '高端幼兒園家長對空氣品質要求極高，可作為招生差異化亮點'},
+        'esg_enterprise':        {'zh': 'ESG 上市櫃企業','priority': 2, 'discount_max_pct': 10, 'avg_units': 10,
+                                  'opening_line': '符合貴公司 ESG 永續報告書空氣品質指標，可申報為員工健康投資'},
+        'beauty_dental':         {'zh': '醫美牙醫',     'priority': 2, 'discount_max_pct': 8,  'avg_units': 3,
+                                  'opening_line': '為高端客戶營造醫療級無塵環境，提升診療品牌價值'},
+    },
+    'B2C': {
+        'allergy_family':        {'zh': '過敏兒家庭',   'priority': 1, 'discount_max_pct': 5,
+                                  'opening_line': '了解過敏兒家庭的擔憂，本系統實測 PM2.5 < 1 μg/m³ 是醫療無塵級'},
+        'newborn_family':        {'zh': '新生兒家庭',   'priority': 1, 'discount_max_pct': 5,
+                                  'opening_line': '為您的寶寶打造最潔淨的呼吸環境，addwii 多位新手父母選擇'},
+        'renovation':            {'zh': '裝潢族',       'priority': 2, 'discount_max_pct': 5,
+                                  'opening_line': '裝潢甲醛揮發是長期挑戰，本系統可加速 VOC 與 PM2.5 清除'},
+        'pet_owner':             {'zh': '寵物家庭',     'priority': 2, 'discount_max_pct': 5,
+                                  'opening_line': '寵物毛屑與過敏原可透過系統級全屋潔淨有效處理'},
+    },
+}
+
+
+# ══════════════════════════════════════════════════════════════
+# P0 · 議價規則（依 KB 範本 B 4 個方向 · 給客服 Agent 用）
+# ══════════════════════════════════════════════════════════════
+PRICING_RULES = {
+    'list_price_strategy': '建議定價已比市場主流便宜 30%，原則「加值不降價」優先',
+    'bundle_discount': {  # 整戶配置包
+        'min_units':         3,
+        'discount_pct_3':    8,   # 3 套 92 折
+        'discount_pct_5':    10,  # 5 套 90 折
+        'discount_pct_10':   15,  # 10 套 85 折
+        'note':              '整戶配置包，套數越多折扣越多',
+    },
+    'seasonal_promo': {   # 節慶限期促銷
+        'events':            ['618 年中慶', '雙 11', '週年慶', '春節'],
+        's03_promo_price':   32900,  # 從 38,900 降 6,000
+        'note':              '促銷期結束後恢復原價，搭配舊機回收折抵',
+    },
+    'b2b_b2c_split': {    # B2B / B2C 雙軌
+        'b2b_max_discount':  12,  # B2B 最高 12 折
+        'b2c_max_discount':  5,   # B2C 維持品牌定位 最高 5 折
+        'note':              'B2C 維持原價保護品牌，B2B 給較積極優惠',
+    },
+    'value_add_no_discount': {  # 加值不降價（優先策略）
+        'options': [
+            '加 NT$ 3,900 升規 + 送 2 年濾網',
+            '24 期 0 利率分期（S03 月付 1,621）',
+            'PM2.5 趨零保固',
+            '免費 IoT 雲端服務 1 年',
+            '舊機回收折抵',
+        ],
+        'note': '優先策略 — 不直接降價，提升 CP 值維持品牌'
+    },
+    'zero_interest_24m': {   # 24 期 0 利率分期（KB 範本 A 提到）
+        'enabled':           True,
+        'periods':           24,
+        'interest_rate_pct': 0,
+        'note':              'S03 月付 1,621 / S06 月付 3,204 / S12 月付 6,371',
+    },
+    'auto_approval_threshold_pct': 5,   # 折扣 < 5% 自動放行
+    'human_review_threshold_pct':  10,  # 折扣 5%~10% 需主管核可
+    'reject_threshold_pct':        15,  # 折扣 > 15% 自動拒絕
+}
+
+
+# ══════════════════════════════════════════════════════════════
+# P0 · 6 空間 / 品牌 / 議價 · 主要函式
+# ══════════════════════════════════════════════════════════════
+def get_brand_assets() -> dict:
+    """回傳完整品牌資產（給客服 / 行銷 Agent 引用）"""
+    return ADDWII_BRAND
+
+
+def list_space_products() -> dict:
+    """列出 6 種空間無塵室（給前端選擇器 / 行銷 Agent）"""
+    return {
+        'total_spaces': len(SPACE_PRODUCTS),
+        'products':     SPACE_PRODUCTS,
+        'note':         '客戶溝通用「空間」分類，出貨用 S03-S12 方案',
+    }
+
+
+def recommend_by_space(space: str, area_ping: float = None) -> dict:
+    """依「空間 + 坪數」推薦方案（客戶語言入口）
+
+    Args:
+        space:     baby / kitchen / bathroom / living / bedroom / dining
+        area_ping: 坪數（可選，不給則用該空間 typical_area 中位數）
+
+    Returns:
+        {space, area_ping, recommended_system, ...完整方案}
+    """
+    if space not in SPACE_PRODUCTS:
+        return {'error': f'未知空間「{space}」，可選：{list(SPACE_PRODUCTS.keys())}'}
+
+    sp = SPACE_PRODUCTS[space]
+    if area_ping is None:
+        area_ping = (sp['typical_area'][0] + sp['typical_area'][1]) / 2
+    else:
+        try:
+            area_ping = float(area_ping)
+        except Exception:
+            return {'error': '坪數必須為數字'}
+
+    # 走標準 recommend_home_clean_room，但綁定空間 metadata
+    rec = recommend_home_clean_room(area_ping)
+    if 'error' in rec:
+        return rec
+
+    return {
+        'space':              space,
+        'space_zh':           sp['space_zh'],
+        'icon':               sp['icon'],
+        'area_ping':          area_ping,
+        'recommended_system': rec['system'],
+        'zp2_config':         rec['zp2_config'],
+        'cadr_total':         rec['cadr_total'],
+        'total_price_ntd':    rec['total_price_ntd'],
+        'pain_points':        sp['pain_points'],
+        'pitch':              sp['pitch'],
+        'extra_equipment':    sp['extra_equipment'],
+        'target_customer':    sp['target_customer'],
+        'env_report_quote':   f'環境部 {ADDWII_BRAND["env_report"]["report_no"]} 驗證 {ADDWII_BRAND["env_report"]["pm25"]}',
+    }
+
+
+def quote_with_negotiation(area_ping: float,
+                           segment: str = None,
+                           customer_type: str = 'B2C',
+                           requested_discount_pct: float = 0,
+                           bundle_units: int = 1,
+                           seasonal_promo: bool = False) -> dict:
+    """含議價邏輯的完整報價（給客服 Agent 核心使用）
+
+    Args:
+        area_ping:              坪數
+        segment:                客群代號（如 maternity_center / allergy_family）
+        customer_type:          B2B / B2C
+        requested_discount_pct: 客戶要求折扣（%）
+        bundle_units:           整戶配置套數（>=3 享包套折扣）
+        seasonal_promo:         是否套用節慶促銷價（S03=32,900）
+
+    Returns:
+        {base_quote, applied_discounts, final_total, approval_status, ...}
+    """
+    base = home_clean_room_quote(area_ping)
+    if 'error' in base:
+        return base
+
+    applied = []
+    discount_pct = 0
+    total = base['total_ntd']
+
+    # ─── 1. 包套折扣（>=3 套）
+    if bundle_units >= 10:
+        bundle_pct = PRICING_RULES['bundle_discount']['discount_pct_10']
+        applied.append({'rule': '整戶包套 10 套以上', 'pct': bundle_pct})
+        discount_pct += bundle_pct
+    elif bundle_units >= 5:
+        bundle_pct = PRICING_RULES['bundle_discount']['discount_pct_5']
+        applied.append({'rule': '整戶包套 5 套以上', 'pct': bundle_pct})
+        discount_pct += bundle_pct
+    elif bundle_units >= 3:
+        bundle_pct = PRICING_RULES['bundle_discount']['discount_pct_3']
+        applied.append({'rule': '整戶包套 3 套以上', 'pct': bundle_pct})
+        discount_pct += bundle_pct
+
+    # ─── 2. 節慶促銷（S03 限定折扣 6,000）
+    if seasonal_promo and base['recommended_system'] == 'S03':
+        promo_off = 38900 - PRICING_RULES['seasonal_promo']['s03_promo_price']
+        applied.append({'rule': '節慶促銷（S03 限定）', 'absolute_off_ntd': promo_off})
+        total -= promo_off
+
+    # ─── 3. 客戶要求額外折扣
+    seg_max = 0
+    if segment and customer_type in CUSTOMER_SEGMENTS:
+        seg_data = CUSTOMER_SEGMENTS[customer_type].get(segment)
+        if seg_data:
+            seg_max = seg_data.get('discount_max_pct', 0)
+    if requested_discount_pct > 0:
+        applied.append({'rule': f'客戶要求折扣 {requested_discount_pct}%（客群上限 {seg_max}%）',
+                        'pct': requested_discount_pct})
+        discount_pct += requested_discount_pct
+
+    # ─── 4. 套用折扣後總額
+    final_discount_ntd = int(total * discount_pct / 100)
+    final_total = total - final_discount_ntd
+
+    # ─── 5. 決定核可狀態
+    status = 'AUTO_APPROVED'
+    reason = '折扣未超權限，自動放行'
+    if discount_pct > PRICING_RULES['reject_threshold_pct']:
+        status = 'REJECTED'
+        reason = f'折扣 {discount_pct}% 超過拒絕門檻 {PRICING_RULES["reject_threshold_pct"]}%'
+    elif discount_pct > PRICING_RULES['human_review_threshold_pct']:
+        status = 'NEED_HUMAN_REVIEW'
+        reason = f'折扣 {discount_pct}% 超過自動門檻 {PRICING_RULES["human_review_threshold_pct"]}%，需主管核可'
+    elif discount_pct > PRICING_RULES['auto_approval_threshold_pct']:
+        if customer_type == 'B2B' and discount_pct <= seg_max:
+            status = 'AUTO_APPROVED'
+            reason = f'B2B 客群 {segment} 上限 {seg_max}%，折扣 {discount_pct}% 在權限內'
+        else:
+            status = 'NEED_HUMAN_REVIEW'
+            reason = f'B2C 折扣 {discount_pct}% 超過 5% 自動門檻，需主管核可'
+
+    return {
+        'area_ping':               area_ping,
+        'customer_type':           customer_type,
+        'segment':                 segment,
+        'bundle_units':            bundle_units,
+        'base_total_ntd':          base['total_ntd'],
+        'applied_discounts':       applied,
+        'total_discount_pct':      discount_pct,
+        'discount_amount_ntd':     final_discount_ntd,
+        'final_total_ntd':         final_total,
+        'zero_interest_24m_ntd':   final_total // 24,
+        'approval_status':         status,
+        'reason':                  reason,
+        'recommended_system':      base['recommended_system'],
+        'value_add_alternatives':  PRICING_RULES['value_add_no_discount']['options'],
+        'data_source':             'addwii KB 2_市場策略範本.md · 範本 B 4 個方向',
+    }
+
+
+def get_customer_segments(customer_type: str = None) -> dict:
+    """列出客群分層（給客服 Agent 第一句識別客戶用）"""
+    if customer_type:
+        return {customer_type: CUSTOMER_SEGMENTS.get(customer_type, {})}
+    return CUSTOMER_SEGMENTS
 
 
 # ══════════════════════════════════════════════════════════════
