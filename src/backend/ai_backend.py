@@ -122,8 +122,13 @@ def init_backend(force: str = None) -> dict:
         choice = force or os.getenv('LINGCE_AI_BACKEND', 'auto').lower()
 
         if choice == 'auto':
-            # 自動偵測順序：ollama → anthropic → transformers → stub
-            for trial in (_try_ollama, _try_anthropic, _try_transformers):
+            # 自動偵測順序：
+            #   1. ANTHROPIC_API_KEY（評審 Mac 用 Claude Code 必有 → 優先）
+            #   2. Ollama（用戶本機 phase 1 主設計）
+            #   3. HF transformers（macOS M2 可跑的 Phi-3-mini）
+            #   4. Stub fallback
+            # 可用 LINGCE_AI_BACKEND=ollama 強制走 Ollama
+            for trial in (_try_anthropic, _try_ollama, _try_transformers):
                 info = trial()
                 if info:
                     _BACKEND_INFO = info
@@ -248,6 +253,182 @@ def _call_anthropic(prompt, system, max_tokens, temperature, timeout_s):
         'model':    model,
         'tokens':   msg.usage.output_tokens if hasattr(msg, 'usage') else len(text) // 4,
         'fallback': False,
+    }
+
+
+def generate_with_tools(prompt: str,
+                        system: str,
+                        tools: list,
+                        max_tokens: int = 1500,
+                        temperature: float = 0.2,
+                        max_iters: int = 5,
+                        agent_id: str = 'unknown',
+                        timeout_s: int = 120) -> dict:
+    """LLM Tool-Use 循環（Anthropic tool_use 為主，Ollama JSON-mode 退化）
+
+    Args:
+        tools:     [{'name','description','input_schema'}]
+        max_iters: 最多幾輪 tool call（避免無限迴圈）
+
+    Returns:
+        {final_text, tool_calls:[...], iterations, backend, model}
+    """
+    if not _BACKEND:
+        init_backend()
+
+    if _BACKEND == 'anthropic':
+        return _anthropic_tool_loop(prompt, system, tools, max_tokens,
+                                     temperature, max_iters, agent_id)
+    elif _BACKEND == 'ollama':
+        return _ollama_tool_loop(prompt, system, tools, max_tokens,
+                                  temperature, max_iters, agent_id, timeout_s)
+    else:
+        # stub / transformers 暫不支援 tool calling，走純生成
+        return {
+            'final_text': generate(prompt, system, max_tokens, temperature, timeout_s).get('text', ''),
+            'tool_calls': [],
+            'iterations': 0,
+            'backend':    _BACKEND,
+            'model':      _BACKEND_INFO.get('model'),
+            'note':       'backend 不支援 tool_use，回 plain text',
+        }
+
+
+def _anthropic_tool_loop(prompt, system, tools, max_tokens, temperature, max_iters, agent_id):
+    """Anthropic tool_use 完整循環"""
+    import anthropic
+    from agent_tools import dispatch
+    client = anthropic.Anthropic()
+    model = _BACKEND_INFO.get('model', 'claude-sonnet-4-5')
+
+    messages = [{'role': 'user', 'content': prompt}]
+    tool_calls = []
+    iterations = 0
+    final_text = ''
+
+    while iterations < max_iters:
+        iterations += 1
+        try:
+            resp = client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                system=system,
+                tools=tools,
+                messages=messages,
+            )
+        except Exception as e:
+            return {'final_text': f'[LLM error] {e}', 'tool_calls': tool_calls,
+                    'iterations': iterations, 'backend': 'anthropic', 'error': str(e)}
+
+        if resp.stop_reason == 'end_turn':
+            final_text = ''.join(b.text for b in resp.content if hasattr(b, 'text'))
+            break
+
+        if resp.stop_reason == 'tool_use':
+            assistant_blocks = []
+            tool_results = []
+            for block in resp.content:
+                if hasattr(block, 'text') and block.text:
+                    assistant_blocks.append({'type': 'text', 'text': block.text})
+                elif block.type == 'tool_use':
+                    assistant_blocks.append({
+                        'type': 'tool_use',
+                        'id':    block.id,
+                        'name':  block.name,
+                        'input': block.input,
+                    })
+                    # 執行 tool
+                    result = dispatch(block.name, dict(block.input), agent=agent_id)
+                    tool_calls.append({
+                        'iter':    iterations,
+                        'tool':    block.name,
+                        'input':   dict(block.input),
+                        'result':  result.get('result'),
+                        'ok':      result.get('ok', False),
+                        'elapsed_ms': result.get('elapsed_ms'),
+                    })
+                    tool_results.append({
+                        'type':         'tool_result',
+                        'tool_use_id':  block.id,
+                        'content':      json.dumps(result.get('result', {}), ensure_ascii=False)[:3000],
+                    })
+            messages.append({'role': 'assistant', 'content': assistant_blocks})
+            messages.append({'role': 'user', 'content': tool_results})
+            continue
+
+        # 其他 stop_reason（max_tokens 等）
+        final_text = ''.join(b.text for b in resp.content if hasattr(b, 'text'))
+        break
+
+    return {
+        'final_text': final_text or '（無回覆）',
+        'tool_calls': tool_calls,
+        'iterations': iterations,
+        'backend':    'anthropic',
+        'model':      model,
+    }
+
+
+def _ollama_tool_loop(prompt, system, tools, max_tokens, temperature, max_iters, agent_id, timeout_s):
+    """Ollama 退化版 tool calling — 透過 JSON-mode 提示 LLM 輸出工具呼叫"""
+    from agent_tools import dispatch
+    # Ollama qwen2.5 雖有 tool calling 但格式不一；先用 JSON mode 簡化
+    tools_desc = '\n'.join(f'- {t["name"]}: {t["description"]}' for t in tools)
+    enhanced_system = f"""{system}
+
+你可使用以下工具（如需取得資料，先回 JSON：{{"tool":"工具名","args":{{...}}}}）；
+不需要工具時直接回答顧客。
+
+可用工具：
+{tools_desc}
+"""
+    messages_history = []
+    tool_calls = []
+
+    for it in range(max_iters):
+        history_text = '\n'.join(f'{m["role"]}: {m["content"]}' for m in messages_history)
+        full_prompt = f'{prompt}\n\n{history_text}' if history_text else prompt
+        r = generate(full_prompt, system=enhanced_system, max_tokens=max_tokens,
+                      temperature=temperature, timeout_s=timeout_s)
+        text = r.get('text', '').strip()
+
+        # 偵測是否要呼叫工具
+        try:
+            data = json.loads(text)
+            if 'tool' in data:
+                result = dispatch(data['tool'], data.get('args', {}), agent=agent_id)
+                tool_calls.append({
+                    'iter':    it + 1,
+                    'tool':    data['tool'],
+                    'input':   data.get('args', {}),
+                    'result':  result.get('result'),
+                    'ok':      result.get('ok', False),
+                    'elapsed_ms': result.get('elapsed_ms'),
+                })
+                messages_history.append({'role': 'assistant', 'content': text})
+                messages_history.append({
+                    'role':    'tool',
+                    'content': json.dumps(result.get('result', {}), ensure_ascii=False)[:1500],
+                })
+                continue
+        except Exception:
+            pass
+
+        # 非 JSON = 最終回覆
+        return {
+            'final_text': text,
+            'tool_calls': tool_calls,
+            'iterations': it + 1,
+            'backend':    'ollama',
+            'model':      _BACKEND_INFO.get('model'),
+        }
+
+    return {
+        'final_text': '（達 max_iters，可能在工具循環中）',
+        'tool_calls': tool_calls,
+        'iterations': max_iters,
+        'backend':    'ollama',
     }
 
 

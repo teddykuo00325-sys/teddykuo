@@ -1,0 +1,36 @@
+{
+  "chat_id": "test-001",
+  "created_at": "2026-05-20T19:48:06",
+  "messages": [
+    {
+      "role": "user",
+      "content": "品牌",
+      "user_name": "web-guest",
+      "ts": "2026-05-20T19:48:06"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "[stub] 規則引擎已回答（非 LLM 生成 · 啟動 Ollama 或設 ANTHROPIC_API_KEY 後可獲得 LLM 增強）",
+      "ts": "2026-05-20T19:50:06",
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b",
+      "iterations": 1
+    }
+  ],
+  "agent_trace": [
+    {
+      "ts": "2026-05-20T19:50:06",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
+    }
+  ],
+  "current_agent": "bd",
+  "customer_profile": {},
+  "last_updated": "2026-05-20T19:50:06"
+}

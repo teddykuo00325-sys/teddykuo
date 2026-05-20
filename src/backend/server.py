@@ -2248,6 +2248,67 @@ def api_telegram_demo():
     return jsonify(tg.demo_conversation())
 
 
+# ──────────────────────────────────────────────────────
+# Telegram Live Bot · 真實 long-polling（需 TELEGRAM_BOT_TOKEN）
+# ──────────────────────────────────────────────────────
+@app.route('/api/telegram/live/start', methods=['POST'])
+def api_telegram_live_start():
+    """啟動真實 Telegram bot（背景 polling）"""
+    import telegram_live_bot as tlb
+    return jsonify(tlb.start())
+
+
+@app.route('/api/telegram/live/stop', methods=['POST'])
+def api_telegram_live_stop():
+    import telegram_live_bot as tlb
+    return jsonify(tlb.stop())
+
+
+@app.route('/api/telegram/live/status')
+def api_telegram_live_status():
+    """查 bot 是否在跑 + 統計"""
+    import telegram_live_bot as tlb
+    return jsonify(tlb.status())
+
+
+# ──────────────────────────────────────────────────────
+# Multi-Agent Router · 對話 thread + handoff trace
+# ──────────────────────────────────────────────────────
+@app.route('/api/agent-router/respond', methods=['POST'])
+def api_agent_router_respond():
+    """直接走 multi-agent 流程（不經 Telegram）"""
+    import agent_router
+    d = request.get_json(silent=True) or {}
+    return jsonify(agent_router.respond(
+        chat_id=str(d.get('chat_id', 'web-demo')),
+        user_text=d.get('text', ''),
+        user_name=d.get('user_name', 'web-guest'),
+    ))
+
+
+@app.route('/api/agent-router/conversation/<chat_id>')
+def api_agent_router_conversation(chat_id):
+    """取對話完整 trace"""
+    import agent_router
+    return jsonify(agent_router.get_conversation_trace(chat_id))
+
+
+@app.route('/api/agent-router/conversations')
+def api_agent_router_list():
+    """收件箱：所有對話 thread"""
+    import agent_router
+    limit = int(request.args.get('limit', 20))
+    return jsonify({'conversations': agent_router.list_conversations(limit)})
+
+
+@app.route('/api/agent-router/tool-calls')
+def api_agent_router_tool_calls():
+    """最近 N 筆 tool call 稽核"""
+    import agent_tools
+    n = int(request.args.get('n', 50))
+    return jsonify({'tool_calls': agent_tools.get_recent_tool_calls(n)})
+
+
 @app.route('/api/agents/activity-log')
 def api_agents_activity_log():
     """回傳 activity_log.jsonl 最近 N 筆"""

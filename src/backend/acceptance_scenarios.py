@@ -716,8 +716,25 @@ ADDWII_BRAND = {
     'address':          '236 新北市土城區中央路四段 51 號 8 樓',
     'phone':            '+886-2-7715-8588',
     'email':            'service@addwii.com',
-    'line_oa':          'addwii 官方帳號（已開通）',
-    'youtube_channel':  '已開通',
+    'line_oa':          'addwii 官方帳號（已開通 · 待加我科技授權 webhook）',
+    'youtube_channel': {
+        'name':         'addwii Clean Room 居家無塵室',
+        'url':          'https://www.youtube.com/@addwii1650',
+        'handle':       '@addwii1650',
+        'status':       '已開通 · 待 OAuth token 授權自動上傳',
+        'content_pillars': [
+            '產品介紹（ZP2 系列 / S03-S12）',
+            '場域實測（41 場 PM2.5 趨零驗證）',
+            '客戶見證（過敏兒 / 新生兒家庭）',
+            '健康議題（PM2.5 / 空汙 / 過敏）',
+        ],
+        'style_guide': {
+            'tone':       '專業、溫暖、可信賴',
+            'subtitle':   '繁體中文字幕（addwii 既有風格）',
+            'lower_third': '品牌色（深藍 + 白）',
+            'cta':        '看實測 → addwii.com / line 客服',
+        },
+    },
     'media_endorsements': [
         {'year': 2024, 'month': 11, 'event': 'Vogue 聯名講座'},
         {'year': 2024, 'month': 10, 'event': '台北時裝週快閃店'},
