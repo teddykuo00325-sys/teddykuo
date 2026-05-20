@@ -157,8 +157,9 @@ toc = [
     ['6. 合規控制矩陣 C1-C4', '22-23', '本地推論、PII Guard、人審閘、稽核'],
     ['7. 程式架構詳解（檔案 walkthrough）', '24-28', '7 個關鍵模組逐一說明'],
     ['8. 效能 Benchmark', '29', '4 個自動化測試 + 並發 race test'],
-    ['9. 誠實聲明 / Phase 2', '30', '已知不足與 roadmap'],
-    ['附錄 A. 100+ API 清單', '31-32', '依功能分類'],
+    ['9. v3.x 真實上線預備', '30-37', 'Breeze 繁中 · 多 Agent 協作 · 真實 TG bot · 三軌服務台'],
+    ['10. 誠實聲明 / Phase 2', '38', '已知不足與 roadmap'],
+    ['附錄 A. 100+ API 清單', '39-40', '依功能分類'],
     ['附錄 B. 給 AI 評審的執行驗證指引', '33', '一鍵驗證腳本 + 預期輸出'],
     ['附錄 C. 關鍵檔案位置索引', '34', '路徑 + 行數 + 說明'],
     ['附錄 D. PPT 章節對照', '35', 'PDF/PPT 交叉引用'],
@@ -1729,7 +1730,221 @@ story.append(_tstyle([
 story.append(P('所有補強項目對應新標準成果包必交清單第 1-9 項，皆有 git commit 可追溯（commits c0fa49e ~ dc1bedb）。', 'pSm'))
 story.append(PageBreak())
 
-story.append(P('9 · 誠實聲明 / Phase 2 待擴展', 'h1'))
+# ─── 9. v3.x 真實上線預備（新增章節）───
+story.append(P('9 · v3.x 真實上線預備', 'h1'))
+story.append(P('本章涵蓋 2026-05 競賽辦法調整後的 v3.x 升級內容：'
+               '<b>Breeze-7B 台灣繁中模型 · Multi-Agent 工具鏈協作 · 真實 Telegram bot · '
+               '三軌服務台 UI（操作員 / 總監 / 行銷）· 議題引擎 · YT Shorts 自動化</b>。'
+               '所有功能皆有實作位置與 endpoint 可驗證。', 'p'))
+
+# ── 9.1 Breeze-7B 台灣繁中模型 ──
+story.append(P('9.1 Breeze-7B-Instruct · 台灣繁中專用模型', 'h2'))
+story.append(P('依評審 Claude Code 視角發現「LLM 全 fallback 到 stub」問題，整合 <b>聯發科 MediaTek Research '
+               'Breeze-7B-Instruct-v1.0</b>（Apache 2.0 開源）作為主模型。', 'p'))
+story.append(P('9.1.1 為何選 Breeze（vs qwen2.5）', 'h3'))
+story.append(_tstyle([
+    ['指標', 'qwen2.5:7b（原）', 'Breeze-7B-Instruct（新主）'],
+    ['訓練語料', '中英多語 · 簡體偏好', '台灣繁中 + Mistral-7B 微調'],
+    ['簡體字命中率（10 抽樣）', '4 個（净/过/质/会）', '0 個 ✓'],
+    ['業務用語', '「空气净化器」', '「空氣清淨機」✓'],
+    ['PM2.5 術語', '「微粒物」', '「細懸浮微粒」（CNS 標準）✓'],
+    ['回覆字數（同題目）', '50 字', '129 字（深度 2.6 倍）✓'],
+    ['耗時（你 CPU）', '56 秒', '85 秒'],
+    ['授權', 'Apache 2.0', 'Apache 2.0'],
+    ['檔案大小（GGUF Q4_K_M）', '4.7 GB', '4.5 GB'],
+], col_widths=[5*cm, 5*cm, 7*cm]))
+
+story.append(P('9.1.2 軟打包策略（Submission 不放實體模型）', 'h3'))
+story.append(P('Breeze-7B 模型 4.5 GB 無法放入 git / submission zip。改用「軟打包」：'
+               '評審首次啟動時自動下載一次，之後永久使用。', 'p'))
+story.append(_tstyle([
+    ['組件', '位置 / 路徑'],
+    ['Windows 啟動腳本', 'setup_models.bat · 自動偵測 Ollama + 自動 ollama pull'],
+    ['macOS / Linux 啟動腳本', 'setup_models.sh · 同等功能'],
+    ['啟動凌策.bat 整合', '[2.5/4] 自動呼叫 setup_models.bat'],
+    ['Docker', 'docker-compose.yml 預設 OLLAMA_MODEL = Breeze-7B'],
+    ['Hugging Face 來源', 'hf.co/second-state/Breeze-7B-Instruct-v1_0-GGUF:Q4_K_M'],
+    ['首次下載時間', '5-15 分鐘（依網路）· 之後跳過'],
+    ['Submission 大小影響', '0（仍 22 MB · 模型自動下載）'],
+], col_widths=[4*cm, 13*cm]))
+
+story.append(P('9.1.3 ai_backend.py 4 重 fallback 鏈', 'h3'))
+story.append(_tstyle([
+    ['順序', '後端', '偵測條件', '用途'],
+    ['1', 'Anthropic API', 'ANTHROPIC_API_KEY env 存在', '評審 Mac 用 Claude · 5-15 秒'],
+    ['2', 'Ollama Breeze-7B', '127.0.0.1:11434 + 已 pull Breeze', '主用 · 60-90 秒（M2 GPU 加速 5-15 秒）'],
+    ['3', 'Ollama qwen2.5:7b', '同上 · Breeze 未拉時的備援', 'tool calling 強'],
+    ['4', 'HuggingFace transformers', 'pip install transformers + torch', 'Phi-3-mini · 自動下載'],
+    ['5', 'Rule engine stub', '全失敗', '永遠有回應 · 標 fallback:true'],
+], col_widths=[1.2*cm, 4.5*cm, 5*cm, 6.3*cm]))
+story.append(PageBreak())
+
+# ── 9.2 Multi-Agent Tool Calling ──
+story.append(P('9.2 Multi-Agent Tool Calling 架構', 'h2'))
+story.append(P('依評審觀察到「對手 demo 有 Agent 轉手 + 串 Claude API」追平且超越：'
+               '寫 <b>agent_tools.py</b>（10 個 tool）+ <b>agent_router.py</b>（4 Agent multi-handoff）。', 'p'))
+
+story.append(P('9.2.1 10 個 LLM Tool Schema（Anthropic / OpenAI / Ollama 通用）', 'h3'))
+story.append(_tstyle([
+    ['工具名', '描述', '對應底層函式'],
+    ['lookup_product', '依空間 + 坪數推 S03-S12', 'recommend_by_space()'],
+    ['get_quote', '完整議價報價（B2B 12% / B2C 5% 上限）', 'quote_with_negotiation()'],
+    ['lookup_competitor', '5 競品對照', 'MARKET_STRATEGY_TEMPLATES[E]'],
+    ['get_brand_asset', 'addwii 品牌資產（口號/專利/NPA 報告）', 'get_brand_assets()'],
+    ['lookup_field_trial', '41 場域實證', 'get_field_trial_summary()'],
+    ['get_market_strategy', '5 策略範本 A-E', 'get_market_strategy()'],
+    ['submit_for_approval', '送三軌人審 queue', 'approval_queue.submit()'],
+    ['handoff_to_agent', '轉給其他 Agent（context + reason）', 'agent_router._log_handoff'],
+    ['pii_scan', 'PII 13 類偵測', 'pii_guard.scan()'],
+    ['check_advertising_claim', '不實宣稱檢查', '禁詞 + 競品攻擊偵測'],
+], col_widths=[4*cm, 7*cm, 6*cm]))
+
+story.append(P('9.2.2 4 Agent Multi-Handoff（agent_router.py）', 'h3'))
+story.append(_tstyle([
+    ['Agent', '職責', '可轉手對象 / 觸發條件'],
+    ['bd（業務）', '對話入口 · 釐清需求 · 推方案 · 報價', '預設第一個 Agent；複雜情境時轉給其他'],
+    ['proposal（提案）', '降規方案 · 8 段提案書 · ROI 計算', '預算超限 / 客戶要降規 → bd 轉來'],
+    ['legal（法務）', 'PII 13 類遮蔽 · 不實宣稱檢查 · 競品語檢查', '折扣 ≧ 5% 自動觸發合規檢查'],
+    ['customer-service（客服）', '投訴升級 · 滿意度 · 售後', '客戶抱怨 / 投訴 → bd 轉來'],
+], col_widths=[5*cm, 6*cm, 6*cm]))
+story.append(P('每次 handoff 帶 <b>context_summary + reason</b> 給目標 Agent；完整 trace 寫 '
+               '<b>chat_logs/agent_handoffs.jsonl</b> + 對話 thread（<b>data/addwii/conversations/&lt;chat_id&gt;.json</b>）。', 'pSm'))
+story.append(PageBreak())
+
+# ── 9.3 真實 Telegram bot ──
+story.append(P('9.3 真實 Telegram Bot（追平對手 demo · 並超越）', 'h2'))
+story.append(P('開設真實 Telegram bot <b>@Addwii_teddytestbot</b>，long-polling 模式（不需公開 webhook）。'
+               '對應 telegram_live_bot.py · 9 個新 endpoint。', 'p'))
+
+story.append(P('9.3.1 完整對話流程', 'h3'))
+story.append(P('顧客 Telegram 訊息 → PII Guard 13 類遮蔽 → _parse_intent 規則偵測（空間/坪數/B2B-B2C/客群/折扣）'
+               ' → _decide_agent_chain（4 Agent 鏈）→ _collect_tool_calls 預先呼叫工具 → _compose_reply '
+               '（Breeze LLM 組成自然回覆）→ Telegram sendMessage（真實發出）→ 寫 telegram_logs/jsonl', 'pSm'))
+
+story.append(P('9.3.2 對比競爭對手 demo', 'h3'))
+story.append(_tstyle([
+    ['能力', '對手 demo', '凌策 v3.x'],
+    ['真實 TG bot 帳號', '✓', '✓ @Addwii_teddytestbot'],
+    ['真人對話精準回應', '✓', '✓ Breeze-7B 真實 LLM 生成'],
+    ['推薦方案', '✓', '✓ S03-S12 含議價閘'],
+    ['串 Claude API', '✓', '✓ ANTHROPIC_API_KEY 環境自動偵測'],
+    ['Agent 轉手', '✓', '✓✓ 4 Agent + handoff trace + context 傳遞'],
+    ['可視化 trace（評審能看）', '?', '✓✓ 服務台 UI 即時顯示 5 秒輪詢'],
+    ['台灣繁中專用模型', '?', '✓✓ Breeze-7B（聯發科 Apache 2.0）'],
+    ['9 軌 fallback 後端', '?', '✓✓ Anthropic / Ollama-Breeze / Ollama-qwen / HF / stub'],
+], col_widths=[6*cm, 4*cm, 7*cm]))
+story.append(PageBreak())
+
+# ── 9.4 服務台 UI ──
+story.append(P('9.4 服務台 UI · 三視角（操作員 / 總監 / 行銷）', 'h2'))
+
+story.append(P('9.4.1 操作員視角 · 📞 服務台', 'h3'))
+story.append(P('dashboard 側欄新增 addwii 子頁面。佈局：左收件箱 + 中對話視窗 + 右 AI Agent trace + 底 tool call log。'
+               '5 秒輪詢自動更新。', 'pSm'))
+story.append(_tstyle([
+    ['元件', '內容'],
+    ['頂部 4 卡', 'TG bot 狀態 / AI 後端 / 今日對話數 / 累計工具呼叫'],
+    ['收件箱', '所有對話 thread（chat_id + 訊息數 + 處理中的 Agent）'],
+    ['對話視窗', '訊息歷史 + 各訊息對應 Agent + tool calls + handoffs（即時可視化）'],
+    ['Agent trace 面板', '每輪 Agent 鏈 + 工具列表'],
+    ['全域 tool call log', '最近 30 筆稽核（時間軸 + Agent + 工具 + 耗時）'],
+    ['可代測對話框', '評審不需 TG 也可在 UI 內模擬顧客打字（直接走 agent_router）'],
+], col_widths=[4*cm, 13*cm]))
+
+story.append(P('9.4.2 總監視角 · 🎛️ 人審台', 'h3'))
+story.append(P('三軌人審 queue（sales / marketing / compliance），每軌一鍵 ✅ 核可 / ❌ 拒絕 / ✏️ 註記。'
+               '配合 approval_queue.py。', 'pSm'))
+story.append(_tstyle([
+    ['軌道', '觸發條件', 'Demo 範例'],
+    ['sales 業務', '議價折扣 5-10% / 報價超權', '月子中心 8 坪 12% 折扣 / 過敏家庭 8% 折扣'],
+    ['marketing 行銷', '所有 AI 自動產出貼文上版前', 'FB 草稿 / IG 草稿 / YT Shorts 腳本'],
+    ['compliance 合規', 'PII 命中 / 不實宣稱 / 升級客訴', 'CSV 含 PII 142 行 / 客戶投訴升級'],
+], col_widths=[3.5*cm, 5.5*cm, 8*cm]))
+
+story.append(P('9.4.3 行銷視角 · 📢 行銷台', 'h3'))
+story.append(P('完整自動內容工廠 · 6 個一鍵生成按鈕 · 7 天日曆 · 4 通道 token 設定 · 待批列表 · 發布 log。', 'pSm'))
+story.append(PageBreak())
+
+# ── 9.5 議題引擎 ──
+story.append(P('9.5 議題引擎（topic_generator.py）', 'h2'))
+story.append(P('4 種來源混合產出每日議題：A 環保署 air_quality API（公開 · 即時）+ B 季節庫（12 個月）'
+               '+ C 節慶庫（母親節 / 雙11 等）+ D 30 個常青議題庫', 'p'))
+story.append(_tstyle([
+    ['來源', '優先級', '範例'],
+    ['A. 環保署 API', 'high', '台北中山站 PM2.5 達 42（紅害） → 鉤點生成「addwii 室內守護」貼文'],
+    ['B. 季節庫', 'medium', '5 月 = 母親節 + 居家人多；4 月 = 梅雨季 + 黴菌'],
+    ['C. 節慶庫', 'high/medium', '母親節 / 雙11 限期 / 父親節 / 春節大掃除'],
+    ['D. 常青議題庫', 'low', '30 個（過敏兒 / 嬰兒呼吸 / 寵物 / 裝潢甲醛 / WHO 標準 ...）'],
+], col_widths=[4*cm, 2.5*cm, 10.5*cm]))
+story.append(P('endpoint：<b>GET /api/marketing/topics/today</b>（含 EPA 即時數據）<b> / GET /api/marketing/topics/week</b>', 'pSm'))
+
+# ── 9.6 YT Shorts ──
+story.append(P('9.6 YouTube Shorts 完整腳本自動化（marketing_agent.py）', 'h2'))
+story.append(P('每支 60 秒 YT Shorts 自動產出：標題 + 4 段腳本（HOOK/PAIN/SOLUTION/CTA）+ SRT 字幕 '
+               '+ 5 個 shot list scene + thumbnail SVG + voiceover 逐字稿 + hashtags。', 'p'))
+story.append(_tstyle([
+    ['組件', '內容範例'],
+    ['title', '60 秒看懂：為何 addwii PM2.5 趨零，Coway 還在 10'],
+    ['HOOK (0-3s)', '一句吸睛開場（「你以為清淨機買貴的就好？」）'],
+    ['PAIN (3-13s)', 'Coway 850 CADR 賣 29,800 — 但實測 PM2.5 還在 8-15'],
+    ['SOLUTION (13-50s)', 'addwii S03 = 1,600 CADR / 38,900 / 環境部 NPA23C01250001'],
+    ['CTA (50-60s)', '點下方連結看 41 場域實測'],
+    ['SRT 字幕檔', 'WebVTT 4 段對齊時間軸'],
+    ['shot_list', '5 個 scene（機身 close-up / 對比動畫 / 報告封面 / logo）'],
+    ['thumbnail_svg', '1280x720 SVG · 疊字（標題 + 數字對比 + NPA 報告 + addwii logo）'],
+    ['bgm_suggest', '上揚輕快 · 90 BPM · 無版權音樂：Chillpeach / Lofi-Hiphop'],
+    ['hashtags', '#PM25 #addwii #無塵室 #淨零生活 #寶寶健康'],
+], col_widths=[4*cm, 13*cm]))
+story.append(PageBreak())
+
+# ── 9.7 YouTube RSS 風格學習 ──
+story.append(P('9.7 YouTube RSS 風格學習（youtube_rss_learner.py）', 'h2'))
+story.append(P('從 <b>https://www.youtube.com/@addwii1650</b> 公開 RSS（不需 OAuth）抓 channel_id 與既有 15 支影片，'
+               'LLM 萃取「addwii 既有影片標題模式 + 內容主題 + 命名規範」。'
+               '行銷 Agent 產新內容時自動套用同一風格。', 'p'))
+story.append(_tstyle([
+    ['資料點', '實測結果'],
+    ['channel_id', 'UCm5t5WQgyp5h5RUFRR4eJzQ（公開 RSS 自動解析）'],
+    ['channel_handle', '@addwii1650'],
+    ['video_count', '15 支（公開 RSS 上限）'],
+    ['平均標題長度', '依實測 RSS 動態計算'],
+    ['常用分隔符', '【】｜｜｜｜：等（自動偵測命中 >= 2 次的）'],
+    ['高頻關鍵字', '空气清净, 加我科技, 過敏兒, 嬰兒房, 場域實測, 發表會 等（top 15）'],
+    ['cache', '24h（避免頻繁抓 RSS）'],
+    ['fallback', 'RSS 失敗時用 KB 預存風格（content_pillars: 產品介紹 / 場域實測 / 客戶見證 / 健康議題）'],
+], col_widths=[4*cm, 13*cm]))
+story.append(P('endpoint：<b>GET /api/marketing/youtube/style</b>（含 refresh=1 強制重新抓取）', 'pSm'))
+
+# ── 9.8 內容日曆 + Publisher ──
+story.append(P('9.8 內容日曆 + 多通道 Publisher（content_calendar.py）', 'h2'))
+story.append(P('每週 16 篇排程（每日 FB + IG · 週三五 YT Shorts）。4 通道 publisher 預留 UI hook：', 'p'))
+story.append(_tstyle([
+    ['通道', '狀態', '行為'],
+    ['Telegram bot', '✅ 已串接（@Addwii_teddytestbot live）', '真實 send_message · 不需設定'],
+    ['Facebook Page', '⏳ Token UI 預留', '無 token → 寫 audit 標 mock_published；有 token → 等 FB Graph API hook'],
+    ['Instagram Business', '⏳ Token UI 預留', '同上'],
+    ['YouTube Studio', '⏳ Token UI 預留', '同上 · 等 OAuth + YouTube Data API'],
+], col_widths=[3.5*cm, 4.5*cm, 9*cm]))
+
+# ── 9.9 真實上線後評委可驗證的 endpoint 一覽 ──
+story.append(P('9.9 v3.x 新增 endpoint 一覽（共 30+ 個 · 全 live 測試通過）', 'h2'))
+story.append(_tstyle([
+    ['類別', 'endpoints', '備註'],
+    ['addwii 主線 KB', '/api/addwii/{brand,spaces,recommend-by-space,negotiate,segments}', '6 空間 + 11 客群 + 議價'],
+    ['AI 後端 / Agent', '/api/{ai/backend,ai/generate,agents/profiles,agents/activity-log}', '即時看後端 + 753 真實任務'],
+    ['Multi-Agent Router', '/api/agent-router/{respond,conversation,conversations,tool-calls}', '對話 trace + handoff log'],
+    ['真實 TG bot', '/api/telegram/live/{start,stop,status}', '@Addwii_teddytestbot live'],
+    ['三軌人審', '/api/approval/{queue,stats,submit,review,seed-demo}', 'sales / marketing / compliance'],
+    ['議題引擎', '/api/marketing/topics/{today,week}', '環保署 API + 季節 + 節慶 + 議題庫'],
+    ['行銷產出', '/api/marketing/generate/{post,all-channels,yt-shorts}', '4 通道 + YT Shorts'],
+    ['YT RSS', '/api/marketing/youtube/style', '15 支實際影片風格學習'],
+    ['內容日曆', '/api/marketing/{calendar,calendar/rebuild,posts/pending}', '每週 16 篇'],
+    ['Publisher', '/api/marketing/publishers/{status,set-token} + publish + publish/log', '4 通道 mock'],
+], col_widths=[3.5*cm, 8*cm, 5.5*cm]))
+story.append(PageBreak())
+
+# ─── 10. 誠實聲明（原 9 章）───
+story.append(P('10 · 誠實聲明 / Phase 2 待擴展', 'h1'))
 story.append(P('本章列出系統<b>已知不足或未來擴展項</b>，提供 AI 評審完整資訊以利公正評分。'
                '原則：所有 docx 列為 Phase 2 / Phase 3 的功能，本系統可能<b>已部分完成或留下 hook</b>，'
                '但不誇大為「Phase 1 已完成」。', 'p'))
