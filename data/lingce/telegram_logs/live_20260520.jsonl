@@ -10,3 +10,13 @@
 {"ts": "2026-05-20T20:03:24", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "[stub] 規則引擎已回答（非 LLM 生成 · 啟動 Ollama 或設 ANTHROPIC_API_KEY 後可獲得 LLM 增強）\n_⚙️ 後端：ollama_"}}
 {"ts": "2026-05-20T20:24:19", "direction": "polling_error", "payload": {"error": "('Connection aborted.', ConnectionResetError(10054, '遠端主機已強制關閉一個現存的連線。', None, 10054, None))"}}
 {"ts": "2026-05-20T20:25:46", "direction": "polling_error", "payload": {"error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"}}
+{"ts": "2026-05-20T20:51:23", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "烤肉"}}
+{"ts": "2026-05-20T20:51:59", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "您好！想要租用烤肉空間嗎？請告知您預計使用的坪數，我們有提供不同大小的包廂 👶🛋️，適合2-30人不等的用餐需求 🏨🍳。期待為您服務！🍽️\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:53:15", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "35坪居家 2歲過敏兒 推薦方案"}}
+{"ts": "2026-05-20T20:54:05", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "您好！35坪居家，2歲過敏兒的推薦方案如下：選用H1過濾效率的空氣清淨機 💨、低過敏原的床上用品 👖、無毒環保的洗浴用品 🧼和餐具 🥘，並設置除塵除蟎環境。請告知更多需求，我們可進一步調整！👋\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:57:05", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "價格？"}}
+{"ts": "2026-05-20T20:57:32", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "您好！請問您的需求是為何種大小的空間 👶🛋️？例如 15 平米左右，我們可以根據坪數 💸來提供相對應的價格範圍 🏡ycz。\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:57:47", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "35坪"}}
+{"ts": "2026-05-20T20:58:08", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "您好！您需要設計一間多大的空間呢？是35坪嗎？🤔👇 🛋️ 🔟 🔥 💡\n_⚙️ 後端：ollama_"}}
+{"ts": "2026-05-20T20:58:19", "direction": "inbound", "payload": {"chat_id": 5506547630, "user_name": "Kuo Yu chun", "text": "對"}}
+{"ts": "2026-05-20T20:58:57", "direction": "outbound", "payload": {"chat_id": 5506547630, "text": "您好！我們需要了解您家的使用空間和坪數，以便提供適合的設計方案。例如：100㎡住宅可配置5-6房 👶🛋️ 🛋️ 🏕️ 🍳 🥂 💤 isher。請告知詳細資訊，感謝！\n_⚙️ 後端：ollama_"}}

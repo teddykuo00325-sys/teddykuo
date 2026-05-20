@@ -111,6 +111,9 @@
         </button>
         <div class="tenant-body space-y-0.5 mt-1" style="display:none">
           <button onclick="setTenantAndPage('addwii','addwii-ws')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-sky-200" data-page="addwii-ws">📊 addwii 儀表板</button>
+          <button onclick="setTenantAndPage('addwii','addwii-service-desk')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-emerald-300" data-page="addwii-service-desk">📞 服務台（TG 真實對話）</button>
+          <button onclick="setTenantAndPage('addwii','addwii-supervisor')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-amber-300" data-page="addwii-supervisor">🎛️ 總監人審台</button>
+          <button onclick="setTenantAndPage('addwii','addwii-marketing')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-pink-300" data-page="addwii-marketing">📢 行銷台（自動發布）</button>
           <button onclick="setTenantAndPage('addwii','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 addwii CRM（B2C 客戶）</button>
           <button onclick="setTenantAndPage('addwii','org')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="org">🏢 組織出缺勤（6 人）</button>
           <button onclick="setTenantAndPage('addwii','attn')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="attn">📈 出缺勤統計</button>
@@ -609,6 +612,9 @@ function showPage(page, tenant){
     dataflow: renderDataflow,
     compliance:renderCompliance,
     'addwii-ws':renderAddwiiWorkspace,'microjet-ws':renderMicrojetWorkspace,
+    'addwii-service-desk':renderAddwiiServiceDesk,
+    'addwii-supervisor':renderAddwiiSupervisor,
+    'addwii-marketing':renderAddwiiMarketing,
     'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval,
     'weiming-procurement':renderWeimingProcurement
   };
@@ -10634,6 +10640,605 @@ async function renderAddwiiWorkspace() {
         ${quickTile('👥','我的 6 人團隊','addwii 組織出缺勤 / 聊天','showPage(\'org\')','from-slate-800 to-slate-900 border-slate-600')}
       </div>
     </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// addwii 服務台（Phase A · 操作員視角）
+// 真實 TG bot 對話 + Agent 工具鏈 trace + handoff 可視化
+// ═══════════════════════════════════════════════════════════
+let SERVICE_DESK_SELECTED_CHAT = null;
+let SERVICE_DESK_POLL_TIMER = null;
+
+async function renderAddwiiServiceDesk() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-[1400px] mx-auto">
+      ${perspectiveBanner('addwii 服務台 · 操作員視角',
+        '真實 Telegram bot @Addwii_teddytestbot · LLM tool calling · 4 Agent 自動 handoff',
+        'from-emerald-900/40 to-teal-900/40')}
+
+      <!-- 頂部狀態列 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5" id="svc-stats">
+        <div class="bg-slate-800/60 border border-emerald-500/30 rounded-lg p-3">
+          <div class="text-[10px] text-slate-400">TG bot 狀態</div>
+          <div class="text-lg font-bold" id="svc-bot-status">載入中...</div>
+        </div>
+        <div class="bg-slate-800/60 border border-blue-500/30 rounded-lg p-3">
+          <div class="text-[10px] text-slate-400">AI 後端</div>
+          <div class="text-lg font-bold" id="svc-backend">—</div>
+        </div>
+        <div class="bg-slate-800/60 border border-purple-500/30 rounded-lg p-3">
+          <div class="text-[10px] text-slate-400">今日對話</div>
+          <div class="text-lg font-bold" id="svc-today-count">—</div>
+        </div>
+        <div class="bg-slate-800/60 border border-amber-500/30 rounded-lg p-3">
+          <div class="text-[10px] text-slate-400">總工具呼叫</div>
+          <div class="text-lg font-bold" id="svc-tool-count">—</div>
+        </div>
+      </div>
+
+      <!-- 3 欄佈局：收件箱 / 對話 / Agent trace -->
+      <div class="grid grid-cols-12 gap-4">
+        <!-- 收件箱 -->
+        <div class="col-span-3 bg-slate-800/60 border border-slate-700 rounded-lg p-3 max-h-[700px] overflow-y-auto">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-emerald-300">📥 收件箱</h3>
+            <button onclick="renderAddwiiServiceDesk()" class="text-[10px] text-slate-400 hover:text-white">🔄</button>
+          </div>
+          <div id="svc-inbox" class="space-y-2 text-xs">載入中...</div>
+        </div>
+
+        <!-- 對話視窗 -->
+        <div class="col-span-5 bg-slate-800/60 border border-slate-700 rounded-lg p-3 max-h-[700px] flex flex-col">
+          <h3 class="text-sm font-bold text-blue-300 mb-3">💬 對話內容</h3>
+          <div id="svc-conversation" class="flex-1 overflow-y-auto text-xs space-y-3">
+            ← 從左側選一個對話
+          </div>
+          <div class="mt-3 pt-3 border-t border-slate-700">
+            <div class="flex gap-2">
+              <input id="svc-input" type="text" placeholder="代替顧客打字測試（直接送到 agent_router）"
+                     class="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-xs"
+                     onkeydown="if(event.key==='Enter') sendSvcMessage()">
+              <button onclick="sendSvcMessage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-xs">送出</button>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">⏳ 等待時間：Ollama 60-90 秒 / Anthropic 5-15 秒</p>
+          </div>
+        </div>
+
+        <!-- Agent Trace 面板 -->
+        <div class="col-span-4 bg-slate-800/60 border border-slate-700 rounded-lg p-3 max-h-[700px] overflow-y-auto">
+          <h3 class="text-sm font-bold text-pink-300 mb-3">🛠 AI Agent Trace</h3>
+          <div id="svc-trace" class="text-xs space-y-3">
+            <p class="text-slate-500">選對話後顯示：Agent 鏈 + tool calls + handoffs</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 最近 tool calls 全域 trace -->
+      <div class="mt-5 bg-slate-800/60 border border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-bold text-amber-300 mb-3">📜 最近 Tool Call 稽核（全域 · SHA-256 chain）</h3>
+        <div id="svc-tool-calls-log" class="text-[10px] font-mono space-y-1 max-h-[300px] overflow-y-auto">載入中...</div>
+      </div>
+    </div>`;
+  await loadServiceDeskData();
+  if (SERVICE_DESK_POLL_TIMER) clearInterval(SERVICE_DESK_POLL_TIMER);
+  SERVICE_DESK_POLL_TIMER = setInterval(loadServiceDeskData, 5000);
+}
+
+async function loadServiceDeskData() {
+  try {
+    const [bot, backend, convs, tools] = await Promise.all([
+      fetch(API_BASE + '/api/telegram/live/status').then(r => r.json()).catch(() => ({running: false})),
+      fetch(API_BASE + '/api/ai/backend').then(r => r.json()).catch(() => ({})),
+      fetch(API_BASE + '/api/agent-router/conversations').then(r => r.json()).catch(() => ({conversations: []})),
+      fetch(API_BASE + '/api/agent-router/tool-calls?n=30').then(r => r.json()).catch(() => ({tool_calls: []})),
+    ]);
+
+    document.getElementById('svc-bot-status').innerHTML = bot.running
+      ? `<span class="text-emerald-400">● 運轉中</span><span class="text-[10px] text-slate-400 ml-2">@Addwii_teddytestbot</span>`
+      : `<span class="text-rose-400">● 未啟動</span>`;
+    document.getElementById('svc-backend').innerHTML =
+      `<span class="text-cyan-300">${backend.backend || 'unknown'}</span><span class="text-[10px] text-slate-400 ml-2">${backend.model || ''}</span>`;
+    document.getElementById('svc-today-count').textContent =
+      ((bot.stats && bot.stats.messages_in) || 0) + ' 進 / ' + ((bot.stats && bot.stats.messages_out) || 0) + ' 出';
+    document.getElementById('svc-tool-count').textContent = (tools.tool_calls || []).length + ' 筆';
+
+    // 收件箱
+    const inbox = document.getElementById('svc-inbox');
+    const list = convs.conversations || [];
+    if (list.length === 0) {
+      inbox.innerHTML = '<p class="text-slate-500 text-center py-4">尚無對話</p>';
+    } else {
+      inbox.innerHTML = list.map(c => `
+        <div onclick="selectSvcConv('${c.chat_id}')"
+             class="p-2 rounded cursor-pointer hover:bg-slate-700 ${SERVICE_DESK_SELECTED_CHAT === c.chat_id ? 'bg-slate-700 border border-emerald-500' : 'bg-slate-900/50'}">
+          <div class="flex items-center justify-between">
+            <div class="font-bold text-emerald-200">#${c.chat_id.slice(-6)}</div>
+            <div class="text-[10px] text-slate-500">${c.message_count} 訊息</div>
+          </div>
+          <div class="text-[10px] text-slate-400 mt-1">由 ${c.current_agent || 'bd'} 處理中</div>
+          <div class="text-[10px] text-slate-500 mt-1 truncate">${c.last_preview || '—'}</div>
+          <div class="text-[10px] text-slate-600 mt-1">${(c.last_updated || '').slice(11, 19)}</div>
+        </div>
+      `).join('');
+    }
+
+    // 最近 tool calls
+    const toolLog = document.getElementById('svc-tool-calls-log');
+    if (!tools.tool_calls || tools.tool_calls.length === 0) {
+      toolLog.innerHTML = '<p class="text-slate-500">尚無 tool call</p>';
+    } else {
+      toolLog.innerHTML = tools.tool_calls.slice().reverse().map(t =>
+        `<div class="flex gap-2 hover:bg-slate-900/50 px-2 py-0.5 rounded">
+          <span class="text-slate-500">${(t.ts || '').slice(11, 19)}</span>
+          <span class="text-amber-300">[${t.agent || 'unknown'}]</span>
+          <span class="text-cyan-300">${t.tool}</span>
+          <span class="text-slate-400">${t.elapsed_ms}ms</span>
+        </div>`
+      ).join('');
+    }
+  } catch (e) {
+    console.error('loadServiceDeskData failed', e);
+  }
+}
+
+async function selectSvcConv(chatId) {
+  SERVICE_DESK_SELECTED_CHAT = chatId;
+  document.getElementById('svc-conversation').innerHTML = '<p class="text-slate-500">載入中...</p>';
+  document.getElementById('svc-trace').innerHTML = '<p class="text-slate-500">載入中...</p>';
+
+  try {
+    const r = await fetch(API_BASE + '/api/agent-router/conversation/' + chatId);
+    const d = await r.json();
+    // 對話視窗
+    const conv = document.getElementById('svc-conversation');
+    const msgs = d.last_messages || [];
+    conv.innerHTML = msgs.map(m => {
+      if (m.role === 'user') {
+        return `<div class="bg-slate-900 rounded-lg p-3 border-l-2 border-blue-500">
+          <div class="text-[10px] text-blue-300 mb-1">👤 ${m.user_name || '顧客'} · ${(m.ts || '').slice(11, 19)}</div>
+          <div class="text-slate-200">${m.content}</div>
+        </div>`;
+      } else {
+        const tools = m.tool_calls || [];
+        const handoffs = m.handoffs || [];
+        return `<div class="bg-emerald-900/30 rounded-lg p-3 border-l-2 border-emerald-500">
+          <div class="text-[10px] text-emerald-300 mb-1">🤖 ${m.agent || 'bd'} Agent · ${(m.ts || '').slice(11, 19)} · ${m.backend || '?'}/${m.model || '?'}</div>
+          <div class="text-slate-200 whitespace-pre-wrap">${m.content}</div>
+          ${tools.length > 0 ? `<div class="mt-2 text-[10px] text-cyan-400">🛠 工具：${tools.map(t => t.tool).join(', ')}</div>` : ''}
+          ${handoffs.length > 0 ? `<div class="mt-1 text-[10px] text-amber-300">🔄 Handoff：${handoffs.map(h => h.from + '→' + h.to).join(' / ')}</div>` : ''}
+        </div>`;
+      }
+    }).join('');
+
+    // Agent trace
+    const trace = document.getElementById('svc-trace');
+    const lastTrace = (d.agent_trace || []).slice(-5).reverse();
+    if (lastTrace.length === 0) {
+      trace.innerHTML = '<p class="text-slate-500">尚無 trace</p>';
+    } else {
+      trace.innerHTML = lastTrace.map((t, i) => `
+        <div class="bg-slate-900 rounded p-3 border border-pink-700/40">
+          <div class="text-[10px] text-slate-400">${(t.ts || '').slice(11, 19)}</div>
+          <div class="mt-1"><span class="text-amber-300 text-[10px]">Agent 鏈</span>
+            <div class="font-mono text-pink-300">${(t.agent_chain || []).join(' → ')}</div></div>
+          <div class="mt-1"><span class="text-amber-300 text-[10px]">工具（${t.tool_count}）</span>
+            <div class="text-cyan-300 text-[10px]">${(t.tools_used || []).join(' · ')}</div></div>
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    document.getElementById('svc-conversation').innerHTML = '<p class="text-rose-400">載入失敗：' + e.message + '</p>';
+  }
+}
+
+async function sendSvcMessage() {
+  const inp = document.getElementById('svc-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.disabled = true;
+  const chatId = SERVICE_DESK_SELECTED_CHAT || ('web-' + Date.now());
+  const conv = document.getElementById('svc-conversation');
+  conv.insertAdjacentHTML('beforeend',
+    `<div class="bg-blue-900/30 rounded p-2 border-l-2 border-blue-400">
+       <div class="text-[10px] text-blue-300">👤 (web 測試) · 等待 AI 回覆...</div>
+       <div class="text-slate-200">${text}</div>
+     </div>`);
+  conv.scrollTop = conv.scrollHeight;
+  try {
+    const r = await fetch(API_BASE + '/api/agent-router/respond', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({chat_id: chatId, text, user_name: 'web-測試員'}),
+    });
+    const d = await r.json();
+    SERVICE_DESK_SELECTED_CHAT = chatId;
+    await selectSvcConv(chatId);
+  } catch (e) {
+    alert('回應失敗：' + e.message);
+  } finally {
+    inp.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 總監人審台（Phase A · 監督者視角）
+// 三軌 queue · 一鍵核可/拒絕/編輯
+// ═══════════════════════════════════════════════════════════
+async function renderAddwiiSupervisor() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-[1400px] mx-auto">
+      ${perspectiveBanner('addwii 總監人審台', '三軌人審 queue · sales / marketing / compliance · 一鍵批核',
+        'from-amber-900/40 to-orange-900/40')}
+
+      <div id="sup-stats" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">載入中...</div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="bg-slate-800/60 border border-blue-500/40 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-blue-300 mb-3">💼 業務 sales</h3>
+          <div id="sup-track-sales" class="space-y-3 max-h-[600px] overflow-y-auto">載入中...</div>
+        </div>
+        <div class="bg-slate-800/60 border border-pink-500/40 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-pink-300 mb-3">📢 行銷 marketing</h3>
+          <div id="sup-track-marketing" class="space-y-3 max-h-[600px] overflow-y-auto">載入中...</div>
+        </div>
+        <div class="bg-slate-800/60 border border-rose-500/40 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-rose-300 mb-3">⚠️ 合規 compliance</h3>
+          <div id="sup-track-compliance" class="space-y-3 max-h-[600px] overflow-y-auto">載入中...</div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-3 justify-end">
+        <button onclick="seedSupervisorDemo()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded text-sm">+ 產生 demo 待審</button>
+        <button onclick="renderAddwiiSupervisor()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm">🔄 重整</button>
+      </div>
+    </div>`;
+  await loadSupervisorData();
+  if (SERVICE_DESK_POLL_TIMER) clearInterval(SERVICE_DESK_POLL_TIMER);
+  SERVICE_DESK_POLL_TIMER = setInterval(loadSupervisorData, 5000);
+}
+
+async function loadSupervisorData() {
+  try {
+    const [stats, sales, marketing, compliance] = await Promise.all([
+      fetch(API_BASE + '/api/approval/stats').then(r => r.json()),
+      fetch(API_BASE + '/api/approval/queue?track=sales').then(r => r.json()),
+      fetch(API_BASE + '/api/approval/queue?track=marketing').then(r => r.json()),
+      fetch(API_BASE + '/api/approval/queue?track=compliance').then(r => r.json()),
+    ]);
+
+    document.getElementById('sup-stats').innerHTML = `
+      <div class="bg-slate-800/60 border border-amber-500/40 rounded-lg p-3">
+        <div class="text-[10px] text-slate-400">總待審</div>
+        <div class="text-2xl font-bold text-amber-300">${stats.total_pending || 0}</div>
+      </div>
+      ${['sales', 'marketing', 'compliance'].map(t => {
+        const d = stats.tracks[t] || {};
+        return `<div class="bg-slate-800/60 border border-slate-600 rounded-lg p-3">
+          <div class="text-[10px] text-slate-400">${t}</div>
+          <div class="text-2xl font-bold">${d.pending || 0}<span class="text-xs text-slate-500"> / ${d.total || 0}</span></div>
+        </div>`;
+      }).join('')}`;
+
+    ['sales', 'marketing', 'compliance'].forEach(track => {
+      const data = ({sales, marketing, compliance})[track][track];
+      const items = (data && data.items) || [];
+      const node = document.getElementById('sup-track-' + track);
+      if (items.length === 0) {
+        node.innerHTML = '<p class="text-slate-500 text-xs text-center py-4">無待審項目</p>';
+      } else {
+        node.innerHTML = items.map(it => `
+          <div class="bg-slate-900 rounded-lg p-3 border border-slate-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] text-slate-400">${it.ticket_id}</span>
+              ${it.priority === 'high' ? '<span class="text-[10px] bg-rose-700 px-1.5 rounded-full">緊急</span>' : ''}
+            </div>
+            <div class="text-xs text-slate-300 mb-1">👤 ${it.customer || '—'}</div>
+            <div class="text-[10px] text-slate-500 mb-2">由 ${it.agent} 提交 · ${(it.ts || '').slice(11, 19)}</div>
+            <div class="bg-slate-950 rounded p-2 text-[10px] text-slate-300 max-h-[150px] overflow-y-auto">
+              ${formatPayload(it.payload)}
+            </div>
+            <div class="flex gap-1 mt-2">
+              <button onclick="reviewTicket('${track}','${it.ticket_id}','approve')"
+                      class="flex-1 px-2 py-1 bg-emerald-600 hover:bg-emerald-500 rounded text-[10px]">✅ 核可</button>
+              <button onclick="reviewTicket('${track}','${it.ticket_id}','reject')"
+                      class="flex-1 px-2 py-1 bg-rose-600 hover:bg-rose-500 rounded text-[10px]">❌ 拒絕</button>
+              <button onclick="reviewTicket('${track}','${it.ticket_id}','edit')"
+                      class="flex-1 px-2 py-1 bg-amber-600 hover:bg-amber-500 rounded text-[10px]">✏️ 註記</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    });
+  } catch (e) {
+    console.error('loadSupervisorData failed', e);
+  }
+}
+
+function formatPayload(p) {
+  if (!p) return '—';
+  if (p.type === 'negotiate_quote') {
+    return `📦 ${p.type}<br>坪數 ${p.area_ping} · ${p.customer_type} ${p.segment || ''}<br>` +
+      `折扣 ${p.requested_discount_pct}% · 包套 ${p.bundle_units || 1} 套<br>` +
+      `${p.base_total_ntd ? `原 ${p.base_total_ntd.toLocaleString()} → 折後 ${p.final_total_ntd.toLocaleString()}` : ''}<br>` +
+      `<span class="text-amber-300">${p.reason || ''}</span>`;
+  }
+  if (p.type === 'fb_post_draft') {
+    return `📘 ${p.channel || 'FB'} 貼文<br><b>${p.title}</b><br>${p.body || ''}`;
+  }
+  if (p.type === 'youtube_shorts_script') {
+    return `▶️ YT Shorts 腳本<br><b>${p.title}</b><br>${p.duration_s}秒 · ${(p.script || '').slice(0, 200)}`;
+  }
+  if (p.type === 'pii_hit') {
+    return `🚨 PII 命中（${(p.pii_classes_found || []).join(', ')}）<br>` +
+           `${p.rows_affected || '?'} 行影響 · ${p.context}<br>${p.reason || ''}`;
+  }
+  if (p.type === 'customer_complaint') {
+    return `🆘 客訴升級<br>${JSON.stringify(p.intent || {}, null, 2)}`;
+  }
+  return `<pre class="text-[10px]">${JSON.stringify(p, null, 2).slice(0, 300)}</pre>`;
+}
+
+async function reviewTicket(track, ticketId, action) {
+  let note = '';
+  if (action === 'reject' || action === 'edit') {
+    note = prompt(`請輸入 ${action} 原因：`);
+    if (!note) return;
+  }
+  try {
+    const r = await fetch(API_BASE + '/api/approval/review', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({track, ticket_id: ticketId, action, reviewed_by: '總監', note}),
+    });
+    const d = await r.json();
+    if (d.error) alert('失敗：' + d.error);
+    else loadSupervisorData();
+  } catch (e) {
+    alert('失敗：' + e.message);
+  }
+}
+
+async function seedSupervisorDemo() {
+  try {
+    await fetch(API_BASE + '/api/approval/seed-demo', {method: 'POST'});
+    loadSupervisorData();
+  } catch (e) {
+    alert('seed 失敗：' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 行銷台（Phase C · 框架先放，內容引擎 B 階段填）
+// ═══════════════════════════════════════════════════════════
+async function renderAddwiiMarketing() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-[1400px] mx-auto">
+      ${perspectiveBanner('addwii 行銷台 · 自動內容工廠',
+        '議題引擎（環保署 API + 季節 + 節慶 + 議題庫）· 多通道文案 · YT Shorts 腳本 · YouTube RSS 風格學習',
+        'from-pink-900/40 to-rose-900/40')}
+
+      <div id="mkt-content">載入中...</div>
+    </div>`;
+  await loadMarketingData();
+  if (SERVICE_DESK_POLL_TIMER) clearInterval(SERVICE_DESK_POLL_TIMER);
+  SERVICE_DESK_POLL_TIMER = setInterval(loadMarketingData, 10000);
+}
+
+async function loadMarketingData() {
+  const node = document.getElementById('mkt-content');
+  if (!node) return;
+  try {
+    const [topics, calendar, posts, ytStyle, publishers, publishLog] = await Promise.all([
+      fetch(API_BASE + '/api/marketing/topics/today').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/marketing/calendar').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/marketing/posts/pending').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/marketing/youtube/style').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/marketing/publishers/status').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/marketing/publish/log?n=10').then(r => r.json()).catch(() => null),
+    ]);
+
+    const todayTopic = topics && topics.today_topic ? topics.today_topic : null;
+    node.innerHTML = `
+      <!-- 頂部 3 卡 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+        <div class="bg-slate-800/60 border border-pink-500/40 rounded-lg p-4">
+          <div class="text-xs text-slate-400 mb-1">📅 今日議題（${todayTopic ? todayTopic.category : '—'}）</div>
+          <div class="text-sm font-bold text-pink-300 mb-1">${todayTopic ? todayTopic.title : '⏳ 載入中'}</div>
+          <div class="text-[10px] text-slate-400">${todayTopic ? todayTopic.source : ''}</div>
+          ${todayTopic && todayTopic.pain_points ? `<div class="text-[10px] text-amber-300 mt-1">${todayTopic.pain_points.slice(0,2).join(' / ')}</div>` : ''}
+        </div>
+        <div class="bg-slate-800/60 border border-purple-500/40 rounded-lg p-4">
+          <div class="text-xs text-slate-400 mb-1">📊 本週排程</div>
+          <div class="text-2xl font-bold text-purple-300">${calendar ? (calendar.this_week_count || 0) : '—'} <span class="text-xs text-slate-500">篇</span></div>
+          <div class="text-[10px] text-slate-400 mt-1">待批 ${posts ? (posts.pending_count || 0) : '—'} · 總計 ${posts ? (posts.total || 0) : '—'}</div>
+        </div>
+        <div class="bg-slate-800/60 border border-emerald-500/40 rounded-lg p-4">
+          <div class="text-xs text-slate-400 mb-1">🎬 YT 頻道風格學習</div>
+          <div class="text-xs text-emerald-300 mb-1">${ytStyle ? (ytStyle.style_summary || '—') : '—'}</div>
+          <a href="${ytStyle ? ytStyle.channel_url : '#'}" target="_blank" class="text-[10px] text-blue-400 hover:underline">${ytStyle ? ytStyle.channel_handle : ''}</a>
+          <span class="text-[10px] text-slate-500 ml-2">${ytStyle && ytStyle.video_count ? ytStyle.video_count + ' 支影片' : ''}</span>
+        </div>
+      </div>
+
+      <!-- 一鍵產生 -->
+      <div class="bg-gradient-to-r from-pink-900/30 to-purple-900/30 border border-pink-500/30 rounded-lg p-4 mb-5">
+        <h3 class="text-sm font-bold text-pink-300 mb-3">⚡ 一鍵產生（依今日議題）</h3>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="genPostNow('facebook')" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 rounded text-xs">📘 產 FB 貼文</button>
+          <button onclick="genPostNow('instagram')" class="px-3 py-2 bg-pink-600 hover:bg-pink-500 rounded text-xs">📷 產 IG 貼文</button>
+          <button onclick="genPostNow('line')" class="px-3 py-2 bg-green-600 hover:bg-green-500 rounded text-xs">💬 產 LINE</button>
+          <button onclick="genPostNow('threads')" class="px-3 py-2 bg-slate-600 hover:bg-slate-500 rounded text-xs">🧵 產 Threads</button>
+          <button onclick="genAllChannels()" class="px-3 py-2 bg-purple-600 hover:bg-purple-500 rounded text-xs">🌐 4 通道一次產</button>
+          <button onclick="genYtShorts()" class="px-3 py-2 bg-red-600 hover:bg-red-500 rounded text-xs">▶️ 產 YT Shorts 腳本</button>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-2">⏳ Ollama 30-90 秒 / Anthropic 5-15 秒 · 產出自動送總監人審 queue</p>
+      </div>
+
+      <!-- 本週日曆 -->
+      <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-4 mb-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-purple-300">📅 本週內容日曆</h3>
+          <button onclick="rebuildCalendar()" class="text-[10px] bg-slate-700 hover:bg-slate-600 rounded px-2 py-1">🔄 重新排程</button>
+        </div>
+        <div class="grid grid-cols-7 gap-2 text-[10px]" id="mkt-cal-grid">
+          ${renderCalGrid(calendar)}
+        </div>
+      </div>
+
+      <!-- 通道設定 -->
+      <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-4 mb-5">
+        <h3 class="text-sm font-bold text-amber-300 mb-3">🔑 發布通道（API token）</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          ${publisherCard('facebook', '📘 Facebook Page', publishers)}
+          ${publisherCard('instagram', '📷 Instagram', publishers)}
+          ${publisherCard('youtube', '▶️ YouTube', publishers)}
+          ${publisherCard('telegram', '💬 Telegram bot', publishers)}
+        </div>
+      </div>
+
+      <!-- 待批貼文 -->
+      <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-4 mb-5">
+        <h3 class="text-sm font-bold text-emerald-300 mb-3">📝 已產出貼文（送總監）</h3>
+        <div class="space-y-2 max-h-[300px] overflow-y-auto" id="mkt-posts-list">
+          ${renderPostsList(posts)}
+        </div>
+      </div>
+
+      <!-- 發布 log -->
+      <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-bold text-amber-300 mb-3">📜 發布 audit log</h3>
+        <div class="space-y-1 text-[10px] font-mono max-h-[200px] overflow-y-auto" id="mkt-publish-log">
+          ${renderPublishLog(publishLog)}
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    node.innerHTML = '<p class="text-rose-400 text-xs">載入失敗：' + e.message + '</p>';
+  }
+}
+
+function renderCalGrid(cal) {
+  if (!cal || !cal.entries) return '<p class="text-slate-500 col-span-7">尚無排程</p>';
+  // group by date
+  const byDate = {};
+  cal.entries.forEach(e => {
+    if (!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+  return Object.keys(byDate).slice(0, 7).map(date => {
+    const entries = byDate[date];
+    const wd = entries[0].weekday;
+    return `<div class="bg-slate-900 rounded p-2 border border-slate-700">
+      <div class="text-[9px] text-slate-500">${date.slice(5)} ${wd}</div>
+      ${entries.map(e => {
+        const icon = {facebook: '📘', instagram: '📷', line: '💬', threads: '🧵', youtube: '▶️'}[e.channel] || '📢';
+        return `<div class="mt-1 truncate" title="${e.topic_title}">${icon}${e.time.slice(0,5)}</div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderPostsList(posts) {
+  if (!posts || !posts.items || posts.items.length === 0)
+    return '<p class="text-slate-500 text-xs">尚無貼文，點上方按鈕產生</p>';
+  return posts.items.slice(0, 10).map(p => `
+    <div class="bg-slate-900 rounded p-2 border border-slate-700 text-xs flex items-center gap-2">
+      <span class="text-[10px] text-slate-500 w-32 truncate">${p.post_id}</span>
+      <span class="text-[10px] px-2 py-0.5 rounded ${p.channel === 'youtube' ? 'bg-red-900 text-red-200' : 'bg-blue-900 text-blue-200'}">${p.channel}</span>
+      <span class="flex-1 text-slate-300 truncate">${p.title || '—'}</span>
+      <span class="text-[10px] text-slate-500">${(p.generated || '').slice(11,19)}</span>
+      ${p.approval ? `<span class="text-[10px] text-amber-300">→${p.approval.slice(-6)}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderPublishLog(log) {
+  if (!log || !log.entries || log.entries.length === 0)
+    return '<p class="text-slate-500">尚無發布紀錄</p>';
+  return log.entries.slice().reverse().map(e => {
+    const color = e.status === 'live_published' ? 'text-emerald-400' :
+                  e.status === 'mock_published' ? 'text-amber-300' :
+                  e.status === 'error' ? 'text-rose-400' : 'text-slate-400';
+    return `<div class="flex gap-2">
+      <span class="text-slate-500">${(e.ts || '').slice(11,19)}</span>
+      <span class="text-cyan-300">${e.channel}</span>
+      <span class="${color}">${e.status}</span>
+      <span class="text-slate-400 truncate">${(e.text_preview || '').slice(0,60)}</span>
+    </div>`;
+  }).join('');
+}
+
+async function genPostNow(channel) {
+  if (!confirm(`要為 ${channel} 產一篇新貼文嗎？（約 30-90 秒）`)) return;
+  try {
+    const r = await fetch(API_BASE + '/api/marketing/generate/post', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({channel, auto_save: true}),
+    });
+    const d = await r.json();
+    alert(`✅ ${channel} 已產出\n${(d.text || '').slice(0, 200)}`);
+    loadMarketingData();
+  } catch (e) { alert('失敗：' + e.message); }
+}
+
+async function genAllChannels() {
+  if (!confirm('要一次產 4 通道（FB/IG/LINE/Threads）嗎？（約 2-5 分鐘）')) return;
+  try {
+    const r = await fetch(API_BASE + '/api/marketing/generate/all-channels', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({}),
+    });
+    const d = await r.json();
+    alert(`✅ 已產 ${Object.keys(d.posts).length} 個通道`);
+    loadMarketingData();
+  } catch (e) { alert('失敗：' + e.message); }
+}
+
+async function genYtShorts() {
+  if (!confirm('要產 YT Shorts 60 秒腳本嗎？（含 SRT 字幕 + 縮圖 SVG · 約 60-120 秒）')) return;
+  try {
+    const r = await fetch(API_BASE + '/api/marketing/generate/yt-shorts', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({duration_s: 60}),
+    });
+    const d = await r.json();
+    alert(`✅ YT Shorts 腳本已產\n標題：${d.title}\n字幕條數：${(d.srt || '').split('\\n\\n').length - 1}`);
+    loadMarketingData();
+  } catch (e) { alert('失敗：' + e.message); }
+}
+
+async function rebuildCalendar() {
+  try {
+    await fetch(API_BASE + '/api/marketing/calendar/rebuild', {method: 'POST'});
+    loadMarketingData();
+  } catch (e) { alert('失敗：' + e.message); }
+}
+
+function publisherCard(channel, label, publishers) {
+  const p = publishers ? (publishers.channels && publishers.channels[channel]) : null;
+  const configured = p && p.configured;
+  return `
+    <div class="bg-slate-900 rounded-lg p-3 border ${configured ? 'border-emerald-500/40' : 'border-slate-700'}">
+      <div class="text-xs font-bold ${configured ? 'text-emerald-300' : 'text-slate-400'}">${label}</div>
+      <div class="text-[10px] text-slate-500 mt-1">${configured ? '✅ 已設定' : '⏳ 待設定 token'}</div>
+      <button onclick="configurePublisher('${channel}')"
+              class="mt-2 w-full px-2 py-1 ${configured ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-slate-700 hover:bg-slate-600'} rounded text-[10px]">
+        ${configured ? '更新 token' : '設定 token'}
+      </button>
+    </div>`;
+}
+
+async function configurePublisher(channel) {
+  const token = prompt(`輸入 ${channel} 的 API token（或留空跳過）：`);
+  if (!token) return;
+  try {
+    await fetch(API_BASE + '/api/marketing/publishers/set-token', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({channel, token}),
+    });
+    loadMarketingData();
+  } catch (e) {
+    alert('失敗：' + e.message);
+  }
 }
 
 async function renderMicrojetWorkspace() {

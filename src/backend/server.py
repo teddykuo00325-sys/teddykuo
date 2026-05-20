@@ -2309,6 +2309,124 @@ def api_agent_router_tool_calls():
     return jsonify({'tool_calls': agent_tools.get_recent_tool_calls(n)})
 
 
+# ══════════════════════════════════════════════════════════
+# 行銷 Agent · 議題引擎 + 多通道文案 + YT Shorts + 內容日曆
+# ══════════════════════════════════════════════════════════
+@app.route('/api/marketing/topics/today')
+def api_marketing_topics_today():
+    """今日議題（A 環保署 + B 季節 + C 節慶 + D 議題庫）"""
+    import topic_generator
+    return jsonify(topic_generator.generate_today_topic())
+
+
+@app.route('/api/marketing/topics/week')
+def api_marketing_topics_week():
+    """未來 7 天議題"""
+    import topic_generator
+    days = int(request.args.get('days', 7))
+    return jsonify({'topics': topic_generator.generate_week_topics(days)})
+
+
+@app.route('/api/marketing/generate/post', methods=['POST'])
+def api_marketing_generate_post():
+    """產一篇單通道貼文"""
+    import marketing_agent, topic_generator
+    d = request.get_json(silent=True) or {}
+    topic = d.get('topic') or topic_generator.generate_today_topic().get('today_topic') or {}
+    channel = d.get('channel', 'facebook')
+    auto_save = d.get('auto_save', True)
+    r = marketing_agent.generate_post_for_channel(topic, channel)
+    if auto_save:
+        r = marketing_agent.save_post(r)
+    return jsonify(r)
+
+
+@app.route('/api/marketing/generate/all-channels', methods=['POST'])
+def api_marketing_generate_all():
+    """一次產 4 通道（FB / IG / LINE / Threads）"""
+    import marketing_agent, topic_generator
+    d = request.get_json(silent=True) or {}
+    topic = d.get('topic') or topic_generator.generate_today_topic().get('today_topic') or {}
+    channels = d.get('channels') or ['facebook', 'instagram', 'line', 'threads']
+    r = marketing_agent.generate_all_channels(topic, channels)
+    # 每個通道分別存
+    for ch, post in r['posts'].items():
+        marketing_agent.save_post(post)
+    return jsonify(r)
+
+
+@app.route('/api/marketing/generate/yt-shorts', methods=['POST'])
+def api_marketing_generate_yt_shorts():
+    """產 YT Shorts 完整腳本 + SRT + thumbnail SVG"""
+    import marketing_agent, topic_generator
+    d = request.get_json(silent=True) or {}
+    topic = d.get('topic') or topic_generator.generate_today_topic().get('today_topic') or {}
+    duration_s = int(d.get('duration_s', 60))
+    r = marketing_agent.generate_yt_shorts_script(topic, duration_s)
+    r = marketing_agent.save_post(r)
+    return jsonify(r)
+
+
+@app.route('/api/marketing/posts/pending')
+def api_marketing_posts_pending():
+    import marketing_agent
+    return jsonify(marketing_agent.list_pending_posts())
+
+
+@app.route('/api/marketing/youtube/style')
+def api_marketing_youtube_style():
+    """YouTube RSS 風格學習結果"""
+    import youtube_rss_learner
+    force = request.args.get('refresh') == '1'
+    return jsonify(youtube_rss_learner.learn_style(force_refresh=force))
+
+
+@app.route('/api/marketing/calendar')
+def api_marketing_calendar():
+    import content_calendar
+    return jsonify(content_calendar.get_calendar())
+
+
+@app.route('/api/marketing/calendar/rebuild', methods=['POST'])
+def api_marketing_calendar_rebuild():
+    import content_calendar
+    return jsonify(content_calendar.build_week_schedule())
+
+
+@app.route('/api/marketing/publishers/status')
+def api_marketing_publishers_status():
+    import content_calendar
+    return jsonify(content_calendar.get_publishers_status())
+
+
+@app.route('/api/marketing/publishers/set-token', methods=['POST'])
+def api_marketing_publishers_set_token():
+    import content_calendar
+    d = request.get_json(silent=True) or {}
+    return jsonify(content_calendar.set_publisher_token(
+        channel=d.get('channel', ''),
+        token=d.get('token', ''),
+    ))
+
+
+@app.route('/api/marketing/publish', methods=['POST'])
+def api_marketing_publish():
+    """發布到指定通道（有 token 真實發；無 token mock）"""
+    import content_calendar
+    d = request.get_json(silent=True) or {}
+    return jsonify(content_calendar.publish_post(
+        channel=d.get('channel', 'facebook'),
+        post_data=d.get('post_data', {}),
+    ))
+
+
+@app.route('/api/marketing/publish/log')
+def api_marketing_publish_log():
+    import content_calendar
+    n = int(request.args.get('n', 50))
+    return jsonify(content_calendar.get_publish_log(n))
+
+
 @app.route('/api/agents/activity-log')
 def api_agents_activity_log():
     """回傳 activity_log.jsonl 最近 N 筆"""

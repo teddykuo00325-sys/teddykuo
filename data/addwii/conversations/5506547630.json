@@ -35,6 +35,156 @@
       "backend": "ollama",
       "model": "qwen2.5:7b",
       "iterations": 1
+    },
+    {
+      "role": "user",
+      "content": "烤肉",
+      "user_name": "Kuo Yu chun",
+      "ts": "2026-05-20T20:51:24"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "您好！想要租用烤肉空間嗎？請告知您預計使用的坪數，我們有提供不同大小的包廂 👶🛋️，適合2-30人不等的用餐需求 🏨🍳。期待為您服務！🍽️",
+      "ts": "2026-05-20T20:51:58",
+      "intent": {
+        "space": null,
+        "area_ping": null,
+        "customer_type": "B2C",
+        "segment": null,
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
+    },
+    {
+      "role": "user",
+      "content": "35坪居家 2歲過敏兒 推薦方案",
+      "user_name": "Kuo Yu chun",
+      "ts": "2026-05-20T20:53:16"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "您好！35坪居家，2歲過敏兒的推薦方案如下：選用H1過濾效率的空氣清淨機 💨、低過敏原的床上用品 👖、無毒環保的洗浴用品 🧼和餐具 🥘，並設置除塵除蟎環境。請告知更多需求，我們可進一步調整！👋",
+      "ts": "2026-05-20T20:54:04",
+      "intent": {
+        "space": null,
+        "area_ping": 35.0,
+        "customer_type": "B2C",
+        "segment": "allergy_family",
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
+    },
+    {
+      "role": "user",
+      "content": "價格？",
+      "user_name": "Kuo Yu chun",
+      "ts": "2026-05-20T20:57:06"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "您好！請問您的需求是為何種大小的空間 👶🛋️？例如 15 平米左右，我們可以根據坪數 💸來提供相對應的價格範圍 🏡ycz。",
+      "ts": "2026-05-20T20:57:31",
+      "intent": {
+        "space": null,
+        "area_ping": null,
+        "customer_type": "B2C",
+        "segment": null,
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": true,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
+    },
+    {
+      "role": "user",
+      "content": "35坪",
+      "user_name": "Kuo Yu chun",
+      "ts": "2026-05-20T20:57:47"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "您好！您需要設計一間多大的空間呢？是35坪嗎？🤔👇 🛋️ 🔟 🔥 💡",
+      "ts": "2026-05-20T20:58:08",
+      "intent": {
+        "space": null,
+        "area_ping": 35.0,
+        "customer_type": "B2C",
+        "segment": null,
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
+    },
+    {
+      "role": "user",
+      "content": "對",
+      "user_name": "Kuo Yu chun",
+      "ts": "2026-05-20T20:58:20"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "您好！我們需要了解您家的使用空間和坪數，以便提供適合的設計方案。例如：100㎡住宅可配置5-6房 👶🛋️ 🛋️ 🏕️ 🍳 🥂 💤 isher。請告知詳細資訊，感謝！",
+      "ts": "2026-05-20T20:58:56",
+      "intent": {
+        "space": null,
+        "area_ping": null,
+        "customer_type": "B2C",
+        "segment": null,
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
     }
   ],
   "agent_trace": [
@@ -53,9 +203,49 @@
       ],
       "tool_count": 0,
       "tools_used": []
+    },
+    {
+      "ts": "2026-05-20T20:51:58",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
+    },
+    {
+      "ts": "2026-05-20T20:54:04",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
+    },
+    {
+      "ts": "2026-05-20T20:57:31",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
+    },
+    {
+      "ts": "2026-05-20T20:58:08",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
+    },
+    {
+      "ts": "2026-05-20T20:58:56",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
     }
   ],
   "current_agent": "bd",
   "customer_profile": {},
-  "last_updated": "2026-05-20T20:03:23"
+  "last_updated": "2026-05-20T20:58:56"
 }
