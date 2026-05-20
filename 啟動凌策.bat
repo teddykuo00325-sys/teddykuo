@@ -51,10 +51,17 @@ if errorlevel 1 (
 
 REM ---- 3. Kill old server ----
 echo.
-echo [3/4] Cleaning port 5000...
+echo [3/4] Cleaning ports 5000/5050/5051...
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":5000 " ^| findstr "LISTENING"') do (
     taskkill /F /PID %%p >nul 2>&1
 )
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":5050 " ^| findstr "LISTENING"') do (
+    taskkill /F /PID %%p >nul 2>&1
+)
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":5051 " ^| findstr "LISTENING"') do (
+    taskkill /F /PID %%p >nul 2>&1
+)
+set "LINGCE_PORT=5050"
 
 REM ---- 4. Start backend ----
 echo.
@@ -75,7 +82,7 @@ for /L %%i in (1,1,12) do (
 echo.
 
 REM ── Open browser via 2 methods in parallel ──
-set "URL=http://127.0.0.1:5000/index.html"
+set "URL=http://127.0.0.1:5050/index.html"
 
 echo.
 echo ============================================================
@@ -98,11 +105,11 @@ echo.
 echo   If browser did NOT open, please MANUALLY copy and paste
 echo   this URL into your browser address bar:
 echo.
-echo        ^>^>^>  http://127.0.0.1:5000/index.html  ^<^<^<
+echo        ^>^>^>  http://127.0.0.1:5050/index.html  ^<^<^<
 echo.
 echo   Or equivalently:
-echo        http://localhost:5000
-echo        http://localhost:5000/dashboard.html
+echo        http://localhost:5050
+echo        http://localhost:5050/dashboard.html
 echo.
 echo ============================================================
 echo.
