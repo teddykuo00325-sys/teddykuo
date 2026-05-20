@@ -71,30 +71,64 @@ def generate_post_for_channel(topic: dict, channel: str) -> dict:
     space = topic.get('recommended_space', topic.get('space', ''))
     angle = topic.get('angle', '')
     hook_data = topic.get('hook_data', {})
-
-    # 加 hook 資料（即時環保署紅燈）
     hook_text = ''
     if hook_data:
-        hook_text = f"今日鉤點：{hook_data.get('site','')} {hook_data.get('pm25','')} μg/m³"
+        hook_text = f"\n即時鉤點：{hook_data.get('site','')} PM2.5={hook_data.get('pm25','')} μg/m³"
 
-    simple_system = (
-        '你是 addwii 行銷文案 Agent。一律台灣繁體中文（禁簡體）。'
-        '不准用「保證」「100%」「絕對」這類絕對性詞。'
-        f'寫 {channel} 風格：{style["tone"]}，{style["length_chars"]} 字內。'
+    # 強化 system prompt：明確品牌身分 + 嚴禁簡體 + 嚴禁亂講
+    strong_system = (
+        '你是「addwii 加我科技」的行銷文案專家，專門撰寫 Home Clean Room 空氣清淨系統的社群貼文。\n'
+        '\n【鐵則】\n'
+        '1. 必須用台灣繁體中文（嚴禁「净」「过」「会」「环」「证」等簡體字）\n'
+        '2. 不准用「保證」「100%」「絕對」「治癒」「根除」等絕對詞\n'
+        '3. 不准貶低 Coway / Blueair / Dyson 等競品（只能客觀對照數字）\n'
+        '4. 必須引用真實數字：CADR / 售價 / 環境部 NPA23C01250001 / 41 場域 / PM2.5 趨零\n'
+        '5. 不要寫「親愛的朋友」「大家好」等空洞開場\n'
+        f'6. 寫 {channel} 風格：{style["tone"]}\n'
+        '7. 直接寫文案內容，不要寫「以下是文案：」「貼文：」等前綴\n'
     )
+
     prompt = (
-        f'今日議題：{topic.get("title")}\n'
-        f'痛點：{pain_str}\n'
-        f'切入角度：{angle}\n'
-        f'推薦空間：{space}\n'
+        f'【今日議題】{topic.get("title")}\n'
+        f'【顧客痛點】{pain_str}\n'
+        f'【切入角度】{angle}\n'
+        f'【推薦空間】{space}\n'
         f'{hook_text}\n\n'
-        f'addwii 已驗證實證：環境部 NPA23C01250001 / 41 場域 PM2.5 趨零 / S03 = 1,600 CADR / 38,900 元 / 24 期 0 利率\n\n'
-        f'請寫一篇 {channel} 貼文。{style["cta_style"]} 必含。'
+        f'【addwii 賣點素材庫】\n'
+        f'• 旗艦方案 S03：1,600 CADR · 38,900 元 · 24 期 0 利率月付 1,621 元\n'
+        f'• 環境部 NPA23C01250001 認證 PM2.5 < 1 μg/m³（趨零）\n'
+        f'• 41 場域實測（30 內部員工家 + 11 外部）大部分 < 2 μg/m³\n'
+        f'• 競品 Coway 850 CADR 賣 29,800 但實測 PM2.5 還在 8-15\n'
+        f'• 10 年研發 · 投資 20 億 · 千項國際專利\n'
+        f'\n請寫一篇 {channel} 貼文（不超過 {style["length_chars"]} 字，{style["cta_style"]} 必含）。\n'
+        f'直接寫貼文內容：'
     )
 
-    r = ai_backend.generate(prompt=prompt, system=simple_system,
-                             max_tokens=400, temperature=0.5, timeout_s=180)
+    # Breeze 在 CPU 慢但品質好，給 240 秒
+    r = ai_backend.generate(prompt=prompt, system=strong_system,
+                             max_tokens=400, temperature=0.4, timeout_s=240)
     text = (r.get('text') or '').strip()
+
+    # 偵測 stub fallback
+    is_fallback = (
+        r.get('backend') == 'stub' or r.get('fallback', False)
+        or text.startswith('[stub]') or 'rule_engine' in text.lower()
+    )
+
+    if is_fallback:
+        # 規則式 fallback（保證可讀內容，不吐 stub 訊息給使用者看）
+        text = _fallback_post_text(topic, channel, style)
+
+    # 移除 LLM 自言自語 prefix
+    junk_prefixes = ('以下是文案：', '貼文：', '以下是貼文：', '回覆：', '回答：',
+                       '文案：', '【貼文】', '【文案】', '直接寫貼文內容：')
+    for _ in range(3):
+        old = text
+        for p in junk_prefixes:
+            if text.startswith(p):
+                text = text[len(p):].strip()
+                break
+        if text == old: break
 
     # 強制繁體
     try:
@@ -102,10 +136,12 @@ def generate_post_for_channel(topic: dict, channel: str) -> dict:
         text = s2t(text)
     except Exception: pass
 
-    # 加 hashtags
+    # 加 hashtags（避開重複）
     if style['hashtags']:
-        if not text.endswith('\n'): text += '\n'
-        text += '\n' + ' '.join(style['hashtags'])
+        has_hashtags = any(h.lower() in text.lower() for h in style['hashtags'])
+        if not has_hashtags:
+            if not text.endswith('\n'): text += '\n'
+            text += '\n' + ' '.join(style['hashtags'])
 
     # 合規檢查
     check = agent_tools.dispatch('check_advertising_claim', {'text': text}, agent='marketing')
@@ -118,10 +154,50 @@ def generate_post_for_channel(topic: dict, channel: str) -> dict:
         'char_count':    len(text),
         'hashtags':      style['hashtags'],
         'compliance':    compliance,
+        'fallback_used': is_fallback,
         'backend':       r.get('backend'),
         'model':         r.get('model'),
+        'elapsed_s':     r.get('latency_ms', 0) / 1000.0 if r.get('latency_ms') else None,
         'generated_at':  datetime.now().isoformat(timespec='seconds'),
     }
+
+
+def _fallback_post_text(topic: dict, channel: str, style: dict) -> str:
+    """LLM 失敗時的規則式範本（依通道風格）"""
+    pain = ' / '.join(topic.get('pain_points', topic.get('pain', [])))[:60]
+    title = topic.get('title', '為家人打造淨零空氣')
+    space = topic.get('recommended_space', '居家')
+    space_zh = {'baby':'嬰兒房', 'kitchen':'廚房', 'bathroom':'浴室',
+                'living':'客廳', 'bedroom':'臥室', 'dining':'餐廳'}.get(space, '居家')
+
+    if channel == 'facebook':
+        return (f'【{title}】\n\n'
+                f'{pain}？\n\n'
+                f'addwii Home Clean Room 為您的{space_zh}打造醫療無塵級環境：\n'
+                f'✓ 旗艦 S03：1,600 CADR · 38,900 元\n'
+                f'✓ 環境部 NPA23C01250001 認證 PM2.5 < 1（趨零）\n'
+                f'✓ 41 場域實測驗證\n'
+                f'✓ 24 期 0 利率月付 1,621\n\n'
+                f'了解更多 → addwii.com')
+    elif channel == 'instagram':
+        return (f'{title} ✨\n\n'
+                f'你還在用 850 CADR？\n'
+                f'addwii S03 = 1,600 CADR / 38,900 元 🌬️\n'
+                f'環境部認證 PM2.5 趨零 ✅\n\n'
+                f'Bio 連結 ↑')
+    elif channel == 'line':
+        return (f'親愛的顧客：\n{title}\n'
+                f'• S03 旗艦 · 38,900 元\n'
+                f'• 24 期 0 利率\n'
+                f'• 環境部 NPA 認證\n'
+                f'點下方按鈕看更多 ↓')
+    elif channel == 'threads':
+        return (f'{title}。\n\n'
+                f'addwii S03 用 1,600 CADR、38,900 元，做到實測 PM2.5 < 1。\n'
+                f'同價位主流品牌（Coway 850 CADR · 29,800）實測還在 8-15。\n'
+                f'環境部 NPA23C01250001 報告可查。\n\n'
+                f'你怎麼看？')
+    return f'{title}\naddwii Home Clean Room · 自由呼吸 淨零生活'
 
 
 def generate_all_channels(topic: dict, channels: list = None) -> dict:
@@ -155,22 +231,54 @@ def generate_yt_shorts_script(topic: dict, duration_s: int = 60) -> dict:
     pain = ' / '.join(topic.get('pain_points', topic.get('pain', [])))
     space = topic.get('recommended_space', topic.get('space', 'bedroom'))
 
-    simple_system = '你是 addwii 短影片腳本作家。一律台灣繁體中文（禁簡體）。語氣輕快、有節奏感。不准用絕對詞。'
+    strong_system = (
+        '你是 addwii 加我科技的 YouTube Shorts 短影片腳本作家。\n'
+        '【鐵則】\n'
+        '1. 必須用台灣繁體中文（嚴禁簡體字）\n'
+        '2. 語氣輕快、有節奏、像直播帶貨\n'
+        '3. 不准用「保證」「100%」「絕對」等絕對詞\n'
+        '4. 必須引用真實數字：CADR / 售價 / NPA 報告編號 / 場域數\n'
+        '5. 直接寫腳本，不要寫「以下是腳本：」等前綴'
+    )
     prompt = (
-        f'議題：{topic.get("title")}\n'
-        f'痛點：{pain}\n'
-        f'目標空間：{space}\n'
-        f'時長：{duration_s} 秒\n\n'
-        f'請依下列結構產 YT Shorts 逐字稿（每段標時間軸）：\n'
-        f'[0-3s] HOOK：吸睛開場（一句話）\n'
-        f'[3-13s] PAIN：點出痛點（具體場景 / 數字）\n'
-        f'[13-50s] SOLUTION：addwii 解法（具體數字：環境部 NPA23C01250001 / 41 場域實測 / S03 1,600 CADR / 38,900 元 / 24 期月付 1,621）\n'
-        f'[50-60s] CTA：點下方連結看實測'
+        f'【議題】{topic.get("title")}\n'
+        f'【痛點】{pain}\n'
+        f'【目標空間】{space}\n'
+        f'【時長】{duration_s} 秒\n\n'
+        f'【addwii 數據庫】\n'
+        f'• S03 旗艦：1,600 CADR · 38,900 元 · 24 期月付 1,621\n'
+        f'• 環境部 NPA23C01250001 · PM2.5 < 1（趨零）\n'
+        f'• 41 場域實測（30 內 + 11 外）大部分 < 2 μg/m³\n'
+        f'• 競品 Coway 850 CADR / 29,800 元 / 實測 PM2.5 8-15\n\n'
+        f'請依下列結構產 YT Shorts 逐字稿（必須含 4 段，每段一句話）：\n\n'
+        f'[0-3s] HOOK：吸睛問句\n'
+        f'[3-13s] PAIN：點出痛點 + 競品實測數字\n'
+        f'[13-50s] SOLUTION：addwii 解法 + S03 CADR/售價/NPA 報告\n'
+        f'[50-60s] CTA：點下方連結看實測\n\n'
+        f'直接寫逐字稿（不要解釋）：'
     )
 
-    r = ai_backend.generate(prompt=prompt, system=simple_system,
-                             max_tokens=600, temperature=0.4, timeout_s=180)
+    r = ai_backend.generate(prompt=prompt, system=strong_system,
+                             max_tokens=500, temperature=0.4, timeout_s=240)
     full_script = (r.get('text') or '').strip()
+
+    # Stub fallback → 用範本
+    if r.get('backend') == 'stub' or full_script.startswith('[stub]'):
+        full_script = (
+            f'[0-3s] HOOK：你以為清淨機買貴的就好？\n\n'
+            f'[3-13s] PAIN：{topic.get("title", "PM2.5 威脅")}。'
+            f'Coway 850 CADR 賣 29,800 — 實測 PM2.5 還在 8-15。\n\n'
+            f'[13-50s] SOLUTION：addwii S03 用 1,600 CADR 做到 38,900 元，'
+            f'環境部 NPA23C01250001 驗證 PM2.5 趨零（< 1 μg/m³）。'
+            f'41 場域實測 30 個員工家 + 11 個外部用戶，大部分都趨零。\n\n'
+            f'[50-60s] CTA：點下方連結看 41 場域實測數據。'
+        )
+
+    # 移除 LLM 多餘 prefix
+    for p in ('以下是腳本：', '腳本：', '逐字稿：', '直接寫逐字稿（不要解釋）：'):
+        if full_script.startswith(p):
+            full_script = full_script[len(p):].strip()
+
     try:
         from simple_s2t import s2t
         full_script = s2t(full_script)

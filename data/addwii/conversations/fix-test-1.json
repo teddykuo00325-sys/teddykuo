@@ -1,0 +1,57 @@
+{
+  "chat_id": "fix-test-1",
+  "created_at": "2026-05-20T22:13:08",
+  "messages": [
+    {
+      "role": "user",
+      "content": "烤肉",
+      "user_name": "測試",
+      "ts": "2026-05-20T22:13:08"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "烤肉產生的油煙可能影響空氣品質，但 addwii 加我科技專注於提供 Home Clean Room 空氣清淨系統。我們能聊聊您的家空氣品質需求嗎？🍳",
+      "ts": "2026-05-20T22:15:31",
+      "intent": {
+        "space": null,
+        "area_ping": null,
+        "customer_type": "B2C",
+        "segment": null,
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [
+        {
+          "tool": "get_brand_asset",
+          "ok": true,
+          "elapsed_ms": 0
+        }
+      ],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "hf.co/second-state/Breeze-7B-Instruct-v1_0-GGUF:Q4_K_M"
+    }
+  ],
+  "agent_trace": [
+    {
+      "ts": "2026-05-20T22:15:31",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 1,
+      "tools_used": [
+        "get_brand_asset"
+      ]
+    }
+  ],
+  "current_agent": "bd",
+  "customer_profile": {},
+  "last_updated": "2026-05-20T22:15:31"
+}

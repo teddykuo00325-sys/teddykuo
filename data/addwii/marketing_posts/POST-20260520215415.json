@@ -1,0 +1,23 @@
+{
+  "channel": "instagram",
+  "topic_title": "5 月主題 · 母親節 + 為家人健康加倍",
+  "text": "[stub] 規則引擎已回答（非 LLM 生成 · 啟動 Ollama 或設 ANTHROPIC_API_KEY 後可獲得 LLM 增強）\n\n#addwii #PM25 #無塵室 #淨零生活 #寶寶健康",
+  "char_count": 101,
+  "hashtags": [
+    "#addwii",
+    "#PM25",
+    "#無塵室",
+    "#淨零生活",
+    "#寶寶健康"
+  ],
+  "compliance": {
+    "violations": [],
+    "compliant": true,
+    "suggestion": "通過"
+  },
+  "backend": "stub",
+  "model": "rule_engine",
+  "generated_at": "2026-05-20T21:54:15",
+  "post_id": "POST-20260520215415",
+  "status": "draft"
+}

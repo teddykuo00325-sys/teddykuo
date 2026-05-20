@@ -239,22 +239,29 @@ def _decide_agent_chain(intent: dict, conv: dict) -> list:
 
 
 def _collect_tool_calls(intent: dict, agent: str) -> list:
-    """依意圖預先呼叫工具（規則決策 · 不靠 LLM）"""
+    """依意圖預先呼叫工具（規則決策 · 不靠 LLM）
+
+    重要：bd Agent 永遠呼叫 get_brand_asset，確保 LLM 至少有品牌 context。
+    """
     import agent_tools
     calls = []
 
     if agent == 'bd':
-        if intent['is_brand_inquiry']:
-            calls.append(('get_brand_asset', {}))
+        # 預設一定要 brand asset（避免 LLM 沒 context 亂編）
+        calls.append(('get_brand_asset', {}))
+
         if intent['is_competitor_inquiry']:
             calls.append(('lookup_competitor', {}))
         if intent['is_field_trial_inquiry']:
             calls.append(('lookup_field_trial', {}))
-        if intent['space'] and intent['area_ping']:
+
+        # 有坪數但無 space → 推 living（最大空間，方便給通用建議）
+        space = intent['space'] or ('living' if intent['area_ping'] else None)
+        if space and intent['area_ping']:
             calls.append(('lookup_product', {
-                'space': intent['space'], 'area_ping': intent['area_ping'],
+                'space': space, 'area_ping': intent['area_ping'],
             }))
-        if intent['is_pricing'] and intent['area_ping']:
+            # 自動帶報價（不一定要 is_pricing）
             calls.append(('get_quote', {
                 'area_ping': intent['area_ping'],
                 'segment': intent['segment'],
@@ -262,6 +269,7 @@ def _collect_tool_calls(intent: dict, agent: str) -> list:
                 'requested_discount_pct': intent['requested_discount_pct'],
                 'bundle_units': intent['bundle_units'],
             }))
+
         if intent['is_strategy_inquiry']:
             kw = '物美價廉' if '物美' in str(intent) else '整體計畫'
             calls.append(('get_market_strategy', {'query': kw}))
@@ -327,30 +335,96 @@ def _compose_reply(intent: dict, tool_results: dict, agent: str,
             elif tool == 'submit_for_approval':
                 kb_lines.append(f"已升級到 {res.get('track')} 主管 queue（單號 {res.get('ticket_id')}）")
 
-    kb_context = ' / '.join(kb_lines) if kb_lines else '（先問顧客空間+坪數）'
+    kb_context = '\n'.join(' • ' + l for l in kb_lines) if kb_lines else ''
 
-    # 極簡 system + prompt，加速 Ollama
-    simple_system = '你是 addwii 業務助理。必須用台灣繁體中文（禁簡體）。專業溫暖，不亂承諾。'
-    prompt = (
-        f'顧客：「{user_text}」\n'
-        f'KB：{kb_context}\n\n'
-        f'用繁體中文簡短（80字內）回覆。引用真實數字。可用 emoji 👶🛋️🛁🍳🛏️🍽️。'
+    # 強化 system prompt：明確「你是 addwii 業務」+ 禁止角色漂移
+    strong_system = (
+        '你是「addwii 加我科技」（www.addwii.com）的業務 AI 助理，'
+        '專門推薦 Home Clean Room 空氣清淨系統（產品名：嬰兒/廚房/浴室/客廳/臥室/餐廳 無塵室 S03-S12）。\n'
+        '\n'
+        '【鐵則】\n'
+        '1. 必須用台灣繁體中文（嚴禁「净」「过」「会」「环」等簡體字）\n'
+        '2. 你不是裝潢設計師、不是建商、不是家具店。你只賣空氣清淨系統\n'
+        '3. 顧客若問非空氣相關（如烤肉/家具），溫和拉回主題：「addwii 是專門做空氣淨化的，能聊聊您家空氣品質的需求嗎？」\n'
+        '4. 不准承諾「保證」「100%」「絕對」「治癒」\n'
+        '5. 不准貶低 Coway/Blueair/Dyson 等競品，只能客觀對照數字\n'
+        '6. 引用實證一定要帶「環境部 NPA23C01250001」「41 場域實測」這些可驗證的點\n'
+        '7. 回覆要直接、不要說「您好」「歡迎」等空洞開場\n'
+        '8. 嚴禁在回答開頭出現「KB：」「Context：」「根據資料」這類字眼\n'
     )
 
-    r = ai_backend.generate(prompt=prompt, system=simple_system,
+    user_message = (
+        f'下面是公司知識庫資訊（內部用 · 不要直接複製到回答）：\n{kb_context}\n\n'
+        if kb_context else ''
+    )
+    user_message += (
+        f'\n顧客剛說：「{user_text}」\n\n'
+        '請以「addwii 業務助理」身份直接回覆顧客。\n'
+        '【要求】\n'
+        '• 80 字內，簡短直接\n'
+        '• 若 KB 提供了具體型號/價格/CADR/NPA 報告編號，引用真實數字\n'
+        '• 若顧客需求不明確，反問「您想保護哪個空間？大概幾坪？」\n'
+        '• 若顧客問「烤肉/裝潢/家具」等非空氣議題，拉回主題\n'
+        '• 可用 1-2 個 emoji（👶🛋️🛁🍳🛏️🍽️）\n'
+        '\n直接寫回覆內容（不要 KB:、回覆：等前綴）：'
+    )
+
+    r = ai_backend.generate(prompt=user_message, system=strong_system,
                              max_tokens=200, temperature=0.3, timeout_s=180)
     text = (r.get('text') or '').strip()
-    # 移除可能的 LLM 自言自語 prefix
-    for prefix in ('回覆內容：', '回覆：', 'A：', 'addwii AI：', '助理：'):
-        if text.startswith(prefix):
-            text = text[len(prefix):].strip()
-    # 簡體 → 繁體（簡單轉換 · 不引入 OpenCC 重套件）
+
+    # 移除常見的 LLM 自言自語 prefix（更全面）
+    junk_prefixes = (
+        'KB：', 'KB:', 'Context：', 'Context:', '根據資料', '根據知識庫',
+        '回覆內容：', '回覆：', '回答：', 'A：', 'A:', 'addwii AI：',
+        '助理：', '助手：', 'addwii：', 'addwii:',
+        '您好！', '您好，', '歡迎！', '歡迎，',
+        '【回覆】', '【回答】', '【answer】',
+    )
+    # 重複 strip 直到沒有 prefix
+    for _ in range(3):
+        old = text
+        for p in junk_prefixes:
+            if text.startswith(p):
+                text = text[len(p):].strip()
+                break
+        if text == old:
+            break
+
+    # 若回覆是 stub 訊息 → 直接給規則式 fallback
+    if text.startswith('[stub]') or 'rule_engine' in text.lower():
+        text = _rule_based_fallback(intent, kb_context)
+
+    # 移除多餘的 KB 條列符號（LLM 偶爾保留「• 品牌：...」）
+    if text.startswith('•'):
+        text = text.lstrip('•').strip()
+
+    # 簡體 → 繁體
     try:
         from simple_s2t import s2t
         text = s2t(text)
     except Exception:
         pass
-    return text or '（系統繁忙，請稍候）'
+
+    return text or '（系統繁忙，請稍候 · 試試明確說「臥室 8 坪」「過敏兒方案」等具體需求）'
+
+
+def _rule_based_fallback(intent: dict, kb_context: str) -> str:
+    """LLM 失敗時的規則式 fallback（永遠有 addwii 角色 + 引導語）"""
+    if intent.get('space') and intent.get('area_ping'):
+        return f'為您 {intent["area_ping"]} 坪規劃方案中...（系統繁忙，請稍候 30 秒重試）'
+    if intent.get('is_brand_inquiry'):
+        return ('addwii 加我科技 ｜ 自由呼吸 淨零生活\n'
+                '✓ 研發 10 年 · 投資 20 億 · 千項國際專利\n'
+                '✓ 41 場域實測 PM2.5 < 2 μg/m³（趨零）\n'
+                '✓ 環境部認證 NPA23C01250001\n'
+                '請告訴我您想保護哪個空間？')
+    if intent.get('is_competitor_inquiry'):
+        return ('addwii HCR S03（38,900 元）vs 主流：\n'
+                '• Coway AP-2023K · 850 CADR · 29,800 · 實測 PM2.5 8-15\n'
+                '• addwii S03 · 1,600 CADR · 38,900 · 實測 PM2.5 < 1（趨零）\n'
+                '🛋️ 同價位帶 CADR 1.9x，實測領先 10 倍')
+    return '請告訴我：您想保護哪個空間（嬰兒/廚房/浴室/客廳/臥室/餐廳）？大概幾坪？'
 
 
 def respond(chat_id: str, user_text: str, user_name: str = 'guest') -> dict:
