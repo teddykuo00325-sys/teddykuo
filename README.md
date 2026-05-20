@@ -61,7 +61,7 @@
 
 ```bash
 # 查詢當前模式
-curl http://localhost:5000/api/mode
+curl http://localhost:5050/api/mode
 
 # 切換線上模式
 set LINGCE_MODE=online && python src/backend/server.py
@@ -83,19 +83,48 @@ set LINGCE_MODE=online && python src/backend/server.py
 
 ---
 
-## 🚀 快速啟動（Windows 10/11）
+## 🚀 快速啟動（跨平台 · Windows / macOS / Linux）
 
-### 最簡單的方式（終端使用者）
+### Port 預設 5050
+> 自 v3.x 起預設改 **5050**（避開 macOS Monterey+ AirPlay Receiver 佔用的 5000）。
+> 可用環境變數 `LINGCE_PORT` 覆寫。Port 被佔用時自動嘗試 5050→5051→5052→8080→8000。
+
+### 最簡單的方式（Windows 終端使用者）
 ```
 雙擊 啟動凌策.bat
 ```
 - 自動檢查 Python → winget 安裝 → 啟動後端 → 打開瀏覽器
 - 首次 20~60 秒；後續 10 秒
 
-### 開發者模式
+### macOS / Linux 啟動
 ```bash
+# 安裝相依
+pip install -r requirements.txt
+
+# 啟動（預設 port 5050）
 python src/backend/server.py
-# → http://localhost:5000/dashboard.html
+# → http://localhost:5050/dashboard.html
+
+# 自訂 port（如 macOS port 5050 也被佔用）
+LINGCE_PORT=8000 python src/backend/server.py
+# → http://localhost:8000/dashboard.html
+```
+
+### Docker（Mac / Win / Linux 通用）
+```bash
+docker-compose up        # 預設離線模式
+# → http://localhost:5050/dashboard.html
+```
+
+### 字型相依說明（重要）
+本專案已內建 **Noto Sans TC** 字型於 `assets/fonts/`（SIL OFL 開源授權），
+所有 PDF 都會嵌入字型子集 → **任何 OS、任何 PDF 閱讀器無需安裝字型**即可正確顯示中文。
+跨平台字型 fallback 順序：倉內 Noto → macOS PingFang/STHeiti → Windows JhengHei → Linux Noto/wqy。
+
+### 開發者模式（Windows · 舊路徑相容）
+```bat
+python src/backend/server.py
+:: → http://localhost:5050/dashboard.html
 ```
 
 ---
@@ -103,7 +132,7 @@ python src/backend/server.py
 ## ⚠️ 使用注意
 
 - **不要**從檔案總管雙擊 `dashboard.html`（會變 `file://` 協定，CORS 擋 API）
-- 請從瀏覽器打開：`http://localhost:5000/dashboard.html`
+- 請從瀏覽器打開：`http://localhost:5050/dashboard.html`
 - 關閉系統 → 關掉黑色終端機視窗即可
 
 ---

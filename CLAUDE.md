@@ -103,8 +103,8 @@ lingce-company/
 - 啟動後端：`python src/backend/server.py`
   - 自動預熱 Ollama gemma4:e2b
   - 自動預熱 CSV 快取
-  - 綁定 `0.0.0.0:5000`（Windows IPv6-only 相容性修正）
-- 瀏覽器開啟：`http://localhost:5000/dashboard.html`
+  - 綁定 `0.0.0.0:5050`（macOS AirPlay 衝突修正；可 `LINGCE_PORT` 覆寫；自動 fallback 至 5051/5052/8080/8000）
+- 瀏覽器開啟：`http://localhost:5050/dashboard.html`
 - 首次使用多租戶：`python scripts/migrate_to_multitenant.py` 切分既有 org_data.json → 4 個 tenant
 
 ## 🛡️ 技術選型

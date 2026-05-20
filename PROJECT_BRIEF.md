@@ -162,7 +162,7 @@ data/
 ### 開發啟動
 ```bash
 python src/backend/server.py
-# → http://localhost:5000/dashboard.html
+# → http://localhost:5050/dashboard.html
 ```
 
 ### 首次導入多租戶資料

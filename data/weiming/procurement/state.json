@@ -336,481 +336,263 @@
       "po_date": "2026-03-20"
     }
   ],
-  "change_sets": [
-    {
-      "change_set_id": "CS-20260422-001",
-      "pr_no": "PR-2026-0001",
-      "status": "APPLIED",
-      "recommendations": [
-        {
-          "line_no": 1,
-          "material_no": "M-HEPA-H13",
-          "description": "HEPA H13 濾網 600×600 mm",
-          "qty": 100,
-          "uom": "PCS",
-          "recommended_supplier_id": "S006",
-          "recommended_supplier_name": "晶圓耗材國際",
-          "recommended_unit_price": 9.05,
-          "recommended_lead_time_days": 25,
-          "currency": "USD",
-          "risk_score_delivery": "low",
-          "risk_score_quality": "low",
-          "risk_score_price": "low",
-          "reasoning": [
-            "過去 4 筆 M-HEPA-H13 PO · 晶圓耗材國際 準時率 97%",
-            "建議價 USD 9.05/PCS = 歷史均價 USD 9.38 × 0.98",
-            "綜合分 96.4 / 100"
-          ],
-          "supplier_score": 96.4
-        }
-      ],
-      "risk_notes": [],
-      "rule_hits": [
-        {
-          "rule": "R005",
-          "line": null,
-          "detail": "全部建議低風險 + 金額 < 5,000 → 可自動建立 PO Draft（Level 3）"
-        }
-      ],
-      "auto_eligible": true,
-      "created_by_ai": true,
-      "model": "rule-engine+heuristics",
-      "created_at": "2026-04-22T18:53:10",
-      "elapsed_s": 0.0,
-      "applied_fields_count": 3,
-      "reviewed_by": "boss",
-      "reviewed_at": "2026-04-22T18:53:10",
-      "accepted_fields": [
-        "supplier",
-        "price",
-        "delivery_date"
-      ],
-      "override_price": {}
-    }
-  ],
-  "pos": [
-    {
-      "po_no": "PO-20260422-001",
-      "pr_no": "PR-2026-0001",
-      "change_set_id": "CS-20260422-001",
-      "supplier_id": "S006",
-      "currency": "USD",
-      "items": [
-        {
-          "line_no": 1,
-          "material_no": "M-HEPA-H13",
-          "description": "HEPA H13 濾網 600×600 mm",
-          "qty": 100,
-          "uom": "PCS",
-          "supplier_id": "S006",
-          "unit_price": 9.05,
-          "currency": "USD",
-          "subtotal": 905.0
-        }
-      ],
-      "total_amount": 905.0,
-      "status": "MATCHED",
-      "created_at": "2026-04-22T18:53:10",
-      "created_by": "boss",
-      "level": 3
-    }
-  ],
-  "grns": [
-    {
-      "grn_no": "GRN-20260422-001",
-      "po_no": "PO-20260422-001",
-      "received_items": [
-        {
-          "line_no": 1,
-          "material_no": "M-HEPA-H13",
-          "qty_received": 100,
-          "qty_ordered": 100,
-          "passed_qc": true
-        }
-      ],
-      "receiver": "wh1",
-      "received_at": "2026-04-22T18:53:10"
-    }
-  ],
-  "invoices": [
-    {
-      "invoice_no": "INV-20260422-001",
-      "po_no": "PO-20260422-001",
-      "grn_no": "GRN-20260422-001",
-      "supplier_id": "S006",
-      "amount": 905.0,
-      "currency": "USD",
-      "received_at": "2026-04-22T18:53:11",
-      "three_way_match": {
-        "po_amount": 905.0,
-        "invoice_amount": 905.0,
-        "grn_items_count": 1,
-        "po_items_count": 1,
-        "amount_match": true,
-        "qty_match": true,
-        "qc_passed": true,
-        "overall_pass": true
-      }
-    }
-  ],
-  "kpi_settlements": [
-    {
-      "settlement_id": "KPI-2026-04-S001",
-      "supplier_id": "S001",
-      "supplier_name": "台灣精密五金",
-      "period": "2026-04",
-      "delivery_ontime_pct": 96,
-      "quality_pass_pct": 99.1,
-      "avg_response_hr": 4,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 97.2,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 4,
-      "chain_hash": "8d9a20a90a1cc7b275880e7afa0a30ea891855807705d166cbdb8214f1255915"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S002",
-      "supplier_id": "S002",
-      "supplier_name": "昇陽貿易",
-      "period": "2026-04",
-      "delivery_ontime_pct": 93,
-      "quality_pass_pct": 98.5,
-      "avg_response_hr": 6,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 95.3,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 5,
-      "chain_hash": "969826a0edf9b65798cba6eab3a11f4aae3b4d2bcc0e29957573c8afee2d823c"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S003",
-      "supplier_id": "S003",
-      "supplier_name": "東光化學",
-      "period": "2026-04",
-      "delivery_ontime_pct": 86,
-      "quality_pass_pct": 96.2,
-      "avg_response_hr": 12,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 90.3,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 6,
-      "chain_hash": "853d2b4bfc7a1360de9e8060eb6abd437c28f860af619c81df9950e4720f9c5a"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S004",
-      "supplier_id": "S004",
-      "supplier_name": "新合興包材",
-      "period": "2026-04",
-      "delivery_ontime_pct": 95,
-      "quality_pass_pct": 98.9,
-      "avg_response_hr": 3,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 96.8,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 7,
-      "chain_hash": "45e0bfd1e4018f2e338dd075246cb3bebb8e8f8bf5aa58ffd484d53b0a65988e"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S005",
-      "supplier_id": "S005",
-      "supplier_name": "佳和特殊電子",
-      "period": "2026-04",
-      "delivery_ontime_pct": 72,
-      "quality_pass_pct": 92.5,
-      "avg_response_hr": 28,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 80.2,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 8,
-      "chain_hash": "0c55809e7a2bb17276fbb2f31bcc0bebf7a208698092e776da298a0a9cb92205"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S006",
-      "supplier_id": "S006",
-      "supplier_name": "晶圓耗材國際",
-      "period": "2026-04",
-      "delivery_ontime_pct": 100.0,
-      "quality_pass_pct": 100.0,
-      "avg_response_hr": 2,
-      "po_count": 1,
-      "invoice_count": 1,
-      "overall_score": 99.8,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 9,
-      "chain_hash": "b84952daa29731248a02cc6ef1d248a03a86f1e626c0619bc547f0365ba57f47"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S007",
-      "supplier_id": "S007",
-      "supplier_name": "華通機電",
-      "period": "2026-04",
-      "delivery_ontime_pct": 89,
-      "quality_pass_pct": 97.1,
-      "avg_response_hr": 8,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 92.5,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 10,
-      "chain_hash": "bcee1df6974d90e79f68b151238892f045efc55ab1a51e66004b1233dd60d112"
-    },
-    {
-      "settlement_id": "KPI-2026-04-S008",
-      "supplier_id": "S008",
-      "supplier_name": "大東原物料",
-      "period": "2026-04",
-      "delivery_ontime_pct": 96,
-      "quality_pass_pct": 98.8,
-      "avg_response_hr": 5,
-      "po_count": 0,
-      "invoice_count": 0,
-      "overall_score": 97.0,
-      "created_at": "2026-04-22T18:53:11",
-      "chain_block_no": 11,
-      "chain_hash": "c548e242904b427d3e064cba89ccc9780ea5e976ba73d7232ab765a3bdcce701"
-    }
-  ],
+  "change_sets": [],
+  "pos": [],
+  "grns": [],
+  "invoices": [],
+  "kpi_settlements": [],
   "chain_blocks": [
     {
       "block_no": 1,
-      "type": "PO_DRAFT",
+      "type": "CONTRACT_AUDIT",
       "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
       "payload": {
-        "po_no": "PO-20260422-001",
-        "pr_no": "PR-2026-0001",
-        "total": 905.0,
-        "supplier_ids": [
-          "S006"
-        ],
-        "approved_by": "boss"
+        "report_id": "CONTRACT-AUDIT-1779036145",
+        "contract_name": "DemoVuln.sol",
+        "overall_risk": "high",
+        "hits_count": 4
       },
-      "timestamp": "2026-04-22T18:53:10",
-      "hash": "1778aaac5057efdcb6a7db0ccbd140e8824101b97c12ac728ea9d361b27d6550"
+      "timestamp": "2026-05-18T00:42:25",
+      "hash": "37c34ba7a4cf35a1481ddb360a074b3b010070836634dfdf01cfaf4b941563a8"
     },
     {
       "block_no": 2,
-      "type": "GRN",
-      "prev_hash": "1778aaac5057efdcb6a7db0ccbd140e8824101b97c12ac728ea9d361b27d6550",
+      "type": "WALLET_TX",
+      "prev_hash": "37c34ba7a4cf35a1481ddb360a074b3b010070836634dfdf01cfaf4b941563a8",
       "payload": {
-        "grn_no": "GRN-20260422-001",
-        "po_no": "PO-20260422-001",
-        "total_items": 1,
-        "all_passed_qc": true
+        "tx_id": "TX-20260518-001",
+        "from": "W-HOT-02",
+        "to": "0xABC",
+        "amount_usd": 30000,
+        "chain": "ETH",
+        "on_chain_hash": "0x363b7167239fd055e40347016516a55af441b7f0",
+        "wallet_type": "hot",
+        "approvals": [
+          "t-01",
+          "cfo-01"
+        ]
       },
-      "timestamp": "2026-04-22T18:53:10",
-      "hash": "19842f51809ba82f630f0156ac0555fbee9e4bc6d9082ac028e4b1200b6a6dc7"
-    },
-    {
-      "block_no": 3,
-      "type": "INVOICE",
-      "prev_hash": "19842f51809ba82f630f0156ac0555fbee9e4bc6d9082ac028e4b1200b6a6dc7",
-      "payload": {
-        "invoice_no": "INV-20260422-001",
-        "po_no": "PO-20260422-001",
-        "grn_no": "GRN-20260422-001",
-        "amount": 905.0,
-        "three_way_match_pass": true
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "0503dafeccb52d348e01437e2f6a5748a617b865e45f49765db949558844efa2"
-    },
-    {
-      "block_no": 4,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "0503dafeccb52d348e01437e2f6a5748a617b865e45f49765db949558844efa2",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S001",
-        "supplier_id": "S001",
-        "period": "2026-04",
-        "score": 97.2,
-        "snapshot_hash": "4fffe752baa3a6371066e1f363e4b9e49a3fa2bd2fe72576825f79c8f46ec34f"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "8d9a20a90a1cc7b275880e7afa0a30ea891855807705d166cbdb8214f1255915"
-    },
-    {
-      "block_no": 5,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "8d9a20a90a1cc7b275880e7afa0a30ea891855807705d166cbdb8214f1255915",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S002",
-        "supplier_id": "S002",
-        "period": "2026-04",
-        "score": 95.3,
-        "snapshot_hash": "87ff3b1fe425f3510f990c6fa832ddabd2ac0ca5432857af90d1825cc9921b2c"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "969826a0edf9b65798cba6eab3a11f4aae3b4d2bcc0e29957573c8afee2d823c"
-    },
-    {
-      "block_no": 6,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "969826a0edf9b65798cba6eab3a11f4aae3b4d2bcc0e29957573c8afee2d823c",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S003",
-        "supplier_id": "S003",
-        "period": "2026-04",
-        "score": 90.3,
-        "snapshot_hash": "6bea3425becbfb54d064b0418e00dc495beabd0fb5d9b4df81d98c43a969002c"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "853d2b4bfc7a1360de9e8060eb6abd437c28f860af619c81df9950e4720f9c5a"
-    },
-    {
-      "block_no": 7,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "853d2b4bfc7a1360de9e8060eb6abd437c28f860af619c81df9950e4720f9c5a",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S004",
-        "supplier_id": "S004",
-        "period": "2026-04",
-        "score": 96.8,
-        "snapshot_hash": "66b32fe0cbd1c06a9e2896b2a2c427e7629d8fd6f174cb7a6cf65ce68c74031a"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "45e0bfd1e4018f2e338dd075246cb3bebb8e8f8bf5aa58ffd484d53b0a65988e"
-    },
-    {
-      "block_no": 8,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "45e0bfd1e4018f2e338dd075246cb3bebb8e8f8bf5aa58ffd484d53b0a65988e",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S005",
-        "supplier_id": "S005",
-        "period": "2026-04",
-        "score": 80.2,
-        "snapshot_hash": "0e590cc650c53e56cd0d0ed07bad40d7470804056d687068fec7a9916e2b0614"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "0c55809e7a2bb17276fbb2f31bcc0bebf7a208698092e776da298a0a9cb92205"
-    },
-    {
-      "block_no": 9,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "0c55809e7a2bb17276fbb2f31bcc0bebf7a208698092e776da298a0a9cb92205",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S006",
-        "supplier_id": "S006",
-        "period": "2026-04",
-        "score": 99.8,
-        "snapshot_hash": "d93db7bcf8574d7598d25ea65d9a1b693c52d0a588680de45d8fc6e332b7a9e9"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "b84952daa29731248a02cc6ef1d248a03a86f1e626c0619bc547f0365ba57f47"
-    },
-    {
-      "block_no": 10,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "b84952daa29731248a02cc6ef1d248a03a86f1e626c0619bc547f0365ba57f47",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S007",
-        "supplier_id": "S007",
-        "period": "2026-04",
-        "score": 92.5,
-        "snapshot_hash": "5552aa78e76b9b8b4d362802db1d3e8da7591ed7e4ce1f77d24c443bc7773bd9"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "bcee1df6974d90e79f68b151238892f045efc55ab1a51e66004b1233dd60d112"
-    },
-    {
-      "block_no": 11,
-      "type": "KPI_SETTLEMENT",
-      "prev_hash": "bcee1df6974d90e79f68b151238892f045efc55ab1a51e66004b1233dd60d112",
-      "payload": {
-        "settlement_id": "KPI-2026-04-S008",
-        "supplier_id": "S008",
-        "period": "2026-04",
-        "score": 97.0,
-        "snapshot_hash": "20f3431955425ee09ff428a86af7f38f2c7e808f73c8f6d356571300a5b3548a"
-      },
-      "timestamp": "2026-04-22T18:53:11",
-      "hash": "c548e242904b427d3e064cba89ccc9780ea5e976ba73d7232ab765a3bdcce701"
+      "timestamp": "2026-05-18T00:42:25",
+      "hash": "e403f4689021296148893dbd33570794fa8b9593e1832e2a0d08ba1961ce90ad"
     }
   ],
   "audit_log": [
     {
-      "audit_id": "A-1776855190890-0f40",
+      "audit_id": "A-1779036145539-2369",
       "actor_type": "ai",
-      "actor_id": "ai-procurement-agent",
-      "action_type": "generate_change_set",
-      "object_type": "change_set",
-      "object_id": "CS-20260422-001",
+      "actor_id": "qa-agent",
+      "action_type": "review_smart_contract",
+      "object_type": "contract",
+      "object_id": "DemoVuln.sol",
       "detail": {
-        "pr_no": "PR-2026-0001",
-        "recommendations": 1,
-        "rule_hits": 1
+        "overall_risk": "high",
+        "hits_count": 4,
+        "report_id": "CONTRACT-AUDIT-1779036145"
       },
-      "created_at": "2026-04-22T18:53:10"
+      "created_at": "2026-05-18T00:42:25"
     },
     {
-      "audit_id": "A-1776855190931-191f",
+      "audit_id": "A-1779036145542-7dcb",
       "actor_type": "human",
-      "actor_id": "boss",
-      "action_type": "apply_change_set",
-      "object_type": "change_set",
-      "object_id": "CS-20260422-001",
+      "actor_id": "treasurer",
+      "action_type": "wallet_tx_propose",
+      "object_type": "wallet_tx",
+      "object_id": "TX-20260518-001",
       "detail": {
-        "accepted_fields_count": 3,
-        "po_no": "PO-20260422-001"
+        "from": "W-HOT-02",
+        "amount_usd": 30000,
+        "ai_recommendation": {
+          "wallet_id": "W-HOT-02",
+          "tier": "hot",
+          "reason": "金額 $30,000 ≤ 熱錢包單筆上限 $50,000 → 走熱錢包 供應商支付熱錢包"
+        }
       },
-      "created_at": "2026-04-22T18:53:10"
+      "created_at": "2026-05-18T00:42:25"
     },
     {
-      "audit_id": "A-1776855190931-02dc",
+      "audit_id": "A-1779036145551-4358",
+      "actor_type": "human",
+      "actor_id": "t-01",
+      "action_type": "wallet_tx_approve",
+      "object_type": "wallet_tx",
+      "object_id": "TX-20260518-001",
+      "detail": {
+        "role": "treasurer",
+        "approvals_count": 1,
+        "required": 2
+      },
+      "created_at": "2026-05-18T00:42:25"
+    },
+    {
+      "audit_id": "A-1779036145559-89a1",
+      "actor_type": "human",
+      "actor_id": "cfo-01",
+      "action_type": "wallet_tx_approve",
+      "object_type": "wallet_tx",
+      "object_id": "TX-20260518-001",
+      "detail": {
+        "role": "cfo",
+        "approvals_count": 2,
+        "required": 2
+      },
+      "created_at": "2026-05-18T00:42:25"
+    },
+    {
+      "audit_id": "A-1779036145571-2e8b",
       "actor_type": "system",
-      "actor_id": "chain",
-      "action_type": "hash_po_draft",
-      "object_type": "po",
-      "object_id": "PO-20260422-001",
+      "actor_id": "system",
+      "action_type": "wallet_tx_execute",
+      "object_type": "wallet_tx",
+      "object_id": "TX-20260518-001",
       "detail": {
-        "block_no": 1
+        "amount_usd": 30000,
+        "on_chain_hash": "0x363b7167239fd055e40347016516a55af441b7f0",
+        "skip_timelock": false
       },
-      "created_at": "2026-04-22T18:53:10"
-    },
-    {
-      "audit_id": "A-1776855190980-9ba3",
-      "actor_type": "human",
-      "actor_id": "wh1",
-      "action_type": "create_grn",
-      "object_type": "grn",
-      "object_id": "GRN-20260422-001",
-      "detail": {
-        "po_no": "PO-20260422-001"
-      },
-      "created_at": "2026-04-22T18:53:10"
-    },
-    {
-      "audit_id": "A-1776855191030-ed68",
-      "actor_type": "human",
-      "actor_id": "acct-01",
-      "action_type": "create_invoice_3way_match",
-      "object_type": "invoice",
-      "object_id": "INV-20260422-001",
-      "detail": {
-        "po_no": "PO-20260422-001",
-        "grn_no": "GRN-20260422-001",
-        "match_pass": true
-      },
-      "created_at": "2026-04-22T18:53:11"
-    },
-    {
-      "audit_id": "A-1776855191066-5101",
-      "actor_type": "system",
-      "actor_id": "kpi-scheduler",
-      "action_type": "settle_supplier_kpi_monthly",
-      "object_type": "kpi_batch",
-      "object_id": "2026-04",
-      "detail": {
-        "suppliers": 8,
-        "period": "2026-04"
-      },
-      "created_at": "2026-04-22T18:53:11"
+      "created_at": "2026-05-18T00:42:25"
     }
   ],
-  "rule_hits": []
+  "rule_hits": [],
+  "wallets": [
+    {
+      "wallet_id": "W-HOT-01",
+      "name": "運營熱錢包",
+      "type": "hot",
+      "chain": "TRON",
+      "asset": "USDT",
+      "address_masked": "TX...k9Qn",
+      "balance_usd": 80000,
+      "policy": {
+        "per_tx_cap_usd": 10000,
+        "required_signers": 1,
+        "signer_roles": [
+          "treasurer"
+        ],
+        "timelock_hr": 0
+      },
+      "note": "日常小額供應商付款（< $10K / tx）"
+    },
+    {
+      "wallet_id": "W-HOT-02",
+      "name": "供應商支付熱錢包",
+      "type": "hot",
+      "chain": "ETH",
+      "asset": "USDT",
+      "address_masked": "0x8a...b17F",
+      "balance_usd": 220000,
+      "policy": {
+        "per_tx_cap_usd": 50000,
+        "required_signers": 2,
+        "signer_roles": [
+          "treasurer",
+          "cfo"
+        ],
+        "timelock_hr": 0
+      },
+      "note": "中額供應商付款（$10K ~ $50K / tx · 2/3 多簽）"
+    },
+    {
+      "wallet_id": "W-WARM-01",
+      "name": "公司間結算溫錢包",
+      "type": "warm",
+      "chain": "ETH",
+      "asset": "USDC",
+      "address_masked": "0x4w...8a3F",
+      "balance_usd": 800000,
+      "policy": {
+        "per_tx_cap_usd": 200000,
+        "required_signers": 2,
+        "signer_roles": [
+          "cfo",
+          "controller"
+        ],
+        "timelock_hr": 6
+      },
+      "note": "公司間結算 / 定期結算 / 資金歸集（2/3 多簽 + 6h timelock · AI 限 L1 僅建議）",
+      "agent_level": "L4",
+      "compliance_note": "AI Agent 限 L1（僅能分析建議），實際簽核必須人工"
+    },
+    {
+      "wallet_id": "W-COLD-01",
+      "name": "公司儲備冷錢包",
+      "type": "cold",
+      "chain": "BTC",
+      "asset": "BTC",
+      "address_masked": "bc1q...x8sc",
+      "balance_usd": 4800000,
+      "policy": {
+        "per_tx_cap_usd": 999999999,
+        "required_signers": 3,
+        "signer_roles": [
+          "cfo",
+          "ceo",
+          "chairman"
+        ],
+        "timelock_hr": 24
+      },
+      "note": "大額撥款（3/5 多簽 + 24h timelock）· 不連 AI、不連日常系統、僅人工離線簽署",
+      "agent_level": "L4",
+      "compliance_note": "冷錢包私鑰離線保管 · AI 完全無法觸碰"
+    },
+    {
+      "wallet_id": "W-COLD-02",
+      "name": "多簽金庫 (Gnosis Safe)",
+      "type": "cold",
+      "chain": "ETH",
+      "asset": "ETH",
+      "address_masked": "0xSafe...42f0",
+      "balance_usd": 1500000,
+      "policy": {
+        "per_tx_cap_usd": 999999999,
+        "required_signers": 3,
+        "signer_roles": [
+          "cfo",
+          "ceo",
+          "auditor"
+        ],
+        "timelock_hr": 24
+      },
+      "note": "戰略投資 / 供應商保證金 Escrow（3/5 + 24h timelock）"
+    }
+  ],
+  "wallet_txs": [
+    {
+      "tx_id": "TX-20260518-001",
+      "from_wallet_id": "W-HOT-02",
+      "from_wallet_name": "供應商支付熱錢包",
+      "wallet_type": "hot",
+      "chain": "ETH",
+      "asset": "USDT",
+      "to_address": "0xABC",
+      "amount_usd": 30000,
+      "purpose": "供應商付款",
+      "po_no": "",
+      "status": "EXECUTED",
+      "proposer": "treasurer",
+      "proposed_at": "2026-05-18T00:42:25",
+      "required_signers": 2,
+      "signer_roles_needed": [
+        "treasurer",
+        "cfo"
+      ],
+      "approvals": [
+        {
+          "approver": "t-01",
+          "role": "treasurer",
+          "at": "2026-05-18T00:42:25"
+        },
+        {
+          "approver": "cfo-01",
+          "role": "cfo",
+          "at": "2026-05-18T00:42:25"
+        }
+      ],
+      "rejections": [],
+      "timelock_hr": 0,
+      "unlock_at": "2026-05-18T00:42:25",
+      "executed_at": "2026-05-18T00:42:25",
+      "tx_hash": "0x363b7167239fd055e40347016516a55af441b7f0",
+      "chain_block_id": 2
+    }
+  ]
 }

@@ -99,8 +99,8 @@ pip install chromadb sentence-transformers
 python src/backend/server.py
 
 # 6. 開啟瀏覽器
-# → http://localhost:5000/dashboard.html
-# → http://localhost:5000/index.html  (官網)
+# → http://localhost:5050/dashboard.html
+# → http://localhost:5050/index.html  (官網)
 ```
 
 **重要環境變數**（選配）：
@@ -261,9 +261,9 @@ cd lingce-company
 python src/backend/server.py
 
 # 另開一個 terminal 測試
-curl http://localhost:5000/api/health
-curl http://localhost:5000/api/crm/summary
-curl http://localhost:5000/api/acceptance/kb-meta
+curl http://localhost:5050/api/health
+curl http://localhost:5050/api/crm/summary
+curl http://localhost:5050/api/acceptance/kb-meta
 ```
 
 全部 200 就代表接續成功，可直接進瀏覽器繼續開發。

@@ -18,3 +18,27 @@
 {"ts": "2026-04-22T18:22:09", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
 {"ts": "2026-04-22T18:23:44", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
 {"ts": "2026-04-22T18:26:27", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-22T18:34:59", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-22T18:36:12", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-22T18:37:25", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-22T18:37:34", "context": "csv_preview", "detections_count": 4, "types": ["CN_NAME", "TW_ID"], "input_len": 159, "output_len": 169}
+{"ts": "2026-04-23T16:30:30", "context": "csv_preview", "detections_count": 8, "types": ["CN_NAME", "EMAIL", "LANDLINE", "TW_ADDR", "TW_PHONE"], "input_len": 169, "output_len": 167}
+{"ts": "2026-04-23T16:30:46", "context": "csv_preview", "detections_count": 10, "types": ["CN_NAME", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 201, "output_len": 195}
+{"ts": "2026-04-23T16:35:01", "context": "unknown", "detections_count": 1, "types": ["TW_PASSPORT"], "input_len": 20, "output_len": 20}
+{"ts": "2026-04-23T16:35:01", "context": "unknown", "detections_count": 1, "types": ["MEDICAL"], "input_len": 24, "output_len": 20}
+{"ts": "2026-04-23T16:35:01", "context": "unknown", "detections_count": 1, "types": ["CREDIT"], "input_len": 26, "output_len": 17}
+{"ts": "2026-04-23T16:35:01", "context": "unknown", "detections_count": 6, "types": ["CN_NAME", "EMAIL", "LANDLINE", "NHI_CARD", "TW_ID", "TW_PASSPORT"], "input_len": 87, "output_len": 86}
+{"ts": "2026-04-23T16:45:45", "context": "unknown", "detections_count": 1, "types": ["TW_PASSPORT"], "input_len": 14, "output_len": 16}
+{"ts": "2026-04-23T16:45:45", "context": "unknown", "detections_count": 1, "types": ["NHI_CARD"], "input_len": 22, "output_len": 14}
+{"ts": "2026-04-23T16:45:45", "context": "unknown", "detections_count": 1, "types": ["MEDICAL"], "input_len": 19, "output_len": 16}
+{"ts": "2026-04-23T16:45:45", "context": "unknown", "detections_count": 1, "types": ["MEDICAL"], "input_len": 16, "output_len": 9}
+{"ts": "2026-04-23T16:45:45", "context": "unknown", "detections_count": 1, "types": ["MEDICAL"], "input_len": 15, "output_len": 9}
+{"ts": "2026-04-23T16:45:45", "context": "unknown", "detections_count": 8, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "MEDICAL", "NHI_CARD", "TW_ID", "TW_PASSPORT"], "input_len": 106, "output_len": 93}
+{"ts": "2026-04-23T19:10:36", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-23T19:37:01", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-25T20:31:19", "context": "scenario:prompt", "detections_count": 2, "types": ["CN_NAME"], "input_len": 866, "output_len": 882}
+{"ts": "2026-04-25T21:00:09", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-04-25T21:00:15", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-05-17T23:56:14", "context": "cloud:test", "detections_count": 1, "types": ["TW_PHONE"], "input_len": 31, "output_len": 30}
+{"ts": "2026-05-18T09:23:18", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
+{"ts": "2026-05-20T14:39:38", "context": "scenario:prompt", "detections_count": 2, "types": ["CN_NAME"], "input_len": 825, "output_len": 841}

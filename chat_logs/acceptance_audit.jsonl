@@ -441,3 +441,109 @@
 {"ts": "2026-04-22T18:21:19", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-80E579F9", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}
 {"ts": "2026-04-22T18:23:44", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-C90983E4", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}
 {"ts": "2026-04-22T18:26:27", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-92EEFC6B", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T18:28:10", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-CB833CF0", "customer": "microjet", "ind": "食品製造", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-22T18:30:04", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-97946109", "customer": "microjet", "ind": "排泄物處理", "use_ai": true, "elapsed_sec": 88.5, "within_5min": true}}
+{"ts": "2026-04-22T18:32:16", "action": "content", "user": "", "detail": {"topic": "春季過敏季，室內空氣這樣顧", "channel": "FB", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-22T18:34:12", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T18:35:16", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T18:36:13", "action": "feedback_analysis", "user": "benchmark", "detail": {"task_id": "TASK-FEEDBACK-61EAC78D", "n": 10, "use_ai": false, "stats": {"負面": 4, "其他": 4, "正面": 5, "準確度": 2, "服務": 3, "軟體": 2, "中性": 1, "硬體": 1}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T18:49:42", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T18:50:50", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T18:52:47", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T18:56:31", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 0, "rows": 0}}
+{"ts": "2026-04-22T19:05:43", "action": "proposal", "user": "boss", "detail": {"task_id": "TASK-PROPOSAL-267A825A", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-22T19:06:37", "action": "product_qa", "user": "boss", "detail": {"customer": "addwii", "q": "我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-22T19:07:21", "action": "feedback_analysis", "user": "boss", "detail": {"task_id": "TASK-FEEDBACK-BF7F92EC", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T19:07:21", "action": "content", "user": "boss", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "Blog", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-22T19:07:27", "action": "csv_analysis", "user": "boss", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-22T19:08:16", "action": "feedback_analysis", "user": "boss", "detail": {"task_id": "TASK-FEEDBACK-27F7ADC6", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T19:08:16", "action": "content", "user": "boss", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "Blog", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-22T19:12:50", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-8D77CEB8", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T23:02:30", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-22T23:10:33", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-6CED7696", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-22T23:54:53", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T00:27:07", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T13:33:24", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T13:59:02", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T14:47:59", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T14:48:23", "action": "proposal", "user": "boss", "detail": {"task_id": "TASK-PROPOSAL-C61E9832", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-23T14:48:23", "action": "content", "user": "boss", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "Blog", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-23T14:50:01", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-91B9B28B", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-23T16:29:01", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T16:29:48", "action": "product_qa", "user": "judge", "detail": {"customer": "addwii", "q": "我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T16:29:48", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-C452B9C0", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T16:29:48", "action": "proposal", "user": "judge", "detail": {"task_id": "TASK-PROPOSAL-93102925", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-23T16:29:48", "action": "content", "user": "judge", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "Blog", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-23T16:30:30", "action": "csv_analysis", "user": "guest", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-23T18:45:05", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T18:48:38", "action": "product_qa", "user": "judge", "detail": {"customer": "microjet", "q": "我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:48:38", "action": "product_qa", "user": "j", "detail": {"customer": "microjet", "q": "MJ-2800 有什麼規格？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:48:38", "action": "product_qa", "user": "j", "detail": {"customer": "microjet", "q": "MJ-3200 有什麼規格？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:48:38", "action": "product_qa", "user": "j", "detail": {"customer": "microjet", "q": "MJ-3100 有什麼規格？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:48:38", "action": "product_qa", "user": "j", "detail": {"customer": "microjet", "q": "MJ-4500 有什麼規格？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:48:38", "action": "product_qa", "user": "j", "detail": {"customer": "microjet", "q": "微型噴射的月球基地銷售策略是什麼？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:48:38", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-6ED5D02A", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T18:51:22", "action": "product_qa", "user": "j", "detail": {"customer": "microjet", "q": "微型噴射的月球基地策略？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-23T18:51:22", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-6F56AC4F", "count": 10, "cat_stats": {"其他": 10}, "urg_stats": {"低": 10}, "duplicates": 9, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T18:51:22", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-FD20B2B1", "count": 3, "cat_stats": {"其他": 3}, "urg_stats": {"低": 3}, "duplicates": 2, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T19:06:47", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-8CFF0A8E", "count": 2, "cat_stats": {"其他": 2}, "urg_stats": {"低": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T19:10:23", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-B8AC9A0E", "count": 10, "cat_stats": {"品質申訴": 3, "退貨": 1, "其他": 4, "帳務": 1, "維修": 1}, "urg_stats": {"高": 4, "中": 2, "低": 4}, "duplicates": 0, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T19:10:23", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-FE3F100C", "count": 3, "cat_stats": {"維修": 3}, "urg_stats": {"低": 3}, "duplicates": 2, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T19:10:23", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-2E8A2BD3", "count": 100, "cat_stats": {"其他": 100}, "urg_stats": {"低": 100}, "duplicates": 80, "elapsed_sec": 0.02}}
+{"ts": "2026-04-23T19:10:23", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-F3F310DA", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T20:28:24", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-23T20:33:47", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-CEBBAAD6", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T20:33:52", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-4B0CEC6E", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-23T20:37:51", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-25T20:30:52", "action": "product_qa", "user": "", "detail": {"customer": "addwii", "q": "嬰兒無塵室適合誰", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-25T20:32:19", "action": "product_qa", "user": "", "detail": {"customer": "addwii", "q": "「我家嬰兒房約 8 坪，PM2.5 目前約 18 μg/m³，請推薦最適合的 addwii Home Clean Room 產品，並說明其 CADR 值與過濾效能。」", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-04-25T20:37:46", "action": "feedback_analysis", "user": "", "detail": {"task_id": "TASK-FEEDBACK-613EBF13", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:38:12", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-955250CF", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-25T20:38:32", "action": "content", "user": "", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "Blog", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-04-25T20:39:02", "action": "csv_analysis", "user": "", "detail": {"files": 10, "cached": true}}
+{"ts": "2026-04-25T20:43:07", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "MJ-3200 墨水匣相容性", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-25T20:43:26", "action": "product_qa", "user": "", "detail": {"customer": "microjet", "q": "「我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？」", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-25T20:44:40", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-DB05F12B", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:44:47", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-F6E6AC1B", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:45:07", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-9BF62ECC", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:45:14", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-53C3BF61", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:45:15", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-F7BAE080", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:46:07", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-68BA4F18", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:47:41", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-BF8C095A", "customer": "microjet", "ind": "食品製造", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-25T20:47:52", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-40010B06", "customer": "microjet", "ind": "食品製造", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-04-25T20:51:44", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-25T20:51:57", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-FD2114C7", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:52:42", "action": "proposal_8sec", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL8-EA6C9596", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:55:13", "action": "proposal_8sec", "user": "judge", "detail": {"task_id": "TASK-PROPOSAL8-39642E7B", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:55:13", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-E6063060", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.01}}
+{"ts": "2026-04-25T20:57:30", "action": "proposal_8sec", "user": "judge", "detail": {"task_id": "TASK-PROPOSAL8-6D5096A1", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:58:49", "action": "proposal_8sec", "user": "judge", "detail": {"task_id": "TASK-PROPOSAL8-F3DDA3D1", "client": "奇景光電", "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T20:59:12", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-E225C9E0", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.0}}
+{"ts": "2026-04-25T21:03:47", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-27T18:45:57", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-04-27T18:45:58", "action": "product_qa", "user": "judge", "detail": {"customer": "microjet", "q": "我的 MJ-3200 顯示 E-043 錯誤，剛換了墨水匣，還在保固期內嗎？", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-04-27T18:45:58", "action": "ticket_classify_batch", "user": "guest", "detail": {"task_id": "TASK-TICKETS-DB5793D5", "count": 6, "cat_stats": {"品質申訴": 2, "其他": 1, "帳務": 1, "相容性": 1, "退貨": 1}, "urg_stats": {"高": 2, "低": 2, "中": 2}, "duplicates": 1, "elapsed_sec": 0.03}}
+{"ts": "2026-04-27T18:45:58", "action": "proposal_8sec", "user": "judge", "detail": {"task_id": "TASK-PROPOSAL8-818D8B57", "client": "大全彩印股份有限公司", "elapsed_sec": 0.0}}
+{"ts": "2026-05-18T00:02:33", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T00:12:07", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T00:34:20", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T00:35:44", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T01:07:54", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T01:25:27", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T01:28:38", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-F49861BE", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-05-18T01:28:53", "action": "content", "user": "", "detail": {"topic": "嬰幼兒房空氣淨化", "channel": "Blog", "use_ai": false, "seo_coverage": 100}}
+{"ts": "2026-05-18T01:34:24", "action": "product_qa", "user": "test", "detail": {"customer": "addwii", "q": "嬰兒房 8 坪 PM2.5 18", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-05-18T01:35:43", "action": "product_qa", "user": "t", "detail": {"customer": "addwii", "q": "6 ping", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-05-18T09:24:14", "action": "product_qa", "user": "", "detail": {"customer": "addwii", "q": "HCR-300 規格", "retrieval": "bigram", "use_ai": false}}
+{"ts": "2026-05-18T12:37:51", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-21EA0C6F", "customer": "addwii", "ind": "居酒屋", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-05-18T12:38:57", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-BE7A1F13", "customer": "addwii", "ind": "居酒屋", "use_ai": true, "elapsed_sec": 60.01, "within_5min": true}}
+{"ts": "2026-05-18T12:40:12", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-54C321A1", "customer": "addwii", "ind": "居酒屋", "use_ai": true, "elapsed_sec": 60.02, "within_5min": true}}
+{"ts": "2026-05-18T12:44:02", "action": "feedback_analysis", "user": "guest", "detail": {"task_id": "TASK-FEEDBACK-D1B811C1", "n": 3, "use_ai": false, "stats": {"負面": 2, "硬體": 2, "軟體": 3, "正面": 1, "準確度": 2, "服務": 1, "中性": 0}, "elapsed_sec": 0.0}}
+{"ts": "2026-05-18T13:37:21", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-18T13:40:56", "action": "proposal", "user": "test", "detail": {"task_id": "TASK-PROPOSAL-6CC31241", "customer": "addwii", "ind": "一般企業", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-05-18T13:44:02", "action": "proposal", "user": "", "detail": {"task_id": "TASK-PROPOSAL-45DADB77", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-05-18T13:44:02", "action": "proposal", "user": "guest", "detail": {"task_id": "TASK-PROPOSAL-D84D26BD", "customer": "addwii", "ind": "工程整合商", "use_ai": false, "elapsed_sec": 0.0, "within_5min": true}}
+{"ts": "2026-05-20T14:39:03", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T14:40:38", "action": "product_qa", "user": "", "detail": {"customer": "addwii", "q": "家中35坪 有2歲過敏兒  推薦方案", "retrieval": "bigram", "use_ai": true}}
+{"ts": "2026-05-20T15:46:33", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}
+{"ts": "2026-05-20T16:30:37", "action": "csv_analysis", "user": "system-prewarm", "detail": {"files": 10, "rows": 435833}}

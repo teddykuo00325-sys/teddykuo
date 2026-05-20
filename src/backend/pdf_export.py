@@ -52,19 +52,26 @@ def _try_ttf(name: str, path: str, subfont_index: int = 0) -> bool:
         return False
 
 
-# 1. 倉內字型（最高優先 · Docker / Linux 部署）
+# 1. 倉內字型（**最高優先** · 完全跨平台 · 評審 Mac/Win/Linux 皆通）
 _REPO_FONT_DIR = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
                                 '..', '..', 'assets', 'fonts')
 _CANDIDATES = [
     # (display_name, path, subfont_index_for_ttc, is_bold_variant)
-    ('CJK',      _os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Regular.otf'), 0, False),
-    ('CJK-Bold', _os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Bold.otf'),    0, True),
+    # ─── 倉內字型（Noto Sans CJK TC · SIL OFL 開源 · 自帶不依賴 OS）
+    ('CJK',      _os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Regular.ttf'), 0, False),
+    ('CJK-Bold', _os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Bold.ttf'),    0, True),
     ('CJK',      _os.path.join(_REPO_FONT_DIR, 'jf-openhuninn.ttf'),      0, False),
-    # 2. Windows 系統字型（開發機 / Windows 部署）
+    # ─── macOS 系統字型（Apple 內建 CJK，無需安裝）
+    ('CJK',      '/System/Library/Fonts/PingFang.ttc',           0, False),
+    ('CJK',      '/System/Library/Fonts/STHeiti Medium.ttc',     0, False),
+    ('CJK',      '/System/Library/Fonts/STHeiti Light.ttc',      0, False),
+    ('CJK',      '/Library/Fonts/Microsoft/微軟正黑體.ttc',       0, False),
+    ('CJK',      '/Library/Fonts/Arial Unicode.ttf',             0, False),
+    # ─── Windows 系統字型
     ('CJK',      r'C:\Windows\Fonts\msjh.ttc',   0, False),  # JhengHei Regular
     ('CJK-Bold', r'C:\Windows\Fonts\msjhbd.ttc', 0, True),   # JhengHei Bold
     ('CJK',      r'C:\Windows\Fonts\mingliu.ttc', 0, False),
-    # 3. Linux 常見字型
+    # ─── Linux 常見字型（Docker / CI）
     ('CJK',      '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 1, False),
     ('CJK',      '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc', 1, False),
     ('CJK',      '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 0, False),

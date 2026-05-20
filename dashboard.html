@@ -162,8 +162,11 @@
 <script>
 // ── Live API Layer ──
 // 用 127.0.0.1 避免 Windows 上 localhost 優先解析成 IPv6 (::1) 產生 2 秒延遲
+// Port 預設 5050（避開 macOS AirPlay 佔用的 5000）；可 ?port=xxxx 覆寫。
+const _portOverride = new URLSearchParams(window.location.search).get('port');
+const _defaultPort = _portOverride || '5050';
 const API_BASE = (window.location.protocol === 'file:')
-  ? 'http://127.0.0.1:5000'
+  ? `http://127.0.0.1:${_defaultPort}`
   : window.location.origin;
 
 // ═══════════════════════════════════════════════════════════

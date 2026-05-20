@@ -5,10 +5,10 @@
 #   docker-compose up        # 預設離線模式（Ollama + 蒸餾 KB）
 #   docker-compose up -d     # 背景執行
 #
-# 評審快速驗證：
-#   開啟 http://localhost:5000/dashboard.html
-#   curl http://localhost:5000/api/mode      → 確認 offline 模式
-#   curl http://localhost:5000/api/agents/levels  → 確認 L1-L4 分級
+# 評審快速驗證（port 5050 預設 · 避開 macOS AirPlay Receiver 佔用的 5000）：
+#   開啟 http://localhost:5050/dashboard.html
+#   curl http://localhost:5050/api/mode      → 確認 offline 模式
+#   curl http://localhost:5050/api/agents/levels  → 確認 L1-L4 分級
 
 version: '3.9'
 
@@ -20,10 +20,11 @@ services:
     container_name: lingce-app
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5050:5050"
     environment:
       # 預設離線模式（依新標準）
       LINGCE_MODE: offline
+      LINGCE_PORT: "5050"
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
       CLAUDE_API_DISABLED: "true"
@@ -32,7 +33,7 @@ services:
       - ./data:/app/data
       - ./chat_logs:/app/chat_logs
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health', timeout=5)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5050/api/health', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 3

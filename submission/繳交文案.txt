@@ -1,0 +1,3 @@
+本作品 凌策 LingCe 專案由 郭祐均 Teddy.Kuo 使用 claude code Opus4.7 歷時 35 天密集開發（2026/04/13 - 05/18），以題目要求完成「1 位真人 + 10 個 AI Agent」組織形態架構，含三家公司完整驗證系統之參賽作品。 壓縮包為完整開發相關檔案 
+公開DEMO網頁版網址 : https://teddykuo.onrender.com/index.html  公開DEMO控制台 https://teddykuo.onrender.com/dashboard.html
+DEMO 版本受限於網路雲端部屬空間不足 無法運行AI模型，若使用安裝包安裝於本機可串開源模型運作本系統。

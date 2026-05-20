@@ -3301,26 +3301,47 @@ def api_procurement_pdf_microjet():
 if __name__ == '__main__':
     import sys, io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
+    # ── Port 解析（跨平台相容）
+    # macOS Monterey 起 5000 被 AirPlay Receiver 佔用，預設改 5050。
+    # 可用 LINGCE_PORT 環境變數覆寫（如 Docker / CI）。
+    # 若指定 port 被佔用，自動嘗試 5050 → 5051 → 5052 → 8080 → 8000。
+    _requested_port = int(os.environ.get('LINGCE_PORT', '5050'))
+    _port_candidates = [_requested_port, 5050, 5051, 5052, 8080, 8000]
+
+    def _find_free_port(candidates):
+        import socket as _s
+        for p in candidates:
+            sock = _s.socket(_s.AF_INET, _s.SOCK_STREAM)
+            try:
+                sock.bind(('0.0.0.0', p))
+                sock.close()
+                return p
+            except OSError:
+                sock.close()
+                continue
+        return candidates[0]  # 全失敗就試第一個讓 Flask 報錯
+
+    PORT = _find_free_port(_port_candidates)
+
     print('=' * 60)
     print('  LingCe Co. - AI Agent Platform v2.0 (Live)')
     print(f'  Model: {OLLAMA_MODEL} @ {OLLAMA_URL}')
     print(f'  Agents: {len(AGENTS)} ready')
+    print(f'  Port:  {PORT} (set LINGCE_PORT to override)')
     print('=' * 60)
     print()
-    print('  Dashboard:  http://localhost:5000/dashboard.html')
-    print('  Website:    http://localhost:5000/')
-    print('  API:        http://localhost:5000/api/health')
-    print('  Chat:       POST http://localhost:5000/api/chat')
-    print('  Pipeline:   POST http://localhost:5000/api/pipeline')
+    print(f'  Dashboard:  http://localhost:{PORT}/dashboard.html')
+    print(f'  Website:    http://localhost:{PORT}/')
+    print(f'  API:        http://localhost:{PORT}/api/health')
+    print(f'  Chat:       POST http://localhost:{PORT}/api/chat')
+    print(f'  Pipeline:   POST http://localhost:{PORT}/api/pipeline')
     print()
     # 關閉 reloader 以保留背景執行緒（AI 回覆、排程器）
     # 用 IPv6 dual-stack 監聽以避免 Windows 上 localhost 解析成 ::1 時每個請求等待 2 秒 IPv6 超時
-    import socket
     try:
         # 監聽 IPv4 (0.0.0.0) — 廣相容，支援 127.0.0.1 / localhost / 區網 IP
-        # 不用 '::' 因為 Windows 預設 IPV6_V6ONLY=1，會拒絕 IPv4 連線
-        # debug=False：關閉 debug 模式，避免 reloader 或額外 child process 干擾
-        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False, threaded=True)
+        app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False, threaded=True)
     except OSError as _e:
         print(f'[Server] 啟動失敗: {_e}，嘗試降級...')
-        app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False, threaded=True)
+        app.run(host='127.0.0.1', port=PORT, debug=False, use_reloader=False, threaded=True)

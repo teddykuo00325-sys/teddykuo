@@ -22,13 +22,40 @@ from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table, Tab
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-try:
-    pdfmetrics.registerFont(TTFont('CJK', 'C:/Windows/Fonts/msjh.ttc', subfontIndex=0))
-    pdfmetrics.registerFont(TTFont('CJK-Bold', 'C:/Windows/Fonts/msjhbd.ttc', subfontIndex=0))
-    FONT, FONT_BOLD = 'CJK', 'CJK-Bold'
-except Exception as e:
-    print(f'font register failed: {e}')
-    FONT, FONT_BOLD = 'Helvetica', 'Helvetica-Bold'
+# 跨平台字型載入（macOS / Windows / Linux 自動偵測）
+_REPO_FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'fonts')
+_FONT_CANDIDATES = [
+    # (name, path, subfontIndex)
+    ('CJK',      os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Regular.ttf'), 0),
+    ('CJK-Bold', os.path.join(_REPO_FONT_DIR, 'NotoSansTC-Bold.ttf'),    0),
+    ('CJK',      '/System/Library/Fonts/PingFang.ttc',           0),  # macOS
+    ('CJK',      '/System/Library/Fonts/STHeiti Medium.ttc',     0),  # macOS
+    ('CJK',      'C:/Windows/Fonts/msjh.ttc',                    0),  # Windows
+    ('CJK-Bold', 'C:/Windows/Fonts/msjhbd.ttc',                  0),  # Windows
+    ('CJK',      '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 1),  # Linux
+    ('CJK',      '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc', 1),  # Linux
+]
+_have = {'CJK': False, 'CJK-Bold': False}
+for name, path, idx in _FONT_CANDIDATES:
+    if _have[name]:
+        continue
+    try:
+        if not os.path.exists(path):
+            continue
+        if path.lower().endswith('.ttc'):
+            pdfmetrics.registerFont(TTFont(name, path, subfontIndex=idx))
+        else:
+            pdfmetrics.registerFont(TTFont(name, path))
+        _have[name] = True
+        print(f'[PDF] {name} 字型嵌入: {path}')
+    except Exception as e:
+        print(f'[PDF] 嘗試 {path} 失敗: {e}')
+        continue
+
+FONT      = 'CJK'      if _have['CJK']      else 'Helvetica'
+FONT_BOLD = 'CJK-Bold' if _have['CJK-Bold'] else FONT
+if not _have['CJK']:
+    print('[PDF] 警告：找不到 CJK 字型，PDF 中文將顯示亂碼。請放 Noto Sans TC 至 assets/fonts/')
 
 C_BLUE   = HexColor('#1e40af')
 C_PURPLE = HexColor('#7c3aed')

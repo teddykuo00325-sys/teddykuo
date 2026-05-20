@@ -46,5 +46,21 @@
     "approval_status": "approved",
     "approver_id": null,
     "approval_reason": null
+  },
+  "room_RD2-002_RD2-026": {
+    "id": "room_RD2-002_RD2-026",
+    "participants": [
+      "RD2-002",
+      "RD2-026"
+    ],
+    "observers": [],
+    "relation": "peer",
+    "created_by": "RD2-002",
+    "created_at": "2026-04-25T21:32:17.038070",
+    "last_activity": "2026-04-25T21:33:04.881759",
+    "ai_enabled": false,
+    "approval_status": "approved",
+    "approver_id": null,
+    "approval_reason": null
   }
 }
