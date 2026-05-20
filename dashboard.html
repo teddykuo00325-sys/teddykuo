@@ -10735,7 +10735,11 @@ async function loadServiceDeskData() {
 
     document.getElementById('svc-bot-status').innerHTML = bot.running
       ? `<span class="text-emerald-400">● 運轉中</span><span class="text-[10px] text-slate-400 ml-2">@Addwii_teddytestbot</span>`
-      : `<span class="text-rose-400">● 未啟動</span>`;
+      : (bot.token_set
+          ? `<span class="text-rose-400">● 未啟動</span>
+             <button onclick="startTgBot()" class="ml-2 px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 rounded text-[10px]">▶ 啟動</button>`
+          : `<span class="text-amber-400">● 無 token</span>
+             <span class="text-[9px] text-slate-500 ml-2">設 TELEGRAM_BOT_TOKEN 環境變數</span>`);
     document.getElementById('svc-backend').innerHTML =
       `<span class="text-cyan-300">${backend.backend || 'unknown'}</span><span class="text-[10px] text-slate-400 ml-2">${backend.model || ''}</span>`;
     document.getElementById('svc-today-count').textContent =
@@ -10779,6 +10783,19 @@ async function loadServiceDeskData() {
   } catch (e) {
     console.error('loadServiceDeskData failed', e);
   }
+}
+
+async function startTgBot() {
+  try {
+    const r = await fetch(API_BASE + '/api/telegram/live/start', {method: 'POST'});
+    const d = await r.json();
+    if (d.ok) {
+      alert(`✅ TG bot 已啟動：@${(d.bot || {}).username || 'unknown'}`);
+    } else {
+      alert(`啟動失敗：${d.error || JSON.stringify(d)}`);
+    }
+    loadServiceDeskData();
+  } catch (e) { alert('失敗：' + e.message); }
 }
 
 async function selectSvcConv(chatId) {

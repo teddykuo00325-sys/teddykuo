@@ -3640,6 +3640,19 @@ if __name__ == '__main__':
     import sys, io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
+    # ── 自動拉起 Telegram bot（若 TELEGRAM_BOT_TOKEN 已設）
+    if os.environ.get('TELEGRAM_BOT_TOKEN'):
+        try:
+            import telegram_live_bot as _tlb
+            _bot_r = _tlb.start()
+            if _bot_r.get('ok'):
+                bot_meta = (_bot_r.get('bot') or {})
+                print(f'[Telegram] bot 已自動啟動: @{bot_meta.get("username", "unknown")}')
+            else:
+                print(f'[Telegram] bot 啟動失敗: {_bot_r.get("error")}')
+        except Exception as _e:
+            print(f'[Telegram] bot 自動啟動 exception: {_e}')
+
     # ── Port 解析（跨平台相容）
     # macOS Monterey 起 5000 被 AirPlay Receiver 佔用，預設改 5050。
     # 可用 LINGCE_PORT 環境變數覆寫（如 Docker / CI）。

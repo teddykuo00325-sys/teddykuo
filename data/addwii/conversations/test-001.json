@@ -18,6 +18,36 @@
       "backend": "ollama",
       "model": "qwen2.5:7b",
       "iterations": 1
+    },
+    {
+      "role": "user",
+      "content": "HI",
+      "user_name": "web-測試員",
+      "ts": "2026-05-20T21:08:45"
+    },
+    {
+      "role": "assistant",
+      "agent": "bd",
+      "content": "嗨👋，您好！請問您是想要設計哪種空間呢？例如：Kitchen 🏩、Bathroom 🛋️、Living Room 👶 或其他？還有大概的坪數是多少呢？謝謝！🏠✨",
+      "ts": "2026-05-20T21:09:19",
+      "intent": {
+        "space": null,
+        "area_ping": null,
+        "customer_type": "B2C",
+        "segment": null,
+        "requested_discount_pct": 0,
+        "bundle_units": 1,
+        "is_brand_inquiry": false,
+        "is_competitor_inquiry": false,
+        "is_field_trial_inquiry": false,
+        "is_complaint": false,
+        "is_pricing": false,
+        "is_strategy_inquiry": false
+      },
+      "tool_calls": [],
+      "handoffs": [],
+      "backend": "ollama",
+      "model": "qwen2.5:7b"
     }
   ],
   "agent_trace": [
@@ -28,9 +58,17 @@
       ],
       "tool_count": 0,
       "tools_used": []
+    },
+    {
+      "ts": "2026-05-20T21:09:19",
+      "agent_chain": [
+        "bd"
+      ],
+      "tool_count": 0,
+      "tools_used": []
     }
   ],
   "current_agent": "bd",
   "customer_profile": {},
-  "last_updated": "2026-05-20T19:50:06"
+  "last_updated": "2026-05-20T21:09:19"
 }
