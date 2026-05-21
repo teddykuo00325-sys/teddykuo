@@ -374,6 +374,19 @@
       },
       "timestamp": "2026-05-18T00:42:25",
       "hash": "e403f4689021296148893dbd33570794fa8b9593e1832e2a0d08ba1961ce90ad"
+    },
+    {
+      "block_no": 3,
+      "type": "CONTRACT_AUDIT",
+      "prev_hash": "e403f4689021296148893dbd33570794fa8b9593e1832e2a0d08ba1961ce90ad",
+      "payload": {
+        "report_id": "CONTRACT-AUDIT-1779362386",
+        "contract_name": "DemoTest",
+        "overall_risk": "high",
+        "hits_count": 1
+      },
+      "timestamp": "2026-05-21T19:19:46",
+      "hash": "e82c0094f88081b68e2631c6c3792ae20a0b9195efe344f50770844bfa549529"
     }
   ],
   "audit_log": [
@@ -450,6 +463,20 @@
         "skip_timelock": false
       },
       "created_at": "2026-05-18T00:42:25"
+    },
+    {
+      "audit_id": "A-1779362386204-36ca",
+      "actor_type": "ai",
+      "actor_id": "qa-agent",
+      "action_type": "review_smart_contract",
+      "object_type": "contract",
+      "object_id": "DemoTest",
+      "detail": {
+        "overall_risk": "high",
+        "hits_count": 1,
+        "report_id": "CONTRACT-AUDIT-1779362386"
+      },
+      "created_at": "2026-05-21T19:19:46"
     }
   ],
   "rule_hits": [],

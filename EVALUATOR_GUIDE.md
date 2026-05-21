@@ -152,7 +152,47 @@ curl -X POST http://localhost:5050/api/telegram/demo
 
 ---
 
-## 六、三家驗收閉環 100% 對應（16/16 step）
+## 六-2 · microjet 強化（v3.x）
+
+```
+src/backend/microjet_scenarios.py
+```
+
+新增結構（同 addwii 等級）：
+- `MICROJET_BRAND`：1,600+ 件專利 / 28 年研發 / ComeTrue + CurieJet 子品牌
+- `MICROJET_PRODUCTS`：8 機型（MJ-2800/3100/3200/4500 商用印表機 + ComeTrue T10/M10 3D 列印機 + CurieJet P710/P760 感測器）
+- `MICROJET_SEGMENTS`：B2B 7 類客群
+- `lookup_product_by_error_code()`：依錯誤碼反查產品（E-041~E-051）
+
+**LLM-augmented 8D 報告**：`generate_8d_report` 現在自動產出
+- `executive_summary_llm`（CEO 高管摘要）
+- `customer_reply_llm`（個人化客戶道歉信）
+兩者皆 LLM 生成（Breeze / Anthropic）。LLM fallback 時用規則模板。
+
+**Dashboard 新頁面**：側欄 `🛠 工程客服台`（路徑 `microjet-service-desk`）
+- 錯誤碼快查（E-041 → MJ-3200）
+- 8D 報告產生器（即時表單 → LLM 增強報告）
+- 8 機型完整產品線視覺化
+
+---
+
+## 六-3 · 維明強化（v3.x）
+
+**LLM-augmented 合約審查**：`review_smart_contract` 新增
+- `risk_score`（0-10 量化分數）
+- `risk_level`（高/中/低/通過 中文化）
+- `llm_review`（業務邏輯層面深度補充，規則引擎抓不到的部分）
+
+**Dashboard 新頁面**：側欄 `⛓ 鏈上監控 + 風控`（路徑 `weiming-chain-monitor`）
+- 冷熱錢包視覺化（紅/橘/藍三色卡片）
+- 比例監控（≦10% / ≦25% / ≧65%）
+- 最近交易 + Timelock 狀態
+- 智能合約審查表單（即時 LLM 風險評分）
+- 鏈上區塊列表（SHA-256 hash chain）
+
+---
+
+## 七、三家驗收閉環 100% 對應（16/16 step）
 
 | 客戶 | 閉環 step | endpoint 對應 |
 |---|---|---|

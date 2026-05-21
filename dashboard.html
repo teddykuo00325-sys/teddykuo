@@ -93,6 +93,7 @@
         </button>
         <div class="tenant-body space-y-0.5 mt-1" style="display:none">
           <button onclick="setTenantAndPage('microjet','microjet-ws')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-amber-200" data-page="microjet-ws">📊 microjet · CurieJet 儀表板</button>
+          <button onclick="setTenantAndPage('microjet','microjet-service-desk')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-emerald-300" data-page="microjet-service-desk">🛠 工程客服台（8D · LLM）</button>
           <button onclick="setTenantAndPage('microjet','crm')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="crm">📋 microjet CRM（B2B 採購）</button>
           <button onclick="setTenantAndPage('microjet','org')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="org">🏢 組織出缺勤（134 人）</button>
           <button onclick="setTenantAndPage('microjet','attn')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="attn">📈 出缺勤統計</button>
@@ -132,6 +133,7 @@
         </button>
         <div class="tenant-body space-y-0.5 mt-1" style="display:none">
           <button onclick="setTenantAndPage('weiming','weiming-procurement')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-300" data-page="weiming-procurement">🛒 AI 採購驗收中心</button>
+          <button onclick="setTenantAndPage('weiming','weiming-chain-monitor')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-purple-300" data-page="weiming-chain-monitor">⛓ 鏈上監控 + 風控</button>
           <button onclick="setTenantAndPage('weiming','weiming-eval')" class="nav-btn w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-slate-400" data-page="weiming-eval">📝 評估進度</button>
         </div>
       </div>
@@ -615,6 +617,8 @@ function showPage(page, tenant){
     'addwii-service-desk':renderAddwiiServiceDesk,
     'addwii-supervisor':renderAddwiiSupervisor,
     'addwii-marketing':renderAddwiiMarketing,
+    'microjet-service-desk':renderMicrojetServiceDesk,
+    'weiming-chain-monitor':renderWeimingChainMonitor,
     'customer-portal':renderCustomerPortal,'weiming-eval':renderWeimingEval,
     'weiming-procurement':renderWeimingProcurement
   };
@@ -11257,6 +11261,354 @@ async function configurePublisher(channel) {
     alert('失敗：' + e.message);
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// microjet 工程客服台（B2B · 8D LLM 報告 + 錯誤碼反查）
+// ═══════════════════════════════════════════════════════════
+async function renderMicrojetServiceDesk() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-[1400px] mx-auto">
+      ${perspectiveBanner('MicroJet 工程客服台 · B2B 售後',
+        '8D 異常報告（LLM 增強）· 錯誤碼反查 · 客戶通報自動產生 · 1,600+ 件 MEMS 專利',
+        'from-amber-900/40 to-orange-900/40')}
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5" id="mj-stats">載入中...</div>
+
+      <div class="grid grid-cols-12 gap-4">
+        <!-- 左：錯誤碼快查 -->
+        <div class="col-span-4 bg-slate-800/60 border border-amber-500/40 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-amber-300 mb-3">🔍 錯誤碼快查</h3>
+          <div class="flex gap-2 mb-3">
+            <input id="mj-err-code" placeholder="如 E-043" class="flex-1 bg-slate-900 border border-slate-600 rounded px-3 py-2 text-xs">
+            <button onclick="lookupErrorCode()" class="px-3 py-2 bg-amber-600 hover:bg-amber-500 rounded text-xs">查</button>
+          </div>
+          <div id="mj-err-result" class="text-xs text-slate-400">輸入 E-041 / E-043 / E-047 試試</div>
+
+          <h3 class="text-sm font-bold text-amber-300 mt-5 mb-3">📋 產品線一覽</h3>
+          <div id="mj-products" class="space-y-2 text-xs max-h-[400px] overflow-y-auto"></div>
+        </div>
+
+        <!-- 中：8D 產生器 -->
+        <div class="col-span-8 bg-slate-800/60 border border-rose-500/40 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-rose-300 mb-3">📑 8D 異常報告產生器（LLM 增強）</h3>
+          <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
+            <div>
+              <label class="text-slate-400">產品型號</label>
+              <input id="mj-8d-model" value="MJ-3200" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 mt-1">
+            </div>
+            <div>
+              <label class="text-slate-400">客戶</label>
+              <input id="mj-8d-customer" value="A 公司" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 mt-1">
+            </div>
+            <div>
+              <label class="text-slate-400">缺陷描述</label>
+              <input id="mj-8d-defect" value="噴頭堵塞率上升 15%" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 mt-1">
+            </div>
+            <div>
+              <label class="text-slate-400">影響數量 / 批號</label>
+              <input id="mj-8d-qty" value="42" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 mt-1">
+            </div>
+          </div>
+          <button onclick="generate8D()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 rounded text-sm">⚡ 產生 8D 報告（含 LLM 高管摘要 + 個人化客戶信）</button>
+          <p class="text-[10px] text-slate-500 mt-2">⏳ Breeze CPU 約 90-180 秒 / Anthropic 約 5-15 秒</p>
+
+          <div id="mj-8d-result" class="mt-4 text-xs"></div>
+        </div>
+      </div>
+    </div>`;
+  await loadMicrojetServiceDeskData();
+}
+
+async function loadMicrojetServiceDeskData() {
+  try {
+    const [brand, prods, segs] = await Promise.all([
+      fetch(API_BASE + '/api/microjet/brand').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/microjet/products').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/microjet/segments').then(r => r.json()).catch(() => null),
+    ]);
+    if (brand) {
+      document.getElementById('mj-stats').innerHTML = `
+        <div class="bg-slate-800/60 border border-amber-500/40 rounded p-3">
+          <div class="text-[10px] text-slate-400">品牌</div>
+          <div class="text-xs font-bold text-amber-300">${brand.company_name_zh}</div>
+          <div class="text-[10px] text-slate-400 mt-1">${brand.slogan}</div>
+        </div>
+        <div class="bg-slate-800/60 border border-orange-500/40 rounded p-3">
+          <div class="text-[10px] text-slate-400">核心數字</div>
+          <div class="text-lg font-bold text-orange-300">${brand.patents}</div>
+          <div class="text-[10px] text-slate-400 mt-1">${brand.r_and_d_years} 年研發 · ${brand.patent_rank_tw}</div>
+        </div>
+        <div class="bg-slate-800/60 border border-cyan-500/40 rounded p-3">
+          <div class="text-[10px] text-slate-400">子品牌</div>
+          <div class="text-xs text-cyan-300">CurieJet · ComeTrue</div>
+          <div class="text-[10px] text-slate-400 mt-1">${Object.keys(brand.sub_brands||{}).length} 個子品牌 · ${(brand.applications||[]).length} 應用領域</div>
+        </div>`;
+    }
+    if (prods && prods.products) {
+      document.getElementById('mj-products').innerHTML = Object.entries(prods.products).map(([model, spec]) =>
+        `<div class="bg-slate-900 rounded p-2 border border-slate-700">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-300">${model}</span>
+            <span class="text-[10px] text-slate-500">${spec.category}</span>
+          </div>
+          <div class="text-slate-400 text-[10px] mt-1">${spec.positioning || spec.series || ''}</div>
+          ${spec.price_ntd ? `<div class="text-emerald-300 text-[10px] mt-1">NT$ ${spec.price_ntd.toLocaleString()}</div>` : ''}
+        </div>`
+      ).join('');
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function lookupErrorCode() {
+  const code = document.getElementById('mj-err-code').value.trim();
+  if (!code) return;
+  try {
+    const r = await fetch(API_BASE + '/api/microjet/lookup-error', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code}),
+    });
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById('mj-err-result').innerHTML =
+        `<div class="text-rose-300">${d.error}</div>`;
+    } else {
+      document.getElementById('mj-err-result').innerHTML =
+        `<div class="bg-amber-900/30 rounded p-2 border border-amber-500/40">
+           <div class="font-bold text-amber-300">${d.model}</div>
+           <div class="text-slate-400 text-[10px] mt-1">${d.error_match}</div>
+           <div class="text-[10px] mt-1">${d.spec.positioning || ''}</div>
+           ${d.spec.price_ntd ? `<div class="text-emerald-300 text-[10px] mt-1">NT$ ${d.spec.price_ntd.toLocaleString()}</div>` : ''}
+         </div>`;
+    }
+  } catch (e) { alert('失敗：' + e.message); }
+}
+
+async function generate8D() {
+  const incident = {
+    product_model:  document.getElementById('mj-8d-model').value || 'MJ-3200',
+    customer:       document.getElementById('mj-8d-customer').value || '客戶 A',
+    defect:         document.getElementById('mj-8d-defect').value || '產品異常',
+    affected_qty:   parseInt(document.getElementById('mj-8d-qty').value) || 0,
+    lot_no:         'MJ-2026-W' + String(Math.floor(Math.random()*52)+1).padStart(2, '0'),
+    discovered_at:  new Date().toISOString().slice(0,10),
+  };
+  document.getElementById('mj-8d-result').innerHTML = '<p class="text-slate-400">⏳ AI 產生中...（含 LLM 高管摘要 + 個人化客戶信）</p>';
+  try {
+    const r = await fetch(API_BASE + '/api/microjet/8d-report', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({incident}),
+    });
+    const d = await r.json();
+    const ll = d.llm_meta || {};
+    document.getElementById('mj-8d-result').innerHTML = `
+      <div class="bg-slate-900 rounded p-3 border border-slate-700 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-rose-300">${d.report_id}</span>
+          <span class="text-[10px] text-slate-500">${d.product_model} / ${d.affected_qty} 台 / ${d.lot_no}</span>
+        </div>
+        ${d.executive_summary_llm ? `
+          <div class="bg-purple-900/30 rounded p-2 border border-purple-500/40">
+            <div class="text-[10px] text-purple-300 mb-1">📌 CEO 高管摘要（LLM ${ll.backend||'?'}/${ll.model||'?'} · ${ll.latency_ms||'?'}ms）</div>
+            <div class="text-slate-200">${d.executive_summary_llm}</div>
+          </div>` : ''}
+
+        ${d.customer_reply_llm ? `
+          <div class="bg-emerald-900/30 rounded p-2 border border-emerald-500/40">
+            <div class="text-[10px] text-emerald-300 mb-1">💌 個人化客戶回覆（LLM）</div>
+            <div class="text-slate-200 whitespace-pre-wrap">${d.customer_reply_llm}</div>
+          </div>` : `
+          <div class="bg-slate-800 rounded p-2 border border-slate-700">
+            <div class="text-[10px] text-slate-400 mb-1">💌 客戶回覆（規則範本 · LLM fallback）</div>
+            <div class="text-slate-300 whitespace-pre-wrap">${d.customer_reply_draft}</div>
+          </div>`}
+
+        <div class="grid grid-cols-2 gap-2 text-[10px]">
+          ${Object.entries(d['8d']).map(([k, v]) => `
+            <div class="bg-slate-800 rounded p-2">
+              <div class="font-bold text-cyan-300">${k}</div>
+              <div class="text-slate-400 mt-1">${
+                Array.isArray(v) ? v.length + ' 項' :
+                typeof v === 'object' ? Object.keys(v).length + ' 個欄位' : v
+              }</div>
+            </div>`).join('')}
+        </div>
+
+        <div class="text-[10px] text-slate-500">
+          ✓ 8D 完整度 ${d.rubric['8d_completeness']}/8 · 根因確認 ✓ · 對策 ${d.rubric.corrective_actions_count} 項 · 24h 內回覆 ✓
+        </div>
+      </div>`;
+  } catch (e) {
+    document.getElementById('mj-8d-result').innerHTML = `<p class="text-rose-300">失敗：${e.message}</p>`;
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// 維明 鏈上監控 + 風控 dashboard tab
+// ═══════════════════════════════════════════════════════════
+async function renderWeimingChainMonitor() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="max-w-[1400px] mx-auto">
+      ${perspectiveBanner('維明 鏈上監控 + 風控',
+        'SHA-256 hash chain 即時 · 冷熱錢包 ≦10/≦25/≧65 · M-of-N 多簽 · LLM 智能合約審查',
+        'from-purple-900/40 to-indigo-900/40')}
+
+      <div id="wm-stats" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">載入中...</div>
+
+      <div class="grid grid-cols-12 gap-4">
+        <!-- 左：冷熱錢包視覺化 -->
+        <div class="col-span-5 bg-slate-800/60 border border-purple-500/40 rounded-lg p-4 max-h-[700px] overflow-y-auto">
+          <h3 class="text-sm font-bold text-purple-300 mb-3">💎 冷熱錢包 + 多簽</h3>
+          <div id="wm-wallets" class="space-y-2">載入中...</div>
+
+          <h3 class="text-sm font-bold text-purple-300 mt-5 mb-3">📜 最近交易（含 Timelock）</h3>
+          <div id="wm-tx-log" class="space-y-1 text-[10px] font-mono"></div>
+        </div>
+
+        <!-- 中：智能合約審查（LLM） -->
+        <div class="col-span-7 bg-slate-800/60 border border-indigo-500/40 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-indigo-300 mb-3">⚖️ 智能合約審查（LLM 增強）</h3>
+          <textarea id="wm-contract-text" rows="8"
+                    class="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-[11px] font-mono"
+                    placeholder="貼入 Solidity / Vyper / 合約條款文字...">
+contract Transfer {
+    address public owner;
+    function withdraw(uint amount) public {
+        require(msg.sender == owner, "not owner");
+        payable(owner).transfer(amount);
+    }
+}</textarea>
+          <div class="flex items-center gap-2 mt-2">
+            <button onclick="reviewContract()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm">⚖️ 啟動 LLM 審查</button>
+            <span class="text-[10px] text-slate-500">⏳ Breeze 60-120s / Anthropic 5-15s</span>
+          </div>
+          <div id="wm-contract-result" class="mt-3"></div>
+
+          <h3 class="text-sm font-bold text-indigo-300 mt-5 mb-3">⛓ 鏈上區塊（最新 5）</h3>
+          <div id="wm-blocks" class="space-y-1 text-[10px] font-mono"></div>
+        </div>
+      </div>
+    </div>`;
+  await loadWeimingMonitor();
+  if (SERVICE_DESK_POLL_TIMER) clearInterval(SERVICE_DESK_POLL_TIMER);
+  SERVICE_DESK_POLL_TIMER = setInterval(loadWeimingMonitor, 8000);
+}
+
+async function loadWeimingMonitor() {
+  try {
+    const [metrics, wallets, txs, blocks] = await Promise.all([
+      fetch(API_BASE + '/api/weiming/metrics?tenant=weiming').then(r => r.json()).catch(() => null),
+      fetch(API_BASE + '/api/weiming/wallets?tenant=weiming').then(r => r.json()).catch(() => []),
+      fetch(API_BASE + '/api/weiming/wallet/txs?tenant=weiming').then(r => r.json()).catch(() => []),
+      fetch(API_BASE + '/api/weiming/chain?tenant=weiming&limit=5').then(r => r.json()).catch(() => null),
+    ]);
+
+    // 統計卡
+    const balRebalance = await fetch(API_BASE + '/api/weiming/wallet/rebalance?tenant=weiming').then(r => r.json()).catch(() => ({}));
+    document.getElementById('wm-stats').innerHTML = `
+      <div class="bg-slate-800/60 border border-purple-500/40 rounded p-3">
+        <div class="text-[10px] text-slate-400">總資產</div>
+        <div class="text-xl font-bold text-purple-300">$${(balRebalance.total_usd || 0).toLocaleString()}</div>
+        <div class="text-[10px] text-slate-500 mt-1">${(wallets || []).length} 個錢包</div>
+      </div>
+      <div class="bg-slate-800/60 border border-red-500/40 rounded p-3">
+        <div class="text-[10px] text-slate-400">🔥 熱錢包比例</div>
+        <div class="text-xl font-bold text-red-300">${((balRebalance.hot_ratio_pct || 0)).toFixed(1)}%</div>
+        <div class="text-[10px] text-slate-500 mt-1">門檻 ≦ 10%</div>
+      </div>
+      <div class="bg-slate-800/60 border border-amber-500/40 rounded p-3">
+        <div class="text-[10px] text-slate-400">🌡️ 溫錢包比例</div>
+        <div class="text-xl font-bold text-amber-300">${((balRebalance.warm_ratio_pct || 0)).toFixed(1)}%</div>
+        <div class="text-[10px] text-slate-500 mt-1">門檻 ≦ 25%</div>
+      </div>
+      <div class="bg-slate-800/60 border border-blue-500/40 rounded p-3">
+        <div class="text-[10px] text-slate-400">❄️ 冷錢包比例</div>
+        <div class="text-xl font-bold text-blue-300">${((balRebalance.cold_ratio_pct || 0)).toFixed(1)}%</div>
+        <div class="text-[10px] text-slate-500 mt-1">門檻 ≧ 65%</div>
+      </div>`;
+
+    // 錢包列表
+    const wList = (wallets || []).map(w => {
+      const color = w.type === 'hot' ? 'text-red-300' :
+                    w.type === 'warm' ? 'text-amber-300' :
+                    'text-blue-300';
+      return `<div class="bg-slate-900 rounded p-2 border border-slate-700">
+        <div class="flex items-center justify-between">
+          <span class="${color} font-bold">${w.type.toUpperCase()} · ${w.wallet_id}</span>
+          <span class="text-emerald-300 text-xs">$${(w.balance_usd || 0).toLocaleString()}</span>
+        </div>
+        <div class="text-[10px] text-slate-400 mt-1">${w.address || ''}</div>
+        ${w.m_of_n ? `<div class="text-[10px] text-cyan-300 mt-1">M-of-N: ${w.m_of_n}</div>` : ''}
+        ${w.timelock_hours ? `<div class="text-[10px] text-amber-300">Timelock: ${w.timelock_hours} 小時</div>` : ''}
+      </div>`;
+    }).join('') || '<p class="text-slate-500 text-xs">無錢包資料</p>';
+    document.getElementById('wm-wallets').innerHTML = wList;
+
+    // 交易列表
+    document.getElementById('wm-tx-log').innerHTML = (txs || []).slice(0, 8).map(t => {
+      const sc = t.status === 'executed' ? 'text-emerald-300' :
+                  t.status === 'rejected' ? 'text-rose-400' :
+                  t.status === 'approved' ? 'text-amber-300' : 'text-slate-400';
+      return `<div class="hover:bg-slate-900/50 px-2 py-1 rounded">
+        <span class="text-slate-500">${(t.ts || '').slice(11, 19)}</span>
+        <span class="${sc}">${t.status}</span>
+        <span class="text-cyan-300">$${(t.amount_usd || 0).toLocaleString()}</span>
+        <span class="text-slate-400">${(t.from_wallet_id || '').slice(0,12)}</span>
+      </div>`;
+    }).join('') || '<p class="text-slate-500">尚無交易</p>';
+
+    // 區塊鏈
+    document.getElementById('wm-blocks').innerHTML = ((blocks || {}).blocks || (blocks || [])).slice(0, 5).map(b =>
+      `<div class="hover:bg-slate-900/50 px-2 py-1 rounded">
+        <span class="text-slate-500">#${b.block_no || b.height || '?'}</span>
+        <span class="text-purple-300">${b.block_type || b.type || 'unknown'}</span>
+        <span class="text-amber-300">${(b.hash || '').slice(0, 12)}...</span>
+      </div>`
+    ).join('') || '<p class="text-slate-500">尚無區塊</p>';
+  } catch (e) {
+    console.error('loadWeimingMonitor', e);
+  }
+}
+
+async function reviewContract() {
+  const text = document.getElementById('wm-contract-text').value.trim();
+  if (!text) return;
+  document.getElementById('wm-contract-result').innerHTML =
+    '<p class="text-slate-400 text-xs">⏳ LLM 風險分析中...（含 reentrancy / overflow / access control 檢查）</p>';
+  try {
+    const r = await fetch(API_BASE + '/api/weiming/contract/review?tenant=weiming', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({contract_text: text, contract_name: 'web-test', use_llm: true}),
+    });
+    const d = await r.json();
+    const llm = d.llm_review || '';
+    const score = d.risk_score || 0;
+    const sc = score >= 7 ? 'text-rose-400' : score >= 4 ? 'text-amber-300' : 'text-emerald-300';
+    document.getElementById('wm-contract-result').innerHTML = `
+      <div class="bg-slate-900 rounded p-3 border border-slate-700 space-y-2 text-xs">
+        <div class="flex items-center gap-3">
+          <span class="text-slate-400">風險評分：</span>
+          <span class="${sc} text-2xl font-bold">${score}/10</span>
+          <span class="text-[10px] text-slate-500">${d.risk_level || '計算中'}</span>
+        </div>
+        ${d.findings && d.findings.length > 0 ? `
+          <div>
+            <div class="text-amber-300 mb-1">發現問題（${d.findings.length}）：</div>
+            <ul class="text-slate-300 list-disc list-inside space-y-1">
+              ${d.findings.map(f => `<li>${f.category || ''} · ${f.description || f}</li>`).join('')}
+            </ul>
+          </div>` : ''}
+        ${llm ? `
+          <div class="bg-purple-900/30 rounded p-2 border border-purple-500/40">
+            <div class="text-purple-300 text-[10px] mb-1">🤖 LLM 深度審查</div>
+            <div class="text-slate-200 whitespace-pre-wrap">${llm}</div>
+          </div>` : ''}
+      </div>`;
+  } catch (e) {
+    document.getElementById('wm-contract-result').innerHTML = `<p class="text-rose-300 text-xs">失敗：${e.message}</p>`;
+  }
+}
+
 
 async function renderMicrojetWorkspace() {
   const s = await fetchScenario();

@@ -1563,7 +1563,8 @@ def api_weiming_wallet_execute(tx_id):
 def api_weiming_contract_review():
     """智能合約自動審查（依新標準維明驗收要求）"""
     data = request.json or {}
-    code = data.get('contract_code', '')
+    # 支援 contract_code / contract_text 兩個欄位名
+    code = data.get('contract_code') or data.get('contract_text') or ''
     name = data.get('contract_name', 'Unknown')
     reviewer = data.get('reviewer', 'qa-01')
     if not code:
@@ -2425,6 +2426,40 @@ def api_marketing_publish_log():
     import content_calendar
     n = int(request.args.get('n', 50))
     return jsonify(content_calendar.get_publish_log(n))
+
+
+# ══════════════════════════════════════════════════════════════
+# microjet 強化（v3.x）· 品牌資產 + 真實機型 + LLM 8D
+# ══════════════════════════════════════════════════════════════
+@app.route('/api/microjet/brand')
+def api_microjet_brand():
+    """MicroJet 完整品牌資產（同 addwii 等級）"""
+    import microjet_scenarios as mj
+    return jsonify(mj.get_microjet_brand())
+
+
+@app.route('/api/microjet/products')
+def api_microjet_products():
+    """產品線（含 MJ-2800/3100/3200/4500 + ComeTrue + CurieJet）"""
+    import microjet_scenarios as mj
+    category = request.args.get('category')
+    return jsonify({'products': mj.list_microjet_products(category)})
+
+
+@app.route('/api/microjet/segments')
+def api_microjet_segments():
+    """B2B 7 類客群分層"""
+    import microjet_scenarios as mj
+    customer_type = request.args.get('customer_type', 'B2B')
+    return jsonify(mj.get_microjet_segments(customer_type))
+
+
+@app.route('/api/microjet/lookup-error', methods=['POST'])
+def api_microjet_lookup_error():
+    """依錯誤碼反查產品（給 8D / 客服 Agent 用）"""
+    import microjet_scenarios as mj
+    d = request.get_json(silent=True) or {}
+    return jsonify(mj.lookup_product_by_error_code(d.get('code', '')))
 
 
 @app.route('/api/agents/activity-log')

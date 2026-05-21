@@ -25,6 +25,170 @@ except Exception:
 
 
 # ══════════════════════════════════════════════════════════════
+# microjet 真實品牌資產（依官網 www.microjet.com.tw 對齊）
+# ══════════════════════════════════════════════════════════════
+MICROJET_BRAND = {
+    'company_name_zh':   '研能科技股份有限公司',
+    'company_name_en':   'MicroJet Technology Co., Ltd.',
+    'slogan':            'MEMS 壓電微流體技術領導品牌',
+    'core_claim':        '全台微泵浦專利排名第 1（1,600+ 件）',
+    'founded':           1998,
+    'r_and_d_years':     28,
+    'patents':           '1,600+ 件（MEMS / 壓電微流體 / 噴墨）',
+    'patent_rank_tw':    '2018 年全台專利排名第 10',
+    'official_site':     'https://www.microjet.com.tw/en/',
+    'sub_brands': {
+        'CurieJet':      {'url': 'https://www.curiejet.com/en/',
+                          'focus': '環境感測器 / 微型泵浦 / 血壓模組'},
+        'ComeTrue':      {'url': 'https://www.cometrue3d.com/en/',
+                          'focus': '全彩 3D 列印機 / 黏結劑噴射陶瓷列印'},
+    },
+    'technology_pillars': [
+        '熱泡式噴墨（thermal inkjet）',
+        '壓電微流體（piezoelectric microfluidics）',
+        'MEMS 微機電系統',
+        '微泵浦（micropumps · 世界最小最薄最靜音）',
+        '環境感測模組（顆粒物 PM2.5 + VOC + 多氣體）',
+    ],
+    'applications': [
+        '商用列印（噴墨印頭 + 墨水匣）',
+        '3D 列印（ComeTrue 全彩粉末 / 陶瓷）',
+        '環境監測（CurieJet P710/P760）',
+        '穿戴裝置（血壓 / 健康監測模組）',
+        '車用電子（世界最小車用環境感測器 29×29×7.2 mm）',
+        '醫療器材（血壓計微泵）',
+        '工業設備（噴塗 / 印刷 / 製程）',
+    ],
+}
+
+
+# microjet 真實產品線（含商用列印機 / 3D 印表機 / 感測器 / 微泵）
+MICROJET_PRODUCTS = {
+    # === 商用噴墨印表機（B2B 核心） ===
+    'MJ-2800': {
+        'category':    'inkjet_printer',
+        'series':      '商用噴墨',
+        'positioning': '入門 · 中量列印',
+        'speed_ppm':   30,
+        'price_ntd':   45000,
+        'features':    ['熱泡噴墨', '雙匣設計', 'WiFi'],
+        'error_codes': ['E-041 印頭過熱', 'E-042 墨水匣識別失敗'],
+    },
+    'MJ-3100': {
+        'category':    'inkjet_printer',
+        'series':      '商用噴墨',
+        'positioning': '中階 · 商用辦公',
+        'speed_ppm':   45,
+        'price_ntd':   78000,
+        'features':    ['壓電 + 熱泡混合', '自動雙面列印', '雲端列印'],
+        'error_codes': ['E-043 雙面模組卡紙', 'E-044 韌體版本不符'],
+    },
+    'MJ-3200': {
+        'category':    'inkjet_printer',
+        'series':      '商用噴墨',
+        'positioning': '高階 · 工業級耐用',
+        'speed_ppm':   60,
+        'price_ntd':   125000,
+        'features':    ['壓電印頭', '長壽命墨水匣', 'MES 整合 API', '24/7 待機'],
+        'error_codes': ['E-043 印頭故障', 'E-047 MES 連線異常', 'E-051 紙匣感測'],
+    },
+    'MJ-4500': {
+        'category':    'inkjet_printer',
+        'series':      '商用噴墨',
+        'positioning': '旗艦 · 大量產線級',
+        'speed_ppm':   90,
+        'price_ntd':   220000,
+        'features':    ['雙印頭', 'Inline 自動校色', 'MES + ERP 雙整合', '5 年保固'],
+        'error_codes': ['E-049 雙印頭同步異常', 'E-051 校色失敗'],
+    },
+    # === ComeTrue 3D 列印機 ===
+    'ComeTrue-T10': {
+        'category':    '3d_printer',
+        'series':      'ComeTrue 全彩',
+        'positioning': '全彩粉末基 3D 列印 · 文創/原型',
+        'tech':        'binder jetting + 全彩墨水',
+        'build_vol':   '200 × 250 × 200 mm',
+        'price_ntd':   980000,
+        'url':         'https://www.cometrue3d.com/en/product/detail/t10-full-color-3d-printer',
+    },
+    'ComeTrue-M10': {
+        'category':    '3d_printer',
+        'series':      'ComeTrue 陶瓷',
+        'positioning': '黏結劑噴射陶瓷列印 · 工業/藝術',
+        'tech':        'binder jetting · 陶瓷粉末',
+        'build_vol':   '160 × 220 × 160 mm',
+        'price_ntd':   1450000,
+    },
+    # === CurieJet 感測器 ===
+    'CurieJet-P710': {
+        'category':    'sensor',
+        'series':      'CurieJet 環境感測',
+        'positioning': '室內空氣品質模組（PM2.5 + VOC）',
+        'measurement': ['PM1.0', 'PM2.5', 'PM10', 'tVOC'],
+        'size_mm':     '29 × 29 × 7.2',
+        'price_ntd':   3800,
+    },
+    'CurieJet-P760': {
+        'category':    'sensor',
+        'series':      'CurieJet 環境感測',
+        'positioning': '室外/車用感測模組（多氣體）',
+        'measurement': ['PM1.0', 'PM2.5', 'PM10', 'tVOC', 'CO₂', '溫度', '濕度'],
+        'size_mm':     '38 × 38 × 9.5',
+        'price_ntd':   6500,
+        'note':        '世界最小車用環境感測器',
+    },
+}
+
+
+# microjet B2B 客群分層（依產品線對應）
+MICROJET_SEGMENTS = {
+    'B2B': {
+        'office_print':         {'zh': '辦公室列印商用',  'priority': 1, 'avg_units': 30,
+                                  'product_focus': ['MJ-2800', 'MJ-3100', 'MJ-3200']},
+        'industrial_print':     {'zh': '工業/產線級列印', 'priority': 1, 'avg_units': 6,
+                                  'product_focus': ['MJ-3200', 'MJ-4500']},
+        'cultural_creative':    {'zh': '文創 / 模型工作室', 'priority': 2, 'avg_units': 1,
+                                  'product_focus': ['ComeTrue-T10']},
+        'ceramic_industry':     {'zh': '陶瓷工業',         'priority': 2, 'avg_units': 1,
+                                  'product_focus': ['ComeTrue-M10']},
+        'iot_device_brand':     {'zh': 'IoT 智慧裝置品牌', 'priority': 1, 'avg_units': 10000,
+                                  'product_focus': ['CurieJet-P710']},
+        'auto_electronics':     {'zh': '車用電子',         'priority': 1, 'avg_units': 50000,
+                                  'product_focus': ['CurieJet-P760']},
+        'medical_device':       {'zh': '醫療器材製造商',   'priority': 1, 'avg_units': 5000,
+                                  'product_focus': ['壓電微泵浦']},
+    },
+}
+
+
+def get_microjet_brand() -> dict:
+    """回傳完整 microjet 品牌資產（給 LLM / Agent 引用）"""
+    return MICROJET_BRAND
+
+
+def list_microjet_products(category: str = None) -> dict:
+    """列出 microjet 產品。category 可選 inkjet_printer/3d_printer/sensor"""
+    if category:
+        return {k: v for k, v in MICROJET_PRODUCTS.items() if v.get('category') == category}
+    return MICROJET_PRODUCTS
+
+
+def get_microjet_segments(customer_type: str = 'B2B') -> dict:
+    """B2B 7 類客群分層"""
+    return MICROJET_SEGMENTS.get(customer_type, {})
+
+
+def lookup_product_by_error_code(code: str) -> dict:
+    """依錯誤碼反查產品（給 8D / 客服 Agent 用）"""
+    code_upper = code.strip().upper()
+    for model, spec in MICROJET_PRODUCTS.items():
+        for ec in spec.get('error_codes', []):
+            if code_upper in ec.upper():
+                return {'model': model, 'error_match': ec, 'spec': spec}
+    return {'error': f'無法解析錯誤碼 {code}'}
+
+
+# ══════════════════════════════════════════════════════════════
 # 場景 B：客訴工單分類
 # ══════════════════════════════════════════════════════════════
 TICKET_CATEGORIES = {
@@ -827,7 +991,7 @@ def generate_8d_report(incident: dict, user: str = 'qa-01') -> dict:
         'lessons_learned': '建立「供應商 IQC 弱項」風險清單，每季更新',
     }
 
-    # 客戶回覆草案（給客服 Agent 寄出前審）
+    # 客戶回覆草案（給客服 Agent 寄出前審）— 規則底稿
     customer_reply = (
         f'{customer} 您好，\n\n'
         f'就 {product}（批號 {lot}）發生之 {defect} 問題，'
@@ -840,6 +1004,52 @@ def generate_8d_report(incident: dict, user: str = 'qa-01') -> dict:
         f'我們將於 24 小時內由專人聯繫您協調更換時程。\n\n'
         f'此致歉意，MicroJet 品質團隊'
     )
+
+    # P3 升級：LLM 增強的高管摘要 + 個人化客戶回覆（接 ai_backend）
+    executive_summary = None
+    llm_customer_reply = None
+    llm_meta = {}
+    try:
+        import sys, os as _os
+        _bdir = _os.path.dirname(_os.path.abspath(__file__))
+        if _bdir not in sys.path: sys.path.insert(0, _bdir)
+        import ai_backend
+        sys_p = (
+            '你是 MicroJet（研能科技）的品保 Agent，負責產出 8D 報告的高管摘要。'
+            '一律繁體中文，專業、簡短、客觀。不准推卸責任，但要強調已有完整對策。'
+        )
+        prompt = (
+            f'以下是 {product}（批號 {lot}）的 8D 報告核心發現：\n'
+            f'缺陷：{defect}\n'
+            f'影響：{qty} 台 / 客戶：{customer}\n'
+            f'根本原因：{d4["root_cause"]}\n'
+            f'永久對策：{len(d5)} 項（包含 IQC 含水率管制、黏度 SPC、設計 review）\n'
+            f'驗證計畫：{d6["verify_period"]}・成功標準 {d6["success_criteria"]}\n\n'
+            f'請為 CEO 寫 80 字內的「執行摘要」（exec summary），重點：嚴重度、'
+            f'已採取行動、預計結案時程、未來預防。直接寫摘要：'
+        )
+        r = ai_backend.generate(prompt=prompt, system=sys_p,
+                                 max_tokens=200, temperature=0.3, timeout_s=120)
+        if not r.get('fallback'):
+            executive_summary = (r.get('text') or '').strip()
+            llm_meta = {'backend': r.get('backend'), 'model': r.get('model'),
+                        'latency_ms': r.get('latency_ms')}
+        # 個人化客戶回覆
+        prompt2 = (
+            f'客戶名：{customer}\n'
+            f'產品：{product}\n'
+            f'問題：{defect}（{qty} 台）\n'
+            f'我方對策：已隔離、免費更換耗材、IQC 流程強化、30 天驗證\n\n'
+            f'請寫一封 200 字內的繁體中文道歉信給 {customer}，'
+            f'要點：表達同理、明確說明 8D 啟動、列出 4 點具體行動、24h 內專人聯繫。'
+            f'結尾簽名「研能科技品質團隊」。直接寫信件內容：'
+        )
+        r2 = ai_backend.generate(prompt=prompt2, system=sys_p,
+                                  max_tokens=400, temperature=0.4, timeout_s=180)
+        if not r2.get('fallback'):
+            llm_customer_reply = (r2.get('text') or '').strip()
+    except Exception:
+        pass
 
     # 量化指標達成
     rubric = {
@@ -868,7 +1078,10 @@ def generate_8d_report(incident: dict, user: str = 'qa-01') -> dict:
             'D7_prevention': d7,
             'D8_closure': d8,
         },
-        'customer_reply_draft': customer_reply,
+        'customer_reply_draft':       customer_reply,
+        'customer_reply_llm':         llm_customer_reply,    # LLM 個人化版本（None 時 fallback 規則）
+        'executive_summary_llm':      executive_summary,     # CEO 高管摘要（LLM）
+        'llm_meta':                   llm_meta,
         'rubric': rubric,
         'agent_level': 'L1',
         'agent_note': 'AI 限 L1（建議型）：產出 8D 草稿供 QA 主管審閱，實際決策仍由人工執行',

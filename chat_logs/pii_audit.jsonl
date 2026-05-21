@@ -42,3 +42,4 @@
 {"ts": "2026-05-17T23:56:14", "context": "cloud:test", "detections_count": 1, "types": ["TW_PHONE"], "input_len": 31, "output_len": 30}
 {"ts": "2026-05-18T09:23:18", "context": "benchmark_pii_recall", "detections_count": 114, "types": ["CN_NAME", "CREDIT", "EMAIL", "LANDLINE", "TW_ADDR", "TW_ID", "TW_PHONE"], "input_len": 2039, "output_len": 1859}
 {"ts": "2026-05-20T14:39:38", "context": "scenario:prompt", "detections_count": 2, "types": ["CN_NAME"], "input_len": 825, "output_len": 841}
+{"ts": "2026-05-21T15:44:00", "context": "scenario:prompt", "detections_count": 1, "types": ["CN_NAME"], "input_len": 513, "output_len": 521}

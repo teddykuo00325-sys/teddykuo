@@ -1119,6 +1119,49 @@ def review_smart_contract(contract_code: str, contract_name: str = 'Unknown',
     if has_high:
         test_suggestions.append('外部稽核（建議第三方 Smart Contract Audit Firm）')
 
+    # 風險評分（0-10）
+    risk_score = 0
+    for h in hits:
+        risk_score += {'high':3, 'medium':1.5, 'low':0.5}.get(h['risk_level'], 0)
+    risk_score = min(10, round(risk_score, 1))
+
+    # P5 升級：LLM 深度審查（接 ai_backend）
+    llm_review = None
+    llm_meta = {}
+    try:
+        import sys, os as _os
+        _bdir = _os.path.dirname(_os.path.abspath(__file__))
+        if _bdir not in sys.path: sys.path.insert(0, _bdir)
+        import ai_backend
+        sys_p = (
+            '你是維明顧問的智能合約資安 Agent，專精 Solidity / Vyper 合約風險分析。\n'
+            '一律繁體中文回覆。專業、簡短、客觀。\n'
+            '檢查面向：reentrancy / overflow / access control / DoS / oracle manipulation / front-running。'
+        )
+        prompt = (
+            f'以下是 {contract_name} 合約原始碼（前 800 字元）：\n```\n{contract_code[:800]}\n```\n\n'
+            f'規則引擎已偵測到 {len(hits)} 項問題（high={sum(1 for h in hits if h["risk_level"]=="high")}, '
+            f'medium={sum(1 for h in hits if h["risk_level"]=="medium")}, '
+            f'low={sum(1 for h in hits if h["risk_level"]=="low")}），整體 {overall_risk}。\n\n'
+            f'請用 150 字內補充規則引擎未必能抓到的「業務邏輯層級」風險，例如：\n'
+            f'• 經濟模型是否有套利空間\n'
+            f'• 權限分層是否合理\n'
+            f'• 升級機制是否有後門\n'
+            f'• 與其他合約交互的假設是否成立\n\n'
+            f'直接寫補充分析（不要說「以下是」）：'
+        )
+        r = ai_backend.generate(prompt=prompt, system=sys_p,
+                                 max_tokens=300, temperature=0.2, timeout_s=120)
+        if not r.get('fallback'):
+            llm_review = (r.get('text') or '').strip()
+            llm_meta = {'backend': r.get('backend'), 'model': r.get('model'),
+                        'latency_ms': r.get('latency_ms')}
+    except Exception:
+        pass
+
+    risk_level_zh = {'high': '高風險（不可部署）', 'medium': '中風險（測試網先行）',
+                      'low': '低風險（建議改善）', 'safe': '通過（仍建議 Slither）'}.get(overall_risk, overall_risk)
+
     report_id = f'CONTRACT-AUDIT-{int(time.time())}'
     report = {
         'report_id': report_id,
@@ -1126,15 +1169,20 @@ def review_smart_contract(contract_code: str, contract_name: str = 'Unknown',
         'reviewer': reviewer,
         'agent_level': 'L1',  # AI 限 L1 建議型
         'overall_risk': overall_risk,
+        'risk_level': risk_level_zh,
+        'risk_score': risk_score,         # 0-10
         'hits_count': len(hits),
         'high_count': sum(1 for h in hits if h['risk_level']=='high'),
         'medium_count': sum(1 for h in hits if h['risk_level']=='medium'),
         'low_count': sum(1 for h in hits if h['risk_level']=='low'),
-        'findings': hits,
+        'findings': [{'category': h['code_id'], 'description': h['description'],
+                       'line': h.get('line'), 'severity': h['risk_level']} for h in hits],
         'test_suggestions': test_suggestions,
         'recommendation': recommendation,
+        'llm_review': llm_review,         # LLM 深度補充分析
+        'llm_meta': llm_meta,
         'management_summary': (
-            f'合約 {contract_name} 審查結果：{overall_risk.upper()} 風險，'
+            f'合約 {contract_name} 審查結果：{overall_risk.upper()} 風險（{risk_score}/10 分），'
             f'共發現 {len(hits)} 項問題（high={sum(1 for h in hits if h["risk_level"]=="high")} '
             f'medium={sum(1 for h in hits if h["risk_level"]=="medium")} '
             f'low={sum(1 for h in hits if h["risk_level"]=="low")}）。'
