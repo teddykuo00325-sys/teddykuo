@@ -480,14 +480,79 @@ def respond(chat_id: str, user_text: str, user_name: str = 'guest') -> dict:
     except Exception as e:
         final_text = f'⚠️ 系統繁忙（{type(e).__name__}）。請稍候或換個說法。'
 
-    # 6. 寫回 thread
+    # 6. CEO 二審（基於置信度的審核機制）
+    try:
+        import ceo_agent
+        ceo_result = ceo_agent.review(
+            intent=intent,
+            tool_results=all_tool_calls,
+            llm_text=final_text,
+            agent_chain=agent_chain,
+            chat_id=chat_id,
+            use_llm_evaluator=False,  # 預設規則為主（避免再花 60-180 秒）
+        )
+    except Exception as _e:
+        ceo_result = {
+            'confidence':  {'score': 0.7, 'breakdown': {}, 'weights': {}},
+            'risk_level':  'medium',
+            'decision':    {'action': 'auto_with_audit', 'reason': f'CEO 失效：{_e}',
+                             'send_to_user': True, 'need_supervisor': False},
+            'ceo_comment': f'CEO 跳過（exception：{_e}）',
+            'consistency': {'consistent': True, 'inconsistencies': []},
+            'elapsed_ms':  0,
+        }
+
+    # 7. 依 CEO 決策路由
+    ceo_action = ceo_result['decision']['action']
+    if ceo_action == 'need_human_review':
+        # 送總監 queue
+        try:
+            import approval_queue as aq
+            ticket = aq.submit(
+                track='sales',
+                payload={
+                    'type':            'ceo_escalation',
+                    'chat_id':         chat_id,
+                    'user_text':       user_text,
+                    'ai_draft':        final_text,
+                    'agent_chain':     agent_chain,
+                    'ceo_confidence':  ceo_result['confidence']['score'],
+                    'ceo_breakdown':   ceo_result['confidence']['breakdown'],
+                    'ceo_risk':        ceo_result['risk_level'],
+                    'ceo_comment':     ceo_result['ceo_comment'],
+                    'intent':          intent,
+                    'inconsistencies': ceo_result['consistency']['inconsistencies'],
+                },
+                agent='ceo',
+                customer=f'chat:{chat_id}',
+                priority='high' if ceo_result['risk_level']=='high' else 'normal',
+            )
+            ceo_result['approval_ticket'] = ticket.get('ticket_id')
+            # 顧客先收到「等候人審」訊息
+            final_text_to_user = (
+                f'我已為您備好初步建議，CEO 已預審完成（信心 {ceo_result["confidence"]["score"]:.0%}），'
+                f'由於涉及{"高風險" if ceo_result["risk_level"]=="high" else "權限外"}決策，'
+                f'已升級給主管確認（單號 {ticket.get("ticket_id", "")[-10:]}），通常 30 分鐘內回覆。'
+            )
+        except Exception:
+            final_text_to_user = final_text
+    elif ceo_action == 'reject_and_retry':
+        final_text_to_user = ('系統判斷需要更多資訊以提供合適建議。請告訴我：\n'
+                                '• 您想保護哪個空間？（嬰兒/廚房/浴室/客廳/臥室/餐廳）\n'
+                                '• 大概幾坪？\n• 預算範圍？\n• 是否有特殊需求（過敏 / 寵物 / 新生兒）？')
+    else:
+        # auto_approve / auto_with_audit · 直接發
+        final_text_to_user = final_text
+
+    # 8. 寫回 thread
     import ai_backend
     backend_info = ai_backend.backend_info()
     conv['current_agent'] = final_agent
     conv['messages'].append({
         'role':       'assistant',
         'agent':      final_agent,
-        'content':    final_text,
+        'content':    final_text_to_user,
+        'original_draft':  final_text if final_text_to_user != final_text else None,
         'ts':         datetime.now().isoformat(timespec='seconds'),
         'intent':     intent,
         'tool_calls': [{'tool': t.get('tool'), 'ok': t.get('ok'),
@@ -495,26 +560,38 @@ def respond(chat_id: str, user_text: str, user_name: str = 'guest') -> dict:
         'handoffs':   handoffs,
         'backend':    backend_info.get('backend'),
         'model':      backend_info.get('model'),
+        'ceo_review': {
+            'score':     ceo_result['confidence']['score'],
+            'risk':      ceo_result['risk_level'],
+            'action':    ceo_action,
+            'comment':   ceo_result['ceo_comment'],
+            'breakdown': ceo_result['confidence']['breakdown'],
+        },
     })
     conv['agent_trace'].append({
-        'ts':          datetime.now().isoformat(timespec='seconds'),
-        'agent_chain': agent_chain,
-        'tool_count':  len(all_tool_calls),
-        'tools_used':  list(set(t.get('tool') for t in all_tool_calls if t.get('tool'))),
+        'ts':            datetime.now().isoformat(timespec='seconds'),
+        'agent_chain':   agent_chain + ['ceo'],
+        'tool_count':    len(all_tool_calls),
+        'tools_used':    list(set(t.get('tool') for t in all_tool_calls if t.get('tool'))),
+        'ceo_score':     ceo_result['confidence']['score'],
+        'ceo_action':    ceo_action,
+        'ceo_risk':      ceo_result['risk_level'],
     })
     save_conversation(conv)
 
     return {
         'chat_id':      chat_id,
-        'reply':        final_text,
+        'reply':        final_text_to_user,
         'final_agent':  final_agent,
-        'agent_chain':  agent_chain,
+        'agent_chain':  agent_chain + ['ceo'],   # CEO 加進鏈
         'intent':       intent,
         'tool_calls':   [{'tool': t.get('tool'), 'ok': t.get('ok'),
                            'elapsed_ms': t.get('elapsed_ms'),
                            'result_preview': str(t.get('result', ''))[:200]}
                           for t in all_tool_calls],
         'handoffs':     handoffs,
+        'ceo_review':   ceo_result,
+        'original_draft': final_text if final_text_to_user != final_text else None,
         'backend':      backend_info.get('backend'),
         'model':        backend_info.get('model'),
     }

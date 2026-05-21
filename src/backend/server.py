@@ -2462,6 +2462,40 @@ def api_microjet_lookup_error():
     return jsonify(mj.lookup_product_by_error_code(d.get('code', '')))
 
 
+# ══════════════════════════════════════════════════════════════
+# CEO Agent · 基於置信度的二層審核（Confidence-based Filtering）
+# 流程：Agent → CEO 二審 → 自動 / 抽樣 audit / 總監 queue / 退回
+# ══════════════════════════════════════════════════════════════
+@app.route('/api/ceo/review', methods=['POST'])
+def api_ceo_review():
+    """直接呼叫 CEO 二審（測試用 · 正常透過 agent_router 自動觸發）"""
+    import ceo_agent
+    d = request.get_json(silent=True) or {}
+    return jsonify(ceo_agent.review(
+        intent=d.get('intent', {}),
+        tool_results=d.get('tool_results', []),
+        llm_text=d.get('llm_text', ''),
+        agent_chain=d.get('agent_chain', ['bd']),
+        chat_id=d.get('chat_id'),
+        use_llm_evaluator=bool(d.get('use_llm_evaluator', False)),
+    ))
+
+
+@app.route('/api/ceo/log')
+def api_ceo_log():
+    """最近 N 筆 CEO 審查紀錄（給總監視角 + Dashboard）"""
+    import ceo_agent
+    n = int(request.args.get('n', 50))
+    return jsonify({'reviews': ceo_agent.get_recent_reviews(n)})
+
+
+@app.route('/api/ceo/stats')
+def api_ceo_stats():
+    """CEO 審查統計（自動過 / 進總監 / 抽樣 audit 比例）"""
+    import ceo_agent
+    return jsonify(ceo_agent.get_stats())
+
+
 @app.route('/api/agents/activity-log')
 def api_agents_activity_log():
     """回傳 activity_log.jsonl 最近 N 筆"""

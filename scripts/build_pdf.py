@@ -614,6 +614,62 @@ story.append(_tstyle([
     ['POST',   '/api/addwii/market-strategy',     '依關鍵字回傳市場策略範本 A-E'],
     ['GET',    '/api/addwii/field-trial',        '41 場域 Field Trial 摘要 + 競品比較 + 房型分佈'],
 ], col_widths=[1.5*cm, 6*cm, 9.5*cm]))
+story.append(P('9.10 CEO Agent · 基於置信度的二層審核（Confidence-based Filtering）', 'h2'))
+story.append(P('依業界 AI 治理主流設計，在 BD/客服/法務/行銷 Agent 與總監人審之間，'
+               '插入一層 <b>CEO Agent</b> 做二審。低風險高置信度自動通過，僅高風險或低置信度才升級真人。', 'p'))
+story.append(P('9.10.1 5 維度信心評分（加權合成）', 'h3'))
+story.append(_tstyle([
+    ['維度', '權重', '評估方式'],
+    ['LLM 品質',     '30%', '文字長度 + KB 訊號命中（NPA / 41 場域）+ stub 偵測 + 不確定詞扣分'],
+    ['KB 命中度',    '25%', 'tool calls 成功率 + 關鍵工具觸發（lookup_product / get_quote）'],
+    ['議價權限',     '20%', '折扣是否落在客群上限（B2B 12% / B2C 5%）'],
+    ['安全',         '15%', 'PII 命中 -0.4 / 不實宣稱 -0.2~0.6 / 禁詞 -0.25'],
+    ['品牌一致性',   '10%', '引用真實 KB + / 用「保證 100%」禁詞 -'],
+], col_widths=[3*cm, 2*cm, 12*cm]))
+
+story.append(P('9.10.2 三閘路由規則', 'h3'))
+story.append(_tstyle([
+    ['信心分數', '風險等級', '動作', '說明'],
+    ['≧ 0.85',  'low',      'auto_approve',       'CEO 自動核可發布'],
+    ['0.70-0.85', 'low/med', 'auto_with_audit',    '通過 + 10% 抽樣 audit'],
+    ['0.50-0.70', 'any',     'need_human_review',  '進總監 queue（高風險加緊急）'],
+    ['任何',     'high',     'need_human_review',  '強制升級總監'],
+    ['< 0.50',  'any',      'reject_and_retry',   '退回原 Agent 重生草稿'],
+], col_widths=[2.5*cm, 2*cm, 4*cm, 8.5*cm]))
+
+story.append(P('9.10.3 CEO 獨特職責（與其他 Agent 區別）', 'h3'))
+story.append(_tstyle([
+    ['Agent', '焦點'],
+    ['BD / 客服 / 提案 / 行銷', '內容生成（做事）'],
+    ['法務', 'PII / 合規檢查（特定面向）'],
+    ['CEO',  '跨領域整合 · 商業合理性 · 品牌調性 · 信心評分（決策）'],
+    ['總監（真人）', '最後一道防線（CEO 拿不準時介入）'],
+], col_widths=[4.5*cm, 12.5*cm]))
+
+story.append(P('9.10.4 對應 endpoint + 視覺化', 'h3'))
+story.append(_tstyle([
+    ['Endpoint',                'method',  '用途'],
+    ['/api/ceo/review',         'POST',    '直接呼叫 CEO 二審（測試用）'],
+    ['/api/ceo/log',            'GET',     '最近 N 筆 CEO 預審紀錄'],
+    ['/api/ceo/stats',          'GET',     '自動核可率 / 升級總監率統計'],
+], col_widths=[5*cm, 2*cm, 10*cm]))
+story.append(P('UI 視覺化：服務台頂部「👔 CEO 二審」4 卡片 · 每則對話 AI 回覆下方有 CEO 紫色徽章顯示信心分數 + '
+               '5 維度分數條 · 總監台底部「CEO 預審紀錄」供事後抽查。', 'pSm'))
+
+story.append(P('9.10.5 設計理念對應業界框架', 'h3'))
+story.append(P('Confidence-based filtering 是企業 AI 治理 2024-2026 主流模式（McKinsey / Anthropic / Gartner 多次提及）。'
+               '本實作對應：', 'pSm'))
+story.append(_tstyle([
+    ['業界框架', '對應實作'],
+    ['LangGraph interrupt 機制', 'agent_router 偵測 ceo_action=need_human_review 觸發 approval_queue'],
+    ['Anthropic constitutional AI', 'CEO Agent 規則式檢查 + LLM self-rated 雙保險'],
+    ['Gartner AI TRiSM',          '5 維度加權信心 + risk 分級 + audit trail'],
+    ['ISO 42001 AI 治理',          '三層分權（Agent / CEO / 總監）符合分權原則'],
+], col_widths=[5*cm, 12*cm]))
+
+story.append(PageBreak())
+
+story.append(P('（以下為原有「v3.x 新增 endpoint 一覽」收尾）', 'pSm'))
 story.append(P('全部 endpoint live 測試通過。實作位置：src/backend/acceptance_scenarios.py '
                '(HOME_CLEAN_ROOM_SYSTEMS · MARKET_STRATEGY_TEMPLATES · FIELD_TRIAL_STATS · '
                'COMPETITOR_COMPARISON · HOUSING_DISTRIBUTION)。', 'pSm'))

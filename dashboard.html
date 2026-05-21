@@ -10717,6 +10717,16 @@ async function renderAddwiiServiceDesk() {
         </div>
       </div>
 
+      <!-- CEO 二審即時 stats -->
+      <div class="mt-5 bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-500/40 rounded-lg p-4">
+        <h3 class="text-sm font-bold text-purple-300 mb-3">👔 CEO Agent 二審（基於置信度的審核機制）</h3>
+        <div id="svc-ceo-stats" class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">載入中...</div>
+        <p class="text-[10px] text-slate-400 mt-2">
+          5 維度信心：LLM 品質 30% · KB 命中 25% · 議價權限 20% · 安全 15% · 品牌一致 10%　·
+          三閘：≧0.85+低風險 自動 · 0.70-0.85 抽樣 audit · &lt;0.70 或 高風險 送總監 · &lt;0.50 退回
+        </p>
+      </div>
+
       <!-- 最近 tool calls 全域 trace -->
       <div class="mt-5 bg-slate-800/60 border border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-bold text-amber-300 mb-3">📜 最近 Tool Call 稽核（全域 · SHA-256 chain）</h3>
@@ -10730,11 +10740,12 @@ async function renderAddwiiServiceDesk() {
 
 async function loadServiceDeskData() {
   try {
-    const [bot, backend, convs, tools] = await Promise.all([
+    const [bot, backend, convs, tools, ceoStats] = await Promise.all([
       fetch(API_BASE + '/api/telegram/live/status').then(r => r.json()).catch(() => ({running: false})),
       fetch(API_BASE + '/api/ai/backend').then(r => r.json()).catch(() => ({})),
       fetch(API_BASE + '/api/agent-router/conversations').then(r => r.json()).catch(() => ({conversations: []})),
       fetch(API_BASE + '/api/agent-router/tool-calls?n=30').then(r => r.json()).catch(() => ({tool_calls: []})),
+      fetch(API_BASE + '/api/ceo/stats').then(r => r.json()).catch(() => null),
     ]);
 
     document.getElementById('svc-bot-status').innerHTML = bot.running
@@ -10768,6 +10779,38 @@ async function loadServiceDeskData() {
           <div class="text-[10px] text-slate-600 mt-1">${(c.last_updated || '').slice(11, 19)}</div>
         </div>
       `).join('');
+    }
+
+    // CEO 二審 stats
+    const ceoNode = document.getElementById('svc-ceo-stats');
+    if (ceoNode) {
+      if (ceoStats && ceoStats.total > 0) {
+        const autoRate = ((ceoStats.auto_approve_rate || 0) * 100).toFixed(0);
+        const humanRate = ((ceoStats.human_review_rate || 0) * 100).toFixed(0);
+        ceoNode.innerHTML = `
+          <div class="bg-slate-900/60 rounded p-3 border border-emerald-500/30">
+            <div class="text-[10px] text-slate-400">CEO 總審查</div>
+            <div class="text-lg font-bold text-emerald-300">${ceoStats.total}</div>
+            <div class="text-[10px] text-slate-500 mt-1">平均耗時 ${ceoStats.avg_elapsed_ms}ms</div>
+          </div>
+          <div class="bg-slate-900/60 rounded p-3 border border-purple-500/30">
+            <div class="text-[10px] text-slate-400">平均信心分數</div>
+            <div class="text-lg font-bold text-purple-300">${ceoStats.avg_score}</div>
+            <div class="text-[10px] text-slate-500 mt-1">0-1 分（越高越好）</div>
+          </div>
+          <div class="bg-slate-900/60 rounded p-3 border border-cyan-500/30">
+            <div class="text-[10px] text-slate-400">自動核可率</div>
+            <div class="text-lg font-bold text-cyan-300">${autoRate}%</div>
+            <div class="text-[10px] text-slate-500 mt-1">高信心 + 低風險</div>
+          </div>
+          <div class="bg-slate-900/60 rounded p-3 border border-amber-500/30">
+            <div class="text-[10px] text-slate-400">升級總監比率</div>
+            <div class="text-lg font-bold text-amber-300">${humanRate}%</div>
+            <div class="text-[10px] text-slate-500 mt-1">低信心 OR 高風險</div>
+          </div>`;
+      } else {
+        ceoNode.innerHTML = '<p class="col-span-4 text-slate-500 text-xs text-center py-2">尚無 CEO 審查紀錄（送幾則 TG 訊息或在對話框測試後會出現）</p>';
+      }
     }
 
     // 最近 tool calls
@@ -10822,11 +10865,33 @@ async function selectSvcConv(chatId) {
       } else {
         const tools = m.tool_calls || [];
         const handoffs = m.handoffs || [];
+        const ceo = m.ceo_review || null;
+        const ceoBadge = ceo ? (() => {
+          const ac = ceo.action;
+          const color = ac === 'auto_approve' ? 'bg-emerald-700' :
+                          ac === 'need_human_review' ? 'bg-amber-700' :
+                          ac === 'reject_and_retry' ? 'bg-rose-700' : 'bg-slate-700';
+          return `<div class="mt-2 ${color}/30 rounded p-2 border border-purple-500/30">
+            <div class="text-[10px] text-purple-200">👔 CEO 二審 · 信心 ${ceo.score} · 風險 ${ceo.risk} · ${ac}</div>
+            <div class="text-[10px] text-slate-300 mt-1">${ceo.comment || ''}</div>
+            ${ceo.breakdown ? `
+              <div class="grid grid-cols-5 gap-1 mt-1 text-[9px]">
+                ${Object.entries(ceo.breakdown).map(([k, v]) => {
+                  const pc = (v * 100).toFixed(0);
+                  const c = v >= 0.7 ? 'text-emerald-300' : v >= 0.5 ? 'text-amber-300' : 'text-rose-400';
+                  return `<div class="bg-slate-900/60 rounded px-1 py-0.5">
+                    <div class="text-slate-500">${k.slice(0,8)}</div><div class="${c}">${pc}%</div>
+                  </div>`;
+                }).join('')}
+              </div>` : ''}
+          </div>`;
+        })() : '';
         return `<div class="bg-emerald-900/30 rounded-lg p-3 border-l-2 border-emerald-500">
           <div class="text-[10px] text-emerald-300 mb-1">🤖 ${m.agent || 'bd'} Agent · ${(m.ts || '').slice(11, 19)} · ${m.backend || '?'}/${m.model || '?'}</div>
           <div class="text-slate-200 whitespace-pre-wrap">${m.content}</div>
           ${tools.length > 0 ? `<div class="mt-2 text-[10px] text-cyan-400">🛠 工具：${tools.map(t => t.tool).join(', ')}</div>` : ''}
           ${handoffs.length > 0 ? `<div class="mt-1 text-[10px] text-amber-300">🔄 Handoff：${handoffs.map(h => h.from + '→' + h.to).join(' / ')}</div>` : ''}
+          ${ceoBadge}
         </div>`;
       }
     }).join('');
@@ -10908,6 +10973,15 @@ async function renderAddwiiSupervisor() {
         </div>
       </div>
 
+      <!-- CEO 預審紀錄（總監事後復查） -->
+      <div class="mt-5 bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-500/40 rounded-lg p-4">
+        <h3 class="text-sm font-bold text-purple-300 mb-3">👔 CEO Agent 預審紀錄（最近 20 筆 · 總監事後復查）</h3>
+        <div id="sup-ceo-log" class="space-y-1 text-[10px] font-mono max-h-[300px] overflow-y-auto">載入中...</div>
+        <p class="text-[10px] text-slate-400 mt-2">
+          CEO 自動核可的請求記錄於此，總監可隨時抽查 · 若發現異常可全面叫回審核
+        </p>
+      </div>
+
       <div class="mt-5 flex gap-3 justify-end">
         <button onclick="seedSupervisorDemo()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded text-sm">+ 產生 demo 待審</button>
         <button onclick="renderAddwiiSupervisor()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm">🔄 重整</button>
@@ -10920,12 +10994,40 @@ async function renderAddwiiSupervisor() {
 
 async function loadSupervisorData() {
   try {
-    const [stats, sales, marketing, compliance] = await Promise.all([
+    const [stats, sales, marketing, compliance, ceoLog] = await Promise.all([
       fetch(API_BASE + '/api/approval/stats').then(r => r.json()),
       fetch(API_BASE + '/api/approval/queue?track=sales').then(r => r.json()),
       fetch(API_BASE + '/api/approval/queue?track=marketing').then(r => r.json()),
       fetch(API_BASE + '/api/approval/queue?track=compliance').then(r => r.json()),
+      fetch(API_BASE + '/api/ceo/log?n=20').then(r => r.json()).catch(() => null),
     ]);
+
+    // CEO log 顯示
+    const ceoNode = document.getElementById('sup-ceo-log');
+    if (ceoNode) {
+      const reviews = (ceoLog && ceoLog.reviews) || [];
+      if (reviews.length === 0) {
+        ceoNode.innerHTML = '<p class="text-slate-500 text-center py-2">尚無 CEO 預審紀錄</p>';
+      } else {
+        ceoNode.innerHTML = reviews.slice().reverse().map(r => {
+          const ac = r.action;
+          const c = ac === 'auto_approve' ? 'text-emerald-300' :
+                      ac === 'auto_with_audit' ? 'text-cyan-300' :
+                      ac === 'need_human_review' ? 'text-amber-300' :
+                      ac === 'reject_and_retry' ? 'text-rose-400' : 'text-slate-400';
+          const rc = r.risk === 'high' ? 'text-rose-400' :
+                       r.risk === 'medium' ? 'text-amber-300' : 'text-emerald-300';
+          return `<div class="flex gap-2 hover:bg-slate-900/50 px-2 py-1 rounded">
+            <span class="text-slate-500">${(r.ts || '').slice(11,19)}</span>
+            <span class="text-cyan-300">${(r.chat_id || '').slice(-6)}</span>
+            <span class="text-purple-300">score=${(r.score||0).toFixed(2)}</span>
+            <span class="${rc}">risk=${r.risk}</span>
+            <span class="${c}">${ac}</span>
+            <span class="text-slate-500">${(r.agent_chain||[]).join('→')}</span>
+          </div>`;
+        }).join('');
+      }
+    }
 
     document.getElementById('sup-stats').innerHTML = `
       <div class="bg-slate-800/60 border border-amber-500/40 rounded-lg p-3">

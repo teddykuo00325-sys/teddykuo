@@ -152,6 +152,55 @@ curl -X POST http://localhost:5050/api/telegram/demo
 
 ---
 
+## 六 · CEO Agent 二層審核（Confidence-based Filtering · v3.x）
+
+```
+src/backend/ceo_agent.py（558 行）
+```
+
+對應業界主流的「Confidence-based filtering」設計：
+**低風險高置信度 → 自動通過 · 只有高風險或低置信度才升級真人**
+
+### 5 維度信心評分
+
+| 維度 | 權重 | 評估方式 |
+|---|:--:|---|
+| LLM 品質 | 30% | 文字長度 + KB 訊號（NPA/41 場域）+ stub 偵測 + 不確定詞扣分 |
+| KB 命中度 | 25% | tool calls 成功率 + 關鍵工具觸發 |
+| 議價權限 | 20% | 折扣 vs 客群上限（B2B 12% / B2C 5%）|
+| 安全 | 15% | PII 命中扣 0.4 / 不實宣稱扣 0.2-0.6 |
+| 品牌一致性 | 10% | 引用真實 KB + / 用「保證 100%」禁詞 - |
+
+### 三閘路由
+
+| score | risk | 動作 |
+|:--:|:--:|---|
+| ≧0.85 | low | **auto_approve** · CEO 自動核可 |
+| 0.70-0.85 | low/med | **auto_with_audit** · 通過但 10% 抽樣 |
+| 0.50-0.70 | any | **need_human_review** · 進總監 queue |
+| any | high | **need_human_review** · 強制升級 |
+| <0.50 | any | **reject_and_retry** · 退回 Agent 重試 |
+
+### CEO 獨特職責（不重複法務 / BD）
+- 跨領域一致性（BD 報價 vs 提案方案 vs 客服承諾）
+- 商業合理性（折扣是否傷毛利）
+- 品牌調性（避免內部 Agent 互相矛盾）
+- 信心評分最終加權
+
+### 驗證 endpoint
+```bash
+curl http://localhost:5050/api/ceo/stats
+curl http://localhost:5050/api/ceo/log?n=20
+curl -X POST http://localhost:5050/api/ceo/review -d '{"intent":{}, "tool_results":[], "llm_text":"...", "agent_chain":["bd"]}'
+```
+
+### Dashboard
+- 服務台頂部「👔 CEO 二審」 4 卡片
+- 每則 AI 回覆下方 CEO 紫色徽章 + 5 維度分數條
+- 總監台底部「CEO 預審紀錄」log
+
+---
+
 ## 六-2 · microjet 強化（v3.x）
 
 ```
